@@ -1,0 +1,8 @@
+{
+  "captured_utc": "2026-10-08T14:26:47.918081+00:00",
+  "files_compared": 35839,
+  "file_differences": [],
+  "git_differences": [],
+  "passed": true,
+  "coverage": "All files size/mtime; SHA-256 except node_modules. No access-time comparison."
+}

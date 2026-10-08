@@ -1,0 +1,4 @@
+interface:
+  display_name: "需求与 Goal 规划"
+  short_description: "将自然语言需求拆成可验收功能、阶段依赖与未来 Agent 任务"
+  default_prompt: "使用 $requirement-planner 将业务需求拆成阶段计划、验收标准与任务依赖。"

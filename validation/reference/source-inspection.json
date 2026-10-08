@@ -1,0 +1,98 @@
+{
+  "method": "read_only_file_inspection_not_business_retest",
+  "screenshots": [
+    {
+      "file": "01-login-1920.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "02-collaboration-1920.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "03-supervision-1920.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "04-risk-control-1920.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "05-business-1920.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "06-cockpit-1920.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "07-business-detail-1920.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "08-reset-current-confirm-1920.png",
+      "size": [
+        1920,
+        1080
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "09-platform-frame-1366.png",
+      "size": [
+        1366,
+        768
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "10-business-1366.png",
+      "size": [
+        1366,
+        768
+      ],
+      "matches_evidence_viewport": true
+    },
+    {
+      "file": "11-cockpit-1366.png",
+      "size": [
+        1366,
+        768
+      ],
+      "matches_evidence_viewport": true
+    }
+  ],
+  "screenshot_count": 11,
+  "zip_sha256": "d92fa5bf324233ed6588605356c0008e0c1231ecf94b9af1b60c00a91c48e23b",
+  "matches_external_sha_file": true,
+  "matches_current_status_sha": true,
+  "passed": true
+}

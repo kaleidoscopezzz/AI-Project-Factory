@@ -1,0 +1,70 @@
+{
+  "captured_utc": "2026-10-08T14:15:59.566710+00:00",
+  "purpose": "artifact_qa_only",
+  "skills": [
+    {
+      "skill": "requirement-planner",
+      "official_exit_code": 0,
+      "official_output": "Skill is valid!",
+      "portable_links_checked": 2,
+      "ui_metadata": "valid"
+    },
+    {
+      "skill": "goal0-scaffolder",
+      "official_exit_code": 0,
+      "official_output": "Skill is valid!",
+      "portable_links_checked": 2,
+      "ui_metadata": "valid"
+    },
+    {
+      "skill": "goal-prompt-writer",
+      "official_exit_code": 0,
+      "official_output": "Skill is valid!",
+      "portable_links_checked": 4,
+      "ui_metadata": "valid"
+    }
+  ],
+  "cases": [
+    {
+      "case": "case-a",
+      "requirements": 18,
+      "acceptance": 18,
+      "tasks": 11,
+      "goal0_criteria": 12,
+      "negative_probes": [
+        {
+          "probe": "duplicate_task",
+          "rejected": true,
+          "reason": "tasks: duplicate IDs"
+        },
+        {
+          "probe": "unknown_dependency",
+          "rejected": true,
+          "reason": "T-A001: unknown dependency NONEXISTENT"
+        },
+        {
+          "probe": "cycle",
+          "rejected": true,
+          "reason": "Dependency cycle at T-A001"
+        },
+        {
+          "probe": "git_authorization_expansion",
+          "rejected": true,
+          "reason": "Unauthorized policy: git_write"
+        },
+        {
+          "probe": "unmapped_acceptance",
+          "rejected": true,
+          "reason": "R-A001: unknown acceptance MISSING"
+        },
+        {
+          "probe": "path_escape",
+          "rejected": true,
+          "reason": "T-A001: unsafe relative write path"
+        }
+      ]
+    }
+  ],
+  "passed": false,
+  "error": "case-b: missing evaluation.md"
+}

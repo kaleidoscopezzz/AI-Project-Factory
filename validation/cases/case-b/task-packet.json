@@ -1,0 +1,753 @@
+{
+  "schema_version": "1.0",
+  "case_id": "case-b",
+  "status": "ready_for_coder_design_only",
+  "target_workdir": "C:\\FactoryCases\\InventoryService",
+  "baseline": {
+    "kind": "unverified_target",
+    "head": null,
+    "verification_required": true
+  },
+  "requirements": [
+    {
+      "id": "R-B001",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-B01"
+      ]
+    },
+    {
+      "id": "R-B002",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-B02"
+      ]
+    },
+    {
+      "id": "R-B003",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-B03",
+        "AC-B04",
+        "AC-B12"
+      ]
+    },
+    {
+      "id": "R-B004",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-B05",
+        "AC-B06"
+      ]
+    },
+    {
+      "id": "R-B005",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-B07",
+        "AC-B11"
+      ]
+    },
+    {
+      "id": "R-B006",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-B08"
+      ]
+    },
+    {
+      "id": "R-B007",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-B09",
+        "AC-B10"
+      ],
+      "source_kind": "derived_engineering_design_from_skills_not_explicit_case_requirement"
+    },
+    {
+      "id": "R-B008",
+      "goal": "Goal 1",
+      "acceptance_ids": [
+        "AC-B13"
+      ]
+    },
+    {
+      "id": "R-B009",
+      "goal": "Goal 2",
+      "acceptance_ids": [
+        "AC-B14"
+      ]
+    },
+    {
+      "id": "R-B010",
+      "goal": "Goal 2",
+      "acceptance_ids": [
+        "AC-B15"
+      ]
+    },
+    {
+      "id": "R-B011",
+      "goal": "Goal 3",
+      "acceptance_ids": [
+        "AC-B16",
+        "AC-B17",
+        "AC-B18",
+        "AC-B19"
+      ]
+    },
+    {
+      "id": "R-B012",
+      "goal": "Goal 1",
+      "acceptance_ids": [
+        "AC-B20"
+      ]
+    },
+    {
+      "id": "R-B013",
+      "goal": "Goal 3",
+      "acceptance_ids": [
+        "AC-B21"
+      ]
+    },
+    {
+      "id": "R-B014",
+      "goal": "Goal 4",
+      "acceptance_ids": [
+        "AC-B22"
+      ]
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-B01",
+      "requirement_id": "R-B001",
+      "given": "未核实目标目录，专属空环境",
+      "when": "只读核验后锁定安装、迁移、构建和启动",
+      "then": "退出0、8000可达、Linux本机容器smoke可运行，无全局安装；真Linux内网机未测",
+      "method": "命令/构建/启动核验",
+      "evidence": "validation/goal0/round-001/environment.log",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B02",
+      "requirement_id": "R-B002",
+      "given": "1440×900和1280×720已登录页面",
+      "when": "键盘导航、全部菜单、样板新增取消",
+      "then": "无整页横溢遮挡；焦点可见；未来业务明确未实现；取消无POST/数据/审计变化",
+      "method": "Playwright UI、DB计数对照",
+      "evidence": "validation/goal0/round-001/screenshots/",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B03",
+      "requirement_id": "R-B003",
+      "given": "虚构正确/错误/禁用账号与真实DB session",
+      "when": "登录、退出、模拟到期后读API",
+      "then": "正确建立真实session；错误不建立；匿名/退出/过期API401；密码hash与脱敏",
+      "method": "真实PG API/会话测试",
+      "evidence": "validation/goal0/round-001/auth.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B04",
+      "requirement_id": "R-B003",
+      "given": "A/B部门的工程样板与角色矩阵",
+      "when": "直接列表/详情API与伪造owner/department字段",
+      "then": "员工/仓管仅本人、经理本部门、管理员工程样板全读；越权403/404或非法字段400且无写/成功审计，默认模型权限不替代对象权限",
+      "method": "真实PG对象权限API",
+      "evidence": "validation/goal0/round-001/permissions.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B05",
+      "requirement_id": "R-B004",
+      "given": "已登录员工，有效label与UUID request_id",
+      "when": "UI新建读回；空label、重放、冲突payload、同键并发、事务故障注入",
+      "then": "首次201生成UUID及一条审计；非法400无写；同键同payload200同UUID/一次审计；冲突409；并发一次写；异常回滚",
+      "method": "UI/真实PG事务和唯一约束集成",
+      "evidence": "validation/goal0/round-001/sample.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B06",
+      "requirement_id": "R-B004",
+      "given": "已提交样板UUID/label",
+      "when": "刷新、关闭浏览器重登录、应用/本项目DB重启；提交响应丢失安全查回",
+      "then": "原UUID/label保留；保留卷；同request_id查回或安全重试，无假成功",
+      "method": "UI/API/DB重启与对照",
+      "evidence": "validation/goal0/round-001/persistence.log",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B07",
+      "requirement_id": "R-B005",
+      "given": "空dev/test专属库及已有手工样板",
+      "when": "迁移/seed两次；请求错误环境/库名reset",
+      "then": "无待迁移、无重复且不覆盖记录；reset守卫拒绝无DROP/清空",
+      "method": "真实PG初始化及守卫命令检查",
+      "evidence": "validation/goal0/round-001/migrations.log",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B08",
+      "requirement_id": "R-B006",
+      "given": "健康服务和原样板",
+      "when": "只暂停本项目DB或API，观察健康/UI/API，再恢复",
+      "then": "live200；ready正常200/DB故障503；错误明确不泄密；恢复读原记录；无Mock/localStorage fallback",
+      "method": "故障注入/UI/API/DB",
+      "evidence": "validation/goal0/round-001/outage.log",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B09",
+      "requirement_id": "R-B007",
+      "given": "锁定候选、专属真实PG测试库",
+      "when": "静态/单元/API/事务/UI/无DEBUG Linux容器smoke",
+      "then": "必需测试全部通过非跳过；预期400/401/403/404/409/503与意外错误分列",
+      "method": "ruff/pytest/Playwright/构建smoke",
+      "evidence": "validation/goal0/round-001/test-report.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B10",
+      "requirement_id": "R-B007",
+      "given": "固定候选内容与实际运行结果",
+      "when": "索引AC、命令/退出码、环境视口、指纹、失败历史和状态",
+      "then": "manifest/验收/PROJECT_STATUS一致；外部验收未发生；无Git写/部署/全局安装",
+      "method": "证据/状态独立核对",
+      "evidence": "validation/goal0/manifest.json",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B11",
+      "requirement_id": "R-B005",
+      "given": "有样板的专属dev数据库",
+      "when": "pg_dump再恢复另一allowlist restore库",
+      "then": "UUID/label/账号关联/审计计数一致；不覆盖原库或碰生产；周期等仅待确认",
+      "method": "真实PG dump/restore隔离演练",
+      "evidence": "validation/goal0/round-001/backup.log",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B12",
+      "requirement_id": "R-B003",
+      "given": "真实session，合法或缺/伪造CSRF",
+      "when": "提交样板并检查cookie",
+      "then": "合法成功；缺/伪造403且DB不变；HttpOnly/SameSite=Lax；HTTPS非dev Secure；无浏览器持久凭据",
+      "method": "API/header/DB检查",
+      "evidence": "validation/goal0/round-001/csrf.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B13",
+      "requirement_id": "R-B008",
+      "given": "Goal0外部验收与后续授权，仓管身份",
+      "when": "创建物料与入库，重复编码/非法数量/员工越权",
+      "then": "编码唯一、正数库存与流水/审计同事务；非法/越权无写",
+      "method": "后续UI/API/真实PG",
+      "evidence": "validation/goal1/materials.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B14",
+      "requirement_id": "R-B009",
+      "given": "有效物料，员工所属部门",
+      "when": "草稿提交与读取申请、跨部门读取、取消编辑",
+      "then": "submitted、数量正数、有效关联；其他部门不可读；提交不扣库；取消不写",
+      "method": "后续UI/API/真实PG",
+      "evidence": "validation/goal2/requests.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B15",
+      "requirement_id": "R-B010",
+      "given": "submitted申请与本部门经理",
+      "when": "approve/reject与跨部门/重复终态审批",
+      "then": "approved/rejected一次审计；跨部门拒绝；终态不重复；批准不扣库；无代理",
+      "method": "后续UI/API/真实PG",
+      "evidence": "validation/goal2/approvals.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B16",
+      "requirement_id": "R-B011",
+      "given": "approved数量3、库存10、仓管",
+      "when": "出库及员工/未批申请调用",
+      "then": "库存7/fulfilled/流水/审计同事务；非法调用拒绝无写",
+      "method": "后续UI/API/真实PG",
+      "evidence": "validation/goal3/dispatch.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B17",
+      "requirement_id": "R-B011",
+      "given": "已出库操作的同幂等键",
+      "when": "再次出库请求",
+      "then": "库存仍7；流水与成功审计仅一次",
+      "method": "后续真实PG幂等测试",
+      "evidence": "validation/goal3/idempotency.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B18",
+      "requirement_id": "R-B011",
+      "given": "库存5，两approved各4，独立数据库连接",
+      "when": "同时出库",
+      "then": "仅一成功、另一409 STOCK_INSUFFICIENT，库存1、不为负",
+      "method": "后续真实PG并发集成",
+      "evidence": "validation/goal3/concurrency.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B19",
+      "requirement_id": "R-B011",
+      "given": "出库事务执行中，隔离测试环境",
+      "when": "注入事务失败",
+      "then": "库存/申请状态/流水/成功审计全部回滚",
+      "method": "后续真实PG回滚集成",
+      "evidence": "validation/goal3/rollback.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B20",
+      "requirement_id": "R-B012",
+      "given": "管理员与普通员工，旧会话",
+      "when": "创建/禁用账号或改部门角色",
+      "then": "管理员服务端生效且审计；非管理员403；禁用会话失效",
+      "method": "后续UI/API/真实会话测试",
+      "evidence": "validation/goal1/accounts.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B21",
+      "requirement_id": "R-B013",
+      "given": "已确认业务成功变更与失败场景",
+      "when": "核对审计并普通员工读/改审计",
+      "then": "成功审计同事务且绑定actor/action/resource/time/request_id；失败无成功审计；普通员工拒绝；脱敏",
+      "method": "后续API/真实PG",
+      "evidence": "validation/goal3/audit.xml",
+      "execution_status": "not_run_planned"
+    },
+    {
+      "id": "AC-B22",
+      "requirement_id": "R-B014",
+      "given": "获批准生产身份/环境凭据/备份周期/容量与固定候选",
+      "when": "Linux内网部署演练、TLS/备份恢复与容量测试",
+      "then": "按批准指标交付可回退包；无批准不部署或声称生产就绪",
+      "method": "后续获授权真实目标机Release检查",
+      "evidence": "validation/release/acceptance.md",
+      "execution_status": "not_run_planned"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-B00",
+      "role": "Coder",
+      "depends_on": [],
+      "write_set": [
+        "docs/baseline.md",
+        "README.md"
+      ],
+      "acceptance_ids": [
+        "AC-B01"
+      ],
+      "outputs": [
+        "只读工具/目录/Git基线记录",
+        "目录/API/模型契约"
+      ],
+      "status": "planned_not_dispatched",
+      "approval_required": "未来案例实施与目标目录授权"
+    },
+    {
+      "id": "T-B01",
+      "role": "Coder",
+      "depends_on": [
+        "T-B00"
+      ],
+      "write_set": [
+        "config/",
+        "requirements.txt",
+        "requirements-dev.txt",
+        "pyproject.toml",
+        "compose.yaml",
+        "Dockerfile",
+        "manage.py",
+        "scripts/",
+        ".env",
+        ".env.example",
+        ".gitignore",
+        "accounts/migrations/",
+        "sample/migrations/",
+        "common/migrations/",
+        "accounts/models.py",
+        "accounts/apps.py",
+        "accounts/__init__.py",
+        "accounts/management/",
+        "common/models.py",
+        "common/apps.py",
+        "common/__init__.py",
+        "common/management/",
+        "sample/models.py",
+        "sample/apps.py",
+        "sample/__init__.py",
+        "sample/management/"
+      ],
+      "acceptance_ids": [
+        "AC-B01",
+        "AC-B07"
+      ],
+      "outputs": [
+        "先建立模型/app骨架后执行迁移seed，锁定依赖/项目配置/运行脚本"
+      ],
+      "status": "planned_not_dispatched",
+      "exclusive_shared_owner": true,
+      "operation_artifact_write_set": [
+        ".venv/",
+        ".cache/",
+        "staticfiles/"
+      ]
+    },
+    {
+      "id": "T-B02",
+      "role": "Coder",
+      "depends_on": [
+        "T-B01"
+      ],
+      "write_set": [
+        "accounts/services.py",
+        "accounts/api.py",
+        "accounts/views.py",
+        "common/errors.py",
+        "common/permissions.py",
+        "common/audit.py",
+        "sample/services.py",
+        "sample/api.py",
+        "sample/views.py",
+        "health/"
+      ],
+      "acceptance_ids": [
+        "AC-B03",
+        "AC-B04",
+        "AC-B05",
+        "AC-B06",
+        "AC-B08",
+        "AC-B12"
+      ],
+      "outputs": [
+        "按冻结模型实现真实认证/资源授权/JSON API/事务样板/健康；模型/迁移/seed变更回T-B01"
+      ],
+      "status": "planned_not_dispatched",
+      "shared_contract_owner": "T-B01",
+      "parallel_group": "goal0-api-ui"
+    },
+    {
+      "id": "T-B03",
+      "role": "Coder",
+      "depends_on": [
+        "T-B01"
+      ],
+      "write_set": [
+        "templates/",
+        "static/"
+      ],
+      "acceptance_ids": [
+        "AC-B02",
+        "AC-B05"
+      ],
+      "outputs": [
+        "登录/主布局/未来入口/真实样板UI"
+      ],
+      "status": "planned_not_dispatched",
+      "shared_contract_owner": "T-B01",
+      "parallel_group": "goal0-api-ui"
+    },
+    {
+      "id": "T-B04",
+      "role": "Tester",
+      "depends_on": [
+        "T-B02",
+        "T-B03"
+      ],
+      "write_set": [
+        "tests/",
+        "validation/goal0/round-001/",
+        "validation/goal0/round-002/",
+        "validation/goal0/round-003/"
+      ],
+      "acceptance_ids": [
+        "AC-B01",
+        "AC-B02",
+        "AC-B03",
+        "AC-B04",
+        "AC-B05",
+        "AC-B06",
+        "AC-B07",
+        "AC-B08",
+        "AC-B09",
+        "AC-B11",
+        "AC-B12"
+      ],
+      "outputs": [
+        "实际测试/API/DB/重启/故障/备份恢复/截图证据"
+      ],
+      "status": "planned_not_dispatched",
+      "operation_artifact_write_set": [
+        "backups/",
+        ".cache/"
+      ]
+    },
+    {
+      "id": "T-B05",
+      "role": "Orchestrator",
+      "depends_on": [
+        "T-B04"
+      ],
+      "write_set": [
+        "PROJECT_STATUS.md",
+        "docs/acceptance-goal0.md",
+        "validation/goal0/manifest.json"
+      ],
+      "acceptance_ids": [
+        "AC-B10"
+      ],
+      "outputs": [
+        "状态/恢复点/验收矩阵/候选指纹"
+      ],
+      "status": "planned_not_dispatched"
+    },
+    {
+      "id": "T-B06",
+      "role": "Reviewer",
+      "depends_on": [
+        "T-B05"
+      ],
+      "write_set": [
+        "validation/goal0/review.md"
+      ],
+      "acceptance_ids": [
+        "AC-B01",
+        "AC-B02",
+        "AC-B03",
+        "AC-B04",
+        "AC-B05",
+        "AC-B06",
+        "AC-B07",
+        "AC-B08",
+        "AC-B09",
+        "AC-B10",
+        "AC-B11",
+        "AC-B12"
+      ],
+      "outputs": [
+        "独立问题报告，非外部验收通过"
+      ],
+      "status": "planned_not_dispatched",
+      "implementation_access": "read_only",
+      "execution_contract": "须后续独立Reviewer只读执行，单Coder只实施/自测T-B00…05；未提供则不伪称独立结论并停待外部验收"
+    },
+    {
+      "id": "T-B10",
+      "role": "Coder",
+      "depends_on": [
+        "T-B06"
+      ],
+      "write_set": [
+        "inventory/materials/",
+        "inventory/receipts/"
+      ],
+      "acceptance_ids": [
+        "AC-B13"
+      ],
+      "outputs": [
+        "物料/入库闭环"
+      ],
+      "status": "planned_not_dispatched",
+      "approval_required": "Goal0外部验收及Goal1实施授权"
+    },
+    {
+      "id": "T-B11",
+      "role": "Coder",
+      "depends_on": [
+        "T-B06"
+      ],
+      "write_set": [
+        "accounts/admin-ui/",
+        "templates/accounts-admin/"
+      ],
+      "acceptance_ids": [
+        "AC-B20"
+      ],
+      "outputs": [
+        "账号角色管理"
+      ],
+      "status": "planned_not_dispatched",
+      "approval_required": "Goal0外部验收及Goal1实施授权"
+    },
+    {
+      "id": "T-B20",
+      "role": "Coder",
+      "depends_on": [
+        "T-B10",
+        "T-B11"
+      ],
+      "write_set": [
+        "requisitions/requests/"
+      ],
+      "acceptance_ids": [
+        "AC-B14"
+      ],
+      "outputs": [
+        "本人/部门领用申请"
+      ],
+      "status": "planned_not_dispatched",
+      "approval_required": "后续Goal2实施授权"
+    },
+    {
+      "id": "T-B21",
+      "role": "Coder",
+      "depends_on": [
+        "T-B20"
+      ],
+      "write_set": [
+        "requisitions/approvals/"
+      ],
+      "acceptance_ids": [
+        "AC-B15"
+      ],
+      "outputs": [
+        "本部门经理一次审批"
+      ],
+      "status": "planned_not_dispatched",
+      "approval_required": "后续Goal2实施授权"
+    },
+    {
+      "id": "T-B22",
+      "role": "Planner",
+      "depends_on": [
+        "T-B21"
+      ],
+      "write_set": [
+        "docs/candidates/approval-delegation.md"
+      ],
+      "acceptance_ids": [],
+      "outputs": [
+        "仅获需求批准后设计代理/代办新增R与AC"
+      ],
+      "status": "blocked_candidate_out_of_scope",
+      "approval_required": "Q-B02回答与新增范围明确授权",
+      "explanation": "候选不属已确认需求，无承诺AC，不参与Goal0退出"
+    },
+    {
+      "id": "T-B30",
+      "role": "Coder",
+      "depends_on": [
+        "T-B21"
+      ],
+      "write_set": [
+        "inventory/dispatch/",
+        "common/audit.py",
+        "common/audit_views.py"
+      ],
+      "acceptance_ids": [
+        "AC-B16",
+        "AC-B17",
+        "AC-B18",
+        "AC-B19",
+        "AC-B21"
+      ],
+      "outputs": [
+        "出库/幂等/并发/回滚/审计完整闭环"
+      ],
+      "status": "planned_not_dispatched",
+      "approval_required": "后续Goal3实施授权"
+    },
+    {
+      "id": "T-B40",
+      "role": "Release Agent",
+      "depends_on": [
+        "T-B30"
+      ],
+      "write_set": [
+        "release/",
+        "docs/operations/"
+      ],
+      "acceptance_ids": [
+        "AC-B22"
+      ],
+      "outputs": [
+        "获授权后生产交付/回退/运维材料"
+      ],
+      "status": "planned_not_dispatched",
+      "approval_required": "生产决定、Goal3外部验收与部署显式授权；当前policy仍deploy=false"
+    }
+  ],
+  "blocking_questions": [
+    {
+      "id": "Q-B01",
+      "blocks_tasks": [
+        "T-B40"
+      ],
+      "question": "生产选择SSO还是批准继续本地账号？须明确接入范围与安全责任。"
+    },
+    {
+      "id": "Q-B02",
+      "blocks_tasks": [
+        "T-B22"
+      ],
+      "question": "是否新增跨部门代办/审批授权代理？未批准前候选任务不实施，既定本人申请/本部门审批可继续。"
+    },
+    {
+      "id": "Q-B03",
+      "blocks_tasks": [
+        "T-B40"
+      ],
+      "question": "生产备份保留周期、RPO/RTO、容量指标和部署凭据是什么？未回答不承诺生产上线。"
+    }
+  ],
+  "policy": {
+    "git_write": false,
+    "deploy": false,
+    "global_install": false,
+    "scope": "设计实例，本轮只写case-b文档；未来Coder须用户另行启动与授权目标根",
+    "database_access": "only factory-case-b dev/test/restore allowlist; never production/other projects",
+    "command_process_environment": {
+      "PIP_CACHE_DIR": ".cache/pip",
+      "TMP": ".cache/tmp",
+      "TEMP": ".cache/tmp",
+      "PLAYWRIGHT_BROWSERS_PATH": ".cache/ms-playwright",
+      "scope": "仅本任务脚本及子进程，退出恢复，不setx，不改系统环境"
+    }
+  },
+  "retry_budget": {
+    "per_issue": 2,
+    "total_rounds": 3
+  },
+  "artifact_paths": {
+    "plan": "plan.md",
+    "blueprint": "goal0-blueprint.md",
+    "prompt": "goal0-prompt.md"
+  },
+  "execution": {
+    "dispatched": false,
+    "automation_implemented": false,
+    "business_tests_run": false,
+    "external_acceptance": "not_occurred"
+  },
+  "notes": [
+    "Goal0 AC-B01…12；其他AC全部后续规划未运行",
+    "未来Git/Release权限须新授权，任务出现不表示当前policy已允许",
+    "T-B22是无承诺AC的待批准候选，不能调度为当前业务任务"
+  ],
+  "shared_files": {
+    "owner": "T-B01",
+    "paths": [
+      "config/",
+      "compose.yaml",
+      "requirements*.txt",
+      "all migrations/",
+      "accounts/common/sample models.py/apps.py/__init__.py",
+      "accounts/common/sample management/"
+    ],
+    "change_protocol": "契约变更回单一整合者，产生新候选指纹再重测"
+  }
+}

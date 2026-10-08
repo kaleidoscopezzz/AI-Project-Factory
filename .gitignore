@@ -1,0 +1,39 @@
+# Project-local validation environment and common Python virtual environments
+.tools/validation-env/
+.venv/
+venv/
+env/
+ENV/
+.virtualenv/
+
+# Python interpreter and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+
+# JavaScript dependencies
+node_modules/
+
+# Temporary caches and files
+.cache/
+.npm/
+.pnpm-store/
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Generated build artifacts
+dist/
+build/
+*.egg-info/
+
+# Keep source deliverables and all historical acceptance evidence visible.
+# Do not ignore skills/, docs/, scripts/, validation/ or root Markdown files.

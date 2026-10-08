@@ -1,0 +1,658 @@
+{
+  "schema_version": "1.0",
+  "case_id": "case-a",
+  "status": "ready_for_coder_design_only",
+  "target_workdir": "C:\\FactoryCases\\ProcurementDemo",
+  "baseline": {
+    "kind": "unverified_target",
+    "head": null,
+    "verification_required": true
+  },
+  "requirements": [
+    {
+      "id": "R-A001",
+      "title": "断网可运行基础",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A001"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A002",
+      "title": "布局菜单导航",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A002"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A003",
+      "title": "演示身份",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A003"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A004",
+      "title": "统一数据来源",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A004"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A005",
+      "title": "刷新持久化",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A005"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A006",
+      "title": "确认重置及取消",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A006"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A007",
+      "title": "校验失败及损坏恢复",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A007"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A008",
+      "title": "场景及旧操作隔离",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A008"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A009",
+      "title": "工程命令",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A009"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A010",
+      "title": "自动化框架",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A010"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A011",
+      "title": "状态和证据",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A011"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A012",
+      "title": "基础阶段边界",
+      "goal": "Goal 0",
+      "acceptance_ids": [
+        "AC-A012"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A013",
+      "title": "申请填报编号",
+      "goal": "Goal 1",
+      "acceptance_ids": [
+        "AC-A013"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A014",
+      "title": "提交锁定及退回重提",
+      "goal": "Goal 1",
+      "acceptance_ids": [
+        "AC-A014"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A015",
+      "title": "审批意见",
+      "goal": "Goal 1",
+      "acceptance_ids": [
+        "AC-A015"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A016",
+      "title": "执行进度",
+      "goal": "Goal 2",
+      "acceptance_ids": [
+        "AC-A016"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A017",
+      "title": "统计记录",
+      "goal": "Goal 2",
+      "acceptance_ids": [
+        "AC-A017"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    },
+    {
+      "id": "R-A018",
+      "title": "正式现场包装",
+      "goal": "Release",
+      "acceptance_ids": [
+        "AC-A018"
+      ],
+      "source": "input.md 已确认需求；工程细化见 plan.md"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AC-A001",
+      "requirement_id": "R-A001",
+      "given": "生产构建已启动",
+      "when": "阻断外部网络后访问身份页、工程样板与本地资源",
+      "then": "页面可用，无外域资源依赖及意外 pageerror",
+      "method": "生产构建 Playwright 请求拦截",
+      "evidence": "evidence/test-runs/e2e.log",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A002",
+      "requirement_id": "R-A002",
+      "given": "1920×1080 与 1366×768 视口",
+      "when": "鼠标和键盘导航并打开重置弹窗",
+      "then": "标题、操作和弹窗可达，无重叠及页面横向溢出，业务菜单明确后续阶段",
+      "method": "两视口 UI 断言和截图",
+      "evidence": "evidence/screenshots/",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A003",
+      "requirement_id": "R-A003",
+      "given": "无身份、填报员、审批员或失效会话",
+      "when": "读取/编辑样板与触发会话失效",
+      "then": "未登录拒绝，填报员可编辑，审批员只读，失效返回角色选择且不改数据，持续模拟身份标识",
+      "method": "SessionService 单测及 UI 用户链路",
+      "evidence": "evidence/test-runs/unit.log",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A004",
+      "requirement_id": "R-A004",
+      "given": "不可变标准 seed 与单一 snapshot",
+      "when": "保存同一 ID 样板一次并读取各视图",
+      "then": "列表详情指标日志同 ID/version 一致、seed 不变、只记一条操作",
+      "method": "单测及 E2E 同源数据断言",
+      "evidence": "evidence/test-runs/e2e.log",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A005",
+      "requirement_id": "R-A005",
+      "given": "填报员在真实 IndexedDB 初始化的标准场景",
+      "when": "UI 改名保存、refresh、重新选身份；独立 browser context 初始化",
+      "then": "原上下文同 ID/value/version/log 保留，第二上下文不污染首个",
+      "method": "真实浏览器 IndexedDB E2E",
+      "evidence": "evidence/test-runs/e2e.log",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A006",
+      "requirement_id": "R-A006",
+      "given": "有已修改样板与日志",
+      "when": "重置取消/Esc/关闭，然后再确认",
+      "then": "取消完整 snapshot 不变；确认原子替换所选 seed、epoch 加一并只写一条 RESET",
+      "method": "完整数据快照断言及 UI E2E",
+      "evidence": "evidence/test-runs/e2e.log",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A007",
+      "requirement_id": "R-A007",
+      "given": "隔离 fixture 可注入写失败或未知 schema",
+      "when": "提交空白/81字名称、触发写失败或损坏读取及恢复",
+      "then": "非法/失败零写入，保留原可读状态与输入；损坏不自动清空，恢复需确认",
+      "method": "故障注入单测、组件测试；正常存储另用真实 E2E",
+      "evidence": "evidence/test-runs/unit.log",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A008",
+      "requirement_id": "R-A008",
+      "given": "标准场景有修改且保存请求待决",
+      "when": "仅改变待选场景、确认重置到退回、refresh；旧保存返回",
+      "then": "选择不写，确认才换场景且持久保留，旧 epoch 结果不能覆盖新状态，无采购退回业务实现",
+      "method": "E2E 与异步竞争单测",
+      "evidence": "evidence/test-runs/unit.log",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A009",
+      "requirement_id": "R-A009",
+      "given": "已实现工程及锁文件",
+      "when": "npm ci、typecheck、lint、build、dev/preview 启动",
+      "then": "命令成功，端口不抢占，README 可复现并记录实测版本",
+      "method": "实际命令退出码和 HTTP 页面",
+      "evidence": "evidence/test-runs/",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A010",
+      "requirement_id": "R-A010",
+      "given": "固定候选源码",
+      "when": "Vitest/组件与 Playwright 套件执行",
+      "then": "AC-A001～008 均有可失败行为测试，报告数量和失败/未运行，不只测按钮存在",
+      "method": "检查测试与机器/HTML报告",
+      "evidence": "evidence/test-runs/",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A011",
+      "requirement_id": "R-A011",
+      "given": "候选代码与本轮实际结果",
+      "when": "生成源码指纹、两视口原始截图、逐 AC 验收表与状态",
+      "then": "命令/退出码、环境、真实结果、AC、证据与同候选对应，记录恢复点，外部验收未发生",
+      "method": "文档/索引/哈希人工与结构检查",
+      "evidence": "evidence/index.json",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A012",
+      "requirement_id": "R-A012",
+      "given": "完整 Goal0 候选工程",
+      "when": "核对源码、路由、界面与规则",
+      "then": "仅工程样板，完整申请审批执行统计未实现，后续菜单标明后续阶段，歧义未硬编码",
+      "method": "Coder 范围自检；外部 Reviewer 后续另行独立审查",
+      "evidence": "docs/acceptance-goal0.md",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A013",
+      "requirement_id": "R-A013",
+      "given": "Goal0 已验收，字段口径已确认，Q-A003 已解决",
+      "when": "填写保存两次或重复触发新增",
+      "then": "新申请唯一编号且无重复创建，非法输入无记录",
+      "method": "后续 UI/数据回归，未运行",
+      "evidence": "future-goal1/acceptance.md",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A014",
+      "requirement_id": "R-A014",
+      "given": "版本规则已确认，草稿及已退回申请",
+      "when": "提交、尝试改正文、取消提交、退回后修改重提",
+      "then": "提交后正文锁定，退回可改重提，取消无状态和日志变化，版本按明确规则处理",
+      "method": "后续状态机及 UI 闭环，未运行",
+      "evidence": "future-goal1/acceptance.md",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A015",
+      "requirement_id": "R-A015",
+      "given": "Q-A001/002/003 已解决且有已提交申请",
+      "when": "模拟审批员同意或退回，填报员尝试审批，取消确认",
+      "then": "按已确认规则转换终态与意见日志，填报员拒绝，取消无变化",
+      "method": "后续 UI 与服务状态回归，未运行",
+      "evidence": "future-goal1/acceptance.md",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A016",
+      "requirement_id": "R-A016",
+      "given": "已批准申请与确认的执行节点",
+      "when": "记录进度并 refresh，未批准申请尝试执行",
+      "then": "进度列表详情日志同源持久，未批准不能执行",
+      "method": "后续 UI 与关联状态回归，未运行",
+      "evidence": "future-goal2/acceptance.md",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A017",
+      "requirement_id": "R-A017",
+      "given": "完整业务记录与确认统计口径",
+      "when": "操作后读取统计与日志、执行取消",
+      "then": "统计等于记录条件计数，确认操作留记录，取消不留，筛选一致",
+      "method": "后续计算单测与 UI 回归，未运行",
+      "evidence": "future-goal2/acceptance.md",
+      "execution_status": "not_run_business_or_browser"
+    },
+    {
+      "id": "AC-A018",
+      "requirement_id": "R-A018",
+      "given": "后续全部业务已验收且包装获授权，Q-A005 已解决",
+      "when": "固定源码构建，无管理员/Node/Git 的目标 Windows x64 断网解压启动",
+      "then": "完整本地资源可运行、持久化/重置可用、包哈希对应候选源码",
+      "method": "后续目标设备独立解压 smoke，未运行",
+      "evidence": "future-release/manifest.json",
+      "execution_status": "not_run_business_or_browser"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-A001",
+      "role": "Coder",
+      "depends_on": [],
+      "write_set": [
+        "evidence/preflight.md"
+      ],
+      "acceptance_ids": [],
+      "outputs": [
+        "实际目录/基线/工具版本核验记录"
+      ],
+      "dispatch_scope": "goal0_design_only"
+    },
+    {
+      "id": "T-A002",
+      "role": "Coder",
+      "depends_on": [
+        "T-A001"
+      ],
+      "write_set": [
+        "package.json",
+        "package-lock.json",
+        ".gitignore",
+        ".cache/",
+        "public/assets/",
+        "tsconfig.json",
+        "tsconfig.app.json",
+        "tsconfig.node.json",
+        "vite.config.ts",
+        "vitest.config.ts",
+        "playwright.config.ts",
+        "eslint.config.js",
+        "index.html",
+        "src/app/",
+        "src/ui/",
+        "README.md"
+      ],
+      "acceptance_ids": [
+        "AC-A001",
+        "AC-A002",
+        "AC-A009",
+        "AC-A012"
+      ],
+      "outputs": [
+        "基础配置、布局、导航及运行接口"
+      ],
+      "dispatch_scope": "goal0_design_only"
+    },
+    {
+      "id": "T-A003",
+      "role": "Coder",
+      "depends_on": [
+        "T-A002"
+      ],
+      "write_set": [
+        "src/core/data/",
+        "src/fixtures/"
+      ],
+      "acceptance_ids": [
+        "AC-A004",
+        "AC-A005",
+        "AC-A006",
+        "AC-A007",
+        "AC-A008"
+      ],
+      "outputs": [
+        "持久化数据契约、seed、原子 save/reset 与错误保护"
+      ],
+      "dispatch_scope": "goal0_design_only"
+    },
+    {
+      "id": "T-A004",
+      "role": "Coder",
+      "depends_on": [
+        "T-A003"
+      ],
+      "write_set": [
+        "src/core/session/",
+        "src/features/foundation/"
+      ],
+      "acceptance_ids": [
+        "AC-A003",
+        "AC-A004",
+        "AC-A005",
+        "AC-A006",
+        "AC-A007",
+        "AC-A008"
+      ],
+      "outputs": [
+        "模拟身份、工程样板真实 UI 链路"
+      ],
+      "dispatch_scope": "goal0_design_only"
+    },
+    {
+      "id": "T-A005",
+      "role": "Tester",
+      "depends_on": [
+        "T-A004"
+      ],
+      "write_set": [
+        "tests/",
+        "evidence/test-runs/"
+      ],
+      "acceptance_ids": [
+        "AC-A001",
+        "AC-A002",
+        "AC-A003",
+        "AC-A004",
+        "AC-A005",
+        "AC-A006",
+        "AC-A007",
+        "AC-A008",
+        "AC-A009",
+        "AC-A010",
+        "AC-A012"
+      ],
+      "outputs": [
+        "行为测试、真实命令结果、失败清单"
+      ],
+      "dispatch_scope": "goal0_design_only"
+    },
+    {
+      "id": "T-A006",
+      "role": "Coder",
+      "depends_on": [
+        "T-A005"
+      ],
+      "write_set": [
+        "PROJECT_STATUS.md",
+        "docs/acceptance-goal0.md",
+        "evidence/index.json",
+        "evidence/screenshots/"
+      ],
+      "acceptance_ids": [
+        "AC-A011"
+      ],
+      "outputs": [
+        "AC/证据索引、候选指纹、状态和恢复点"
+      ],
+      "dispatch_scope": "goal0_design_only"
+    },
+    {
+      "id": "T-A101",
+      "role": "Coder",
+      "depends_on": [
+        "T-A006"
+      ],
+      "write_set": [
+        "src/features/procurement/",
+        "tests/procurement/"
+      ],
+      "acceptance_ids": [
+        "AC-A013",
+        "AC-A014"
+      ],
+      "outputs": [
+        "后续 Goal1 申请与提交重提闭环"
+      ],
+      "dispatch_scope": "future_goal_not_authorized_now"
+    },
+    {
+      "id": "T-A102",
+      "role": "Coder",
+      "depends_on": [
+        "T-A101"
+      ],
+      "write_set": [
+        "src/features/approval/",
+        "tests/approval/"
+      ],
+      "acceptance_ids": [
+        "AC-A015"
+      ],
+      "outputs": [
+        "后续 Goal1 审批意见闭环"
+      ],
+      "dispatch_scope": "future_goal_not_authorized_now"
+    },
+    {
+      "id": "T-A103",
+      "role": "Coder",
+      "depends_on": [
+        "T-A102"
+      ],
+      "write_set": [
+        "src/features/execution/",
+        "tests/execution/"
+      ],
+      "acceptance_ids": [
+        "AC-A016"
+      ],
+      "outputs": [
+        "后续 Goal2 执行进度"
+      ],
+      "dispatch_scope": "future_goal_not_authorized_now"
+    },
+    {
+      "id": "T-A104",
+      "role": "Coder",
+      "depends_on": [
+        "T-A101",
+        "T-A102",
+        "T-A103"
+      ],
+      "write_set": [
+        "src/features/reporting/",
+        "tests/reporting/"
+      ],
+      "acceptance_ids": [
+        "AC-A017"
+      ],
+      "outputs": [
+        "后续 Goal2 同源统计与操作记录"
+      ],
+      "dispatch_scope": "future_goal_not_authorized_now"
+    },
+    {
+      "id": "T-A201",
+      "role": "Release Agent",
+      "depends_on": [
+        "T-A104"
+      ],
+      "write_set": [
+        "packaging/",
+        "release/"
+      ],
+      "acceptance_ids": [
+        "AC-A018"
+      ],
+      "outputs": [
+        "后续另授权现场包与目标实测"
+      ],
+      "dispatch_scope": "future_goal_not_authorized_now"
+    }
+  ],
+  "blocking_questions": [
+    {
+      "id": "Q-A001",
+      "blocks_tasks": [
+        "T-A102"
+      ],
+      "question": "审批是一层还是多层？"
+    },
+    {
+      "id": "Q-A002",
+      "blocks_tasks": [
+        "T-A102"
+      ],
+      "question": "金额是否触发不同审批路径，范围和阈值是什么？"
+    },
+    {
+      "id": "Q-A003",
+      "blocks_tasks": [
+        "T-A101",
+        "T-A102"
+      ],
+      "question": "退回后覆盖正文还是保留版本及差异？"
+    },
+    {
+      "id": "Q-A004",
+      "blocks_tasks": [
+        "T-A103",
+        "T-A104"
+      ],
+      "question": "执行节点、录入角色和统计筛选口径是什么？"
+    },
+    {
+      "id": "Q-A005",
+      "blocks_tasks": [
+        "T-A201"
+      ],
+      "question": "现场浏览器版本、便携启动/端口策略与允许的本地可执行文件是什么？"
+    }
+  ],
+  "policy": {
+    "git_write": false,
+    "deploy": false,
+    "global_install": false,
+    "business_case_execution": false,
+    "write_scope": "仅未来已核验 target_workdir；本轮只在工厂 case-a 输出设计文档"
+  },
+  "retry_budget": {
+    "per_issue": 2,
+    "total_rounds": 3
+  },
+  "artifact_paths": {
+    "plan": "plan.md",
+    "blueprint": "goal0-blueprint.md",
+    "prompt": "goal0-prompt.md"
+  },
+  "selected_stack": {
+    "ui": "React + TypeScript + Vite + HashRouter",
+    "data": "原生 IndexedDB，仅虚构单机演示",
+    "tests": "Vitest + Testing Library + Playwright"
+  },
+  "handoff_notes": [
+    "此任务包只描述接口设计，未实现或启动调度器。",
+    "只有 Goal0 设计可作为下次明确授权 Coder 的输入；Goal1/2/Release 不在当前派发范围。",
+    "Release 包装需要独立授权，不从 task.write_set 推导权限。"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "captured_utc": "2026-10-08T14:07:12.023466+00:00",
+  "purpose": "artifact_qa_only",
+  "skills": [
+    {
+      "skill": "requirement-planner",
+      "official_exit_code": 0,
+      "official_output": "Skill is valid!",
+      "portable_links_checked": 2,
+      "ui_metadata": "valid"
+    },
+    {
+      "skill": "goal0-scaffolder",
+      "official_exit_code": 0,
+      "official_output": "Skill is valid!",
+      "portable_links_checked": 2,
+      "ui_metadata": "valid"
+    },
+    {
+      "skill": "goal-prompt-writer",
+      "official_exit_code": 0,
+      "official_output": "Skill is valid!",
+      "portable_links_checked": 4,
+      "ui_metadata": "valid"
+    }
+  ],
+  "cases": [],
+  "passed": true
+}

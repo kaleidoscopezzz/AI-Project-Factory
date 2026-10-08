@@ -1,0 +1,160 @@
+{
+  "captured_utc": "2026-10-08T14:26:48.634656+00:00",
+  "purpose": "artifact_qa_only",
+  "skills": [
+    {
+      "skill": "requirement-planner",
+      "official_exit_code": 0,
+      "official_output": "Skill is valid!",
+      "portable_links_checked": 2,
+      "ui_metadata": "valid"
+    },
+    {
+      "skill": "goal0-scaffolder",
+      "official_exit_code": 0,
+      "official_output": "Skill is valid!",
+      "portable_links_checked": 2,
+      "ui_metadata": "valid"
+    },
+    {
+      "skill": "goal-prompt-writer",
+      "official_exit_code": 0,
+      "official_output": "Skill is valid!",
+      "portable_links_checked": 4,
+      "ui_metadata": "valid"
+    }
+  ],
+  "cases": [
+    {
+      "case": "case-a",
+      "requirements": 18,
+      "acceptance": 18,
+      "tasks": 11,
+      "goal0_criteria": 12,
+      "negative_probes": [
+        {
+          "probe": "duplicate_task",
+          "rejected": true,
+          "reason": "tasks: duplicate IDs"
+        },
+        {
+          "probe": "unknown_dependency",
+          "rejected": true,
+          "reason": "T-A001: unknown dependency NONEXISTENT"
+        },
+        {
+          "probe": "cycle",
+          "rejected": true,
+          "reason": "Dependency cycle at T-A001"
+        },
+        {
+          "probe": "git_authorization_expansion",
+          "rejected": true,
+          "reason": "Unauthorized policy: git_write"
+        },
+        {
+          "probe": "unmapped_acceptance",
+          "rejected": true,
+          "reason": "R-A001: unknown acceptance MISSING"
+        },
+        {
+          "probe": "path_escape",
+          "rejected": true,
+          "reason": "T-A001: unsafe relative write path"
+        }
+      ]
+    },
+    {
+      "case": "case-b",
+      "requirements": 14,
+      "acceptance": 22,
+      "tasks": 14,
+      "goal0_criteria": 12,
+      "negative_probes": [
+        {
+          "probe": "duplicate_task",
+          "rejected": true,
+          "reason": "tasks: duplicate IDs"
+        },
+        {
+          "probe": "unknown_dependency",
+          "rejected": true,
+          "reason": "T-B00: unknown dependency NONEXISTENT"
+        },
+        {
+          "probe": "cycle",
+          "rejected": true,
+          "reason": "Dependency cycle at T-B00"
+        },
+        {
+          "probe": "git_authorization_expansion",
+          "rejected": true,
+          "reason": "Unauthorized policy: git_write"
+        },
+        {
+          "probe": "unmapped_acceptance",
+          "rejected": true,
+          "reason": "R-B001: unknown acceptance MISSING"
+        },
+        {
+          "probe": "path_escape",
+          "rejected": true,
+          "reason": "T-B00: unsafe relative write path"
+        }
+      ]
+    }
+  ],
+  "passed": true,
+  "environment": {
+    "python": "3.14.6",
+    "pyyaml": "6.0.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "official_validator": "C:\\Users\\44725\\.codex\\skills\\.system\\skill-creator\\scripts\\quick_validate.py",
+    "official_validator_sha256": "6068513d924ed3559e186dfcdead7439129828dcf402167fd925c06dffbf2806"
+  },
+  "reference_checks": "passed; coverage limits in reference/after.json",
+  "document_links_checked": 32,
+  "delivery_fingerprint": {
+    "sha256_by_file": {
+      "AGENTS.md": "d6ba4b58165bf27f1ee15d11e903ad30df09e30e1c76ceb148e6db7bb1e3b57b",
+      "docs/MULTI_AGENT_ROADMAP.md": "c717a1368f4c6749570533d79932a4fd01879887e6517667a8540070bdf1802f",
+      "docs/SOURCE_EXPERIENCE.md": "51be43be52f8717424bd3f950807328369bda06109b0b4ffc58c224c9791d6d8",
+      "docs/USAGE.md": "9b1f302a11b74b03bdc35013147119692cbbb5cc8d4a695a024737d3b1485b03",
+      "PROJECT_STATUS.md": "a56393169c23e221a1f07c36e4cb2050f1404cf6998ff78c443adcc3e9fb6529",
+      "README.md": "869b542f24dac2370b9afcfd5723b937d9888dd37d95854c7e9ef30dd8523da4",
+      "scripts/inspect_reference_evidence.py": "b16cbc8684e9197405d654cadc498d69214d7ff232ab3f64664c6690ddc7b55b",
+      "scripts/reference_guard.py": "2c39b6f19f7745e3d50d00cee0bab3ab4f0e963bb33da05eff98293b4424cccd",
+      "scripts/validate_delivery.py": "02115471fba1fac445cc016ec87a51d27ed3d68ec09b73ffbd879e67693ecd90",
+      "skills/goal-prompt-writer/agents/openai.yaml": "ec87fda37f8b224ed4ad325f16fb9acce8042e7fe50af787e4366f97658eb830",
+      "skills/goal-prompt-writer/assets/acceptance-record.md": "00285e6d0e158edc46d30282427cd3a0ad126e8d664a7ac5977397449b176186",
+      "skills/goal-prompt-writer/assets/goal-development-prompt.md": "4e5a21516a013eda42e31e075799d7159d7eb024f7f365b8bb08996eb69c9dd7",
+      "skills/goal-prompt-writer/assets/project-status.md": "15cd42223687129a7a9f3e38dbcdc5a41da5b5e1d92b9f77269c0d3cfa8af74e",
+      "skills/goal-prompt-writer/references/writing-guide.md": "819b784a8ba63c74246f0dcab97bee704ef7171c4e09c9e2f7cac143e05035ae",
+      "skills/goal-prompt-writer/SKILL.md": "771207c8ca42000a9c742c5509a345f9c676af0c6f19243136a94efcee5be70c",
+      "skills/goal0-scaffolder/agents/openai.yaml": "f6e859048def626612434a361c836493097d2036bf045f19e9eed3ed175d2d86",
+      "skills/goal0-scaffolder/assets/goal0-blueprint.md": "d70c0ce88f05368f35b37a504a4c16ddb0ab8070c9e9b2b5fdb047ee6ccc0f6e",
+      "skills/goal0-scaffolder/references/architecture.md": "e9b01a83d119bf97c80ace27d5154a39a709dc17a2961205f5a62147981e2a33",
+      "skills/goal0-scaffolder/SKILL.md": "c2eccb3c65d34bf5c6d68ddd8de63e4dd4f7bbb147da95ce521874dc5c402bda",
+      "skills/requirement-planner/agents/openai.yaml": "a5a8f024ea3528c188bf1c1f754cfdca6cc806b3a6818058ae9c04615e2ac6a9",
+      "skills/requirement-planner/assets/requirement-plan.md": "d35cb550b707e083cf978fe046544ed210048fcfb3ac3f1fd86c6bd15cda2e8c",
+      "skills/requirement-planner/references/decomposition.md": "5efdd8e2908afd07680cd49f5bddd0d4c817b6e8d64dd626aa38ef6a13722875",
+      "skills/requirement-planner/SKILL.md": "b95863de0fd39d8904d7f82da4644793b7fe998f6ad270f4a2c6b4af8c12c93e",
+      "validation/cases/case-a/evaluation.md": "f876fccb8d24b0ab79015528956474a25d17b336ee29f2e8b2674f39861dc24a",
+      "validation/cases/case-a/goal0-blueprint.md": "7d3e83189670774c0c1d8322e14bb2d39566e0c3f8af7ce1d42e03e92ca0d5e9",
+      "validation/cases/case-a/goal0-prompt.md": "8df79d6d4d0ec423eec8e936490b1b419340ded15509f78028b2857a27cc41c9",
+      "validation/cases/case-a/input.md": "be9f642d217e63b7ac7302915e076ffc6dd4f696aa43a08b1ec4e647ac30d71e",
+      "validation/cases/case-a/plan.md": "37b03ee192524fa3fac26b8931913e40c823653a1353883732370754d4688f8d",
+      "validation/cases/case-a/task-packet.json": "c2de11642128a423888c0cec731cde7cf66d5a976b586654e442c9da96f17b20",
+      "validation/cases/case-b/evaluation.md": "2c5d35e84664ef6bf1faceda598980e8c0e9a2563796cca36bc86d9ac1a6afec",
+      "validation/cases/case-b/goal0-blueprint.md": "ffb9add744e054fcd1466cbb45b9db82a5f1a978025ffc243bdf1fd8dc5033c4",
+      "validation/cases/case-b/goal0-prompt.md": "62ecfb7d199732bb0cf960bc29df36956de0274c4b5c3958504d3af8856a7ccb",
+      "validation/cases/case-b/input.md": "2aa1aea74a216e960067fc0f637f4c7c2bfca50a27c37f371d81c5762ed037d4",
+      "validation/cases/case-b/plan.md": "80864a20a222d86459f0e6aff284bd9c8a3820a340c4ad88381fade2ab3fc524",
+      "validation/cases/case-b/task-packet.json": "49356180a0fa7184c5b9c6d024c35b7d9059359265d58089df07c3839ee7464f",
+      "validation/INDEPENDENT_REVIEW.md": "26231b57094f0ae5753d87234d736fbc1525cd6beeb10b3af6970f09826689cf",
+      "validation/REPORT.md": "268ee06372197ad11ee161702819c23520f1fa49d2114bc32b0821ce79f82907"
+    },
+    "manifest_sha256": "2fd623f240a5466761bf325661ff8b6ce6793408f791810201378cb2ae3e2299",
+    "meaning": "Content fingerprint only, not Git freeze or external acceptance"
+  }
+}
