@@ -1,0 +1,4 @@
+APF Goal 1 — REVIEWER APPROVED
+
+Approved: Planner -> TaskPacket -> Coder, basic validation, failure recovery, explicit new-request Full Access and CodexPath entry fixes.
+Evidence: real phased recovery with 5/5 business tests; prior 31/31 and revised 41/41 controller regressions. New-request Full Access is control-double tested; no fresh-task real E2E claim. Full Access has no OS workspace boundary; no hard Token ceiling. Goal 0 unchanged; Goal 2 not started.

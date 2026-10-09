@@ -1,0 +1,36 @@
+✔ AC-002/003/004 domain counts and search (1.6471ms)
+✔ AC-006/007/008/009/011 real file HTTP boundaries (107.0771ms)
+✔ AC-011 non-loopback startup rejected (109.1959ms)
+✖ AC-001..011 real offline browser, restart, keyboard, screenshots (5620.6522ms)
+✔ AC-005 foreground contrast >=4.5:1 (2.0914ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5986.0078
+
+✖ failing tests:
+
+test at tests\goal0.test.mjs:19:1
+✖ AC-001..011 real offline browser, restart, keyboard, screenshots (5620.6522ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'Failed to load resource: the server responded with a status of 503 (Service Unavailable)'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///C:/AI-Project-Factory/projects/p-dc1e9d42b5ae/workspace/tests/goal0.test.mjs:21:2298)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'Failed to load resource: the server responded with a status of 503 (Service Unavailable)' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

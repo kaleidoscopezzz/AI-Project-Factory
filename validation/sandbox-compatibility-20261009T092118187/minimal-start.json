@@ -1,0 +1,17 @@
+{
+  "probe_id": "SBX-P01",
+  "tool": "exec_command",
+  "sandbox_permissions_override": "omitted; existing session policy used",
+  "cmd": "Write-Output 'APF_SANDBOX_MINIMAL_START_OK'; exit 0",
+  "shell": "powershell.exe",
+  "login": false,
+  "workdir": "C:\\AI-Project-Factory",
+  "result": {
+    "chunk_id": "008462",
+    "wall_time_seconds": 0.4491636,
+    "exit_code": 0,
+    "original_token_count": 8,
+    "output": "APF_SANDBOX_MINIMAL_START_OK\r\n"
+  },
+  "mxc_compatibility_proven": false
+}

@@ -1,0 +1,216 @@
+{
+  "check_id": "SBX-COMPAT-20261009",
+  "captured_at": "2026-10-09T09:21:19.7750471+08:00",
+  "evidence_root": "C:\\AI-Project-Factory\\validation\\sandbox-compatibility-20261009T092118187",
+  "os": {
+    "Caption": "Microsoft Windows 11 家庭版 中文版",
+    "Version": "10.0.26200",
+    "BuildNumber": "26200",
+    "OSArchitecture": "64 位"
+  },
+  "app": [
+    {
+      "Name": "OpenAI.Codex",
+      "Version": "26.1002.7124.0"
+    }
+  ],
+  "backend_version": "codex-cli 0.162.0-alpha.2",
+  "backend_version_source": "observed codex.exe --version and current session_meta",
+  "config_source": "C:\\Users\\44725\\.codex\\config.toml",
+  "allowlisted_config": [
+    {
+      "section": "",
+      "key": "approval_policy",
+      "value": "\"never\""
+    },
+    {
+      "section": "",
+      "key": "sandbox_mode",
+      "value": "\"danger-full-access\""
+    },
+    {
+      "section": "windows",
+      "key": "sandbox",
+      "value": "\"elevated\""
+    }
+  ],
+  "session_source": "C:\\Users\\44725\\.codex\\sessions\\2026\\10\\09\\rollout-2026-10-09T09-17-45-01a11e3c-d319-7ed0-bfd7-d67196ce3458.jsonl",
+  "session_records": [
+    {
+      "type": "session_meta",
+      "timestamp": "2026-10-09T01:17:47.008Z",
+      "id": "01a11e3c-d319-7ed0-bfd7-d67196ce3458",
+      "cli_version": "0.162.0-alpha.2",
+      "originator": "Codex Desktop",
+      "cwd": "C:\\AI-Project-Factory"
+    },
+    {
+      "type": "turn_context",
+      "timestamp": "2026-10-09T01:18:01.278Z",
+      "cwd": "C:\\AI-Project-Factory",
+      "approval_policy": "never",
+      "sandbox_policy": {
+        "type": "danger-full-access"
+      }
+    }
+  ],
+  "processes": [
+    {
+      "ProcessId": 14632,
+      "ParentProcessId": 1820,
+      "Name": "codex-windows-sandbox-service.exe",
+      "ExecutablePath": null
+    },
+    {
+      "ProcessId": 31736,
+      "ParentProcessId": 10896,
+      "Name": "codex.exe",
+      "ExecutablePath": "C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\bin\\9691020b546a15b2\\codex.exe"
+    },
+    {
+      "ProcessId": 23676,
+      "ParentProcessId": 10896,
+      "Name": "codex-computer-use-swift.exe",
+      "ExecutablePath": "C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\3dd31cfff853001c\\bin\\node_modules\\@oai\\sky\\bin\\windows\\swift\\x64\\codex-computer-use-swift.exe"
+    },
+    {
+      "ProcessId": 30376,
+      "ParentProcessId": 10896,
+      "Name": "codex.exe",
+      "ExecutablePath": "C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\bin\\9691020b546a15b2\\codex.exe"
+    },
+    {
+      "ProcessId": 33356,
+      "ParentProcessId": 31736,
+      "Name": "codex-code-mode-host.exe",
+      "ExecutablePath": "C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\bin\\9691020b546a15b2\\codex-code-mode-host.exe"
+    }
+  ],
+  "diagnostic_log_excerpt": [
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 14,
+      "text": "[2026-10-09T01:10:22.099303600+00:00] runtime read/execute validation failed: validate runtime read/execute access on C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\3dd31cfff853001c\\bin\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 15,
+      "text": "[2026-10-09T01:10:22.102326500+00:00] setup refresh: processed 0 write roots (read roots delegated); errors=[\"runtime read/execute validation failed: validate runtime read/execute access on C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\runtimes\\\\cua_node\\\\3dd31cfff853001c\\\\bin\\\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)\"]"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 16,
+      "text": "[2026-10-09T01:10:22.102359800+00:00] setup refresh completed with errors: [\"runtime read/execute validation failed: validate runtime read/execute access on C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\runtimes\\\\cua_node\\\\3dd31cfff853001c\\\\bin\\\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)\"]"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 17,
+      "text": "[2026-10-09T01:10:22.102532400+00:00] setup error: setup refresh had errors"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 18,
+      "text": "[2026-10-09 09:10:22.102 codex-windows-sandbox-setup.exe] setup error: setup refresh had errors"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 24,
+      "text": "[2026-10-09T01:10:31.819839200+00:00] runtime read/execute validation failed: validate runtime read/execute access on C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\3dd31cfff853001c\\bin\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 25,
+      "text": "[2026-10-09T01:10:31.822255700+00:00] setup refresh: processed 0 write roots (read roots delegated); errors=[\"runtime read/execute validation failed: validate runtime read/execute access on C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\runtimes\\\\cua_node\\\\3dd31cfff853001c\\\\bin\\\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)\"]"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 26,
+      "text": "[2026-10-09T01:10:31.822283400+00:00] setup refresh completed with errors: [\"runtime read/execute validation failed: validate runtime read/execute access on C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\runtimes\\\\cua_node\\\\3dd31cfff853001c\\\\bin\\\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)\"]"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 27,
+      "text": "[2026-10-09T01:10:31.822299200+00:00] setup error: setup refresh had errors"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 28,
+      "text": "[2026-10-09 09:10:31.822 codex-windows-sandbox-setup.exe] setup error: setup refresh had errors"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 29,
+      "text": "[2026-10-09T01:10:31.823043700+00:00] runtime read/execute validation failed: validate runtime read/execute access on C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\3dd31cfff853001c\\bin\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 30,
+      "text": "[2026-10-09T01:10:31.824188+00:00] top-level error: setup refresh had errors"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 31,
+      "text": "[2026-10-09T01:10:31.824805400+00:00] setup refresh: processed 0 write roots (read roots delegated); errors=[\"runtime read/execute validation failed: validate runtime read/execute access on C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\runtimes\\\\cua_node\\\\3dd31cfff853001c\\\\bin\\\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)\"]"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 32,
+      "text": "[2026-10-09T01:10:31.824837400+00:00] setup refresh completed with errors: [\"runtime read/execute validation failed: validate runtime read/execute access on C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\runtimes\\\\cua_node\\\\3dd31cfff853001c\\\\bin\\\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)\"]"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 33,
+      "text": "[2026-10-09T01:10:31.824857800+00:00] setup error: setup refresh had errors"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 34,
+      "text": "[2026-10-09 09:10:31.824 codex-windows-sandbox-setup.exe] setup error: setup refresh had errors"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 35,
+      "text": "[2026-10-09T01:10:31.826500500+00:00] top-level error: setup refresh had errors"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 44,
+      "text": "[2026-10-09T01:10:36.412089300+00:00] runtime read/execute validation failed: validate runtime read/execute access on C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\3dd31cfff853001c\\bin\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 45,
+      "text": "[2026-10-09T01:10:36.413507400+00:00] setup refresh: processed 0 write roots (read roots delegated); errors=[\"runtime read/execute validation failed: validate runtime read/execute access on C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\runtimes\\\\cua_node\\\\3dd31cfff853001c\\\\bin\\\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)\"]"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 46,
+      "text": "[2026-10-09T01:10:36.413566200+00:00] setup refresh completed with errors: [\"runtime read/execute validation failed: validate runtime read/execute access on C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\runtimes\\\\cua_node\\\\3dd31cfff853001c\\\\bin\\\\node_repl.exe: open ACL target for root-only update: 另一个程序正在使用此文件，进程无法访问。 (os error 32)\"]"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 47,
+      "text": "[2026-10-09T01:10:36.413580500+00:00] setup error: setup refresh had errors"
+    },
+    {
+      "source": "C:\\Users\\44725\\.codex\\.sandbox\\sandbox.2026-10-09.log",
+      "line": 48,
+      "text": "[2026-10-09 09:10:36.413 codex-windows-sandbox-setup.exe] setup error: setup refresh had errors"
+    }
+  ],
+  "setup_error_source": "C:\\Users\\44725\\.codex\\.sandbox\\setup_error.json",
+  "setup_error": {
+    "code": "helper_unknown_error",
+    "message": "setup refresh had errors"
+  },
+  "classification": "unsandboxed_current_session",
+  "mxc_confirmed": false,
+  "ipc_probes": "skipped: MXC not confirmed; stop condition",
+  "historical_errors_causality": "not established",
+  "mxc_feature_settings": [
+    {
+      "line": 80,
+      "text": "prefer_mxc = true"
+    }
+  ]
+}

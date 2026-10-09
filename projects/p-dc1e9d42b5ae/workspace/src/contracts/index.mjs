@@ -1,0 +1,3 @@
+export const PROJECT='offline-library-demo';
+export class AppError extends Error { constructor(status,code,message){super(message);this.status=status;this.code=code;} }
+export function validateInput(v){if(!v || typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!['note','revision','operationId'].includes(k))||typeof v.note!=='string'||[...v.note.trim()].length<1||[...v.note.trim()].length>120||!Number.isInteger(v.revision)||v.revision<0||typeof v.operationId!=='string'||!/^[\w-]{8,80}$/.test(v.operationId))throw new AppError(400,'INVALID_INPUT','备注须为 1–120 个字符，提交参数须有效');return {...v,note:v.note.trim()};}

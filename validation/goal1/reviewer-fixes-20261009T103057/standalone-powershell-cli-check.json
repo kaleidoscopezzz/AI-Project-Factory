@@ -1,0 +1,12 @@
+{
+  "kind": "real independent Windows PowerShell CLI path/version check only",
+  "powershell": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+  "codex_not_in_child_PATH": true,
+  "selected_cli": "C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\bin\\9691020b546a15b2\\codex.exe",
+  "exit_code": 0,
+  "stdout": "codex_in_path=false\n{\n  \"Codex路径\": \"C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\bin\\\\9691020b546a15b2\\\\codex.exe\",\n  \"版本\": \"codex-cli 0.162.0-alpha.2\",\n  \"Agent调用\": 0\n}\n",
+  "stderr": "",
+  "agent_calls": 0,
+  "e2e_or_browser_run": false,
+  "global_env_or_policy_changed": false
+}

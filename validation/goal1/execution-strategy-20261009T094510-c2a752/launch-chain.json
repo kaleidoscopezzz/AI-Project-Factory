@@ -1,0 +1,48 @@
+{
+  "project_id": "p-dc1e9d42b5ae",
+  "packet_sha256": "edb6c6afa62657c5dc2d899e4774bed1855b5e4dd5b9689ca67ac746207c8ad2",
+  "task_status": "已失败",
+  "calls": 2,
+  "retries": 0,
+  "budget": {
+    "max_agent_calls": 3,
+    "max_retries": 1,
+    "agent_timeout_seconds": 900,
+    "check_timeout_seconds": 180,
+    "max_validation_rounds": 1
+  },
+  "codex_executable": "C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\bin\\9691020b546a15b2\\codex.exe",
+  "codex_version": "codex-cli 0.162.0-alpha.2",
+  "model": "gpt-6.1-sol",
+  "selected_user_config": {
+    "sandbox_mode": "danger-full-access",
+    "approval_policy": "never"
+  },
+  "stages": [
+    {
+      "stage": "PowerShell entry",
+      "entry": "scripts/factory.ps1 -> python -B -m factory.controller"
+    },
+    {
+      "stage": "APF environment",
+      "parent_permission_context": "CODEX_PERMISSION_PROFILE removed by clean_env"
+    },
+    {
+      "stage": "Planner",
+      "mode": "read-only",
+      "called_this_phase": false
+    },
+    {
+      "stage": "Coder current adapter",
+      "mode": "workspace-write",
+      "ignore_user_config": true,
+      "approval_policy": "never",
+      "called_this_phase": false
+    },
+    {
+      "stage": "engine preflight/build/test/runtime current adapter",
+      "mode": "codex sandbox -P :workspace -c windows.sandbox=\"unelevated\""
+    }
+  ],
+  "full_access_coder_enabled": false
+}

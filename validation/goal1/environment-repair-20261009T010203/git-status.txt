@@ -1,0 +1,10 @@
+ M PROJECT_STATUS.md
+?? docs/GOAL1_TASK_PACKET.md
+?? docs/GOAL1_USAGE.md
+?? factory/
+?? projects/
+?? scripts/diagnose_goal1_environment.py
+?? scripts/factory.ps1
+?? scripts/goal1_guard.py
+?? tests/
+?? validation/goal1/

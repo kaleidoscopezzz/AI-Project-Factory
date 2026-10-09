@@ -1,0 +1,10 @@
+# Generated projects: retain source/control/evidence, omit disposable runtime data.
+**/workspace/.factory-tmp/
+**/workspace/var/
+**/control/controller.lock
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12

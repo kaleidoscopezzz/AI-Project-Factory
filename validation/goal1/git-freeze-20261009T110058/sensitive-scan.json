@@ -1,0 +1,38 @@
+{
+  "genuine_secret_candidates": [],
+  "synthetic_fixtures": [
+    {
+      "path": "tests/test_factory.py",
+      "rules": [
+        "private_key",
+        "openai_key",
+        "bearer",
+        "named_secret"
+      ],
+      "classification": "existing synthetic redaction test fixture, not credentials"
+    },
+    {
+      "path": "validation/goal1/reviewer-fixes-20261009T103057/source-before/tests/test_factory.py",
+      "rules": [
+        "private_key",
+        "openai_key",
+        "bearer",
+        "named_secret"
+      ],
+      "classification": "existing synthetic redaction test fixture, not credentials"
+    }
+  ],
+  "nested_zip_checks": [
+    {
+      "path": "projects/p-dc1e9d42b5ae/workspace/validation/goal0/browser-trace.zip",
+      "members": 63,
+      "passed": true
+    },
+    {
+      "path": "projects/p-dc1e9d42b5ae/workspace/validation/history-20261009-095808-578/goal0/browser-trace.zip",
+      "members": 63,
+      "passed": true
+    }
+  ],
+  "scope": "selected Goal1 files only; no global/private config read; pattern scan is not a full security proof"
+}

@@ -1,0 +1,36 @@
+{
+  "captured_utc": "2026-10-08T17:11:03.430763+00:00",
+  "frozen_differences": [],
+  "frozen_removed": [],
+  "frozen_added": [],
+  "factory_git_differences": [],
+  "factory_git_removed": [],
+  "factory_git_added": [],
+  "control_differences": [
+    "controller.lock"
+  ],
+  "control_removed": [],
+  "control_added": [],
+  "workspace_differences": [],
+  "workspace_removed": [],
+  "workspace_added": [],
+  "historical_goal1_differences": [],
+  "historical_goal1_removed": [],
+  "historical_goal1_added": [
+    "exception-tests-f366a1347d.json",
+    "exception-tests-f366a1347d.txt"
+  ],
+  "reference_file_differences": [],
+  "reference_git_differences": [],
+  "reference_files_compared": 35839,
+  "reference_coverage": "All files size/mtime; SHA-256 except node_modules. No access-time comparison.",
+  "frozen_files_compared": 44,
+  "factory_git_files_compared": 235,
+  "user_config_unchanged": true,
+  "passed": false,
+  "packet_valid": true,
+  "task_status": "已失败",
+  "agent_calls": 2,
+  "retries": 0,
+  "completion_exists": false
+}

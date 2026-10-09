@@ -1,0 +1,11 @@
+{
+  "kind": "actual no-Retry recovery after lock fix; no Agent invocation",
+  "exit_code": 1,
+  "stdout": "任务失败；保留结果。显式使用 -Retry 后才允许有限重试。\n{\n  \"项目\": \"p-dc1e9d42b5ae\",\n  \"状态\": \"已失败\",\n  \"错误\": \"Coder 未完成或自测未通过\",\n  \"Agent调用\": 2,\n  \"产物\": \"C:\\\\AI-Project-Factory\\\\projects\\\\p-dc1e9d42b5ae\\\\control\",\n  \"工程\": \"C:\\\\AI-Project-Factory\\\\projects\\\\p-dc1e9d42b5ae\\\\workspace\"\n}\n",
+  "stderr": "",
+  "lock_before_sha256": "2ac9a6746aca543af8dff39894cfe8173afba21eb01c6fae33d52947222855ef",
+  "lock_after_sha256": "2ac9a6746aca543af8dff39894cfe8173afba21eb01c6fae33d52947222855ef",
+  "lock_unchanged_after_fix": true,
+  "first_recovery_appended_one_zero": true,
+  "lock_current_bytes": 3
+}

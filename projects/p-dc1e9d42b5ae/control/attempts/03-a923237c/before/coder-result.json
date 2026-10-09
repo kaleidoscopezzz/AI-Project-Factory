@@ -1,0 +1,57 @@
+{
+  "status": "failed",
+  "summary": "Goal 0 源码基座已实现，但验证受阻，未完成。构建修复复核通过，实际服务及五项 HTTP 检查成功；测试因 spawn EPERM 未进入测试主体。",
+  "files": [
+    "package.json",
+    "src/",
+    "scripts/",
+    "tests/goal0.test.mjs",
+    "data/seed.json",
+    "README.zh-CN.md",
+    "PROJECT_STATUS.md",
+    "validation/goal0/acceptance.md"
+  ],
+  "tests": [
+    {
+      "command": "node scripts/build.mjs（首次）",
+      "exit_code": 1,
+      "result": "子进程检查失败"
+    },
+    {
+      "command": "node scripts/build.mjs（唯一修复复核）",
+      "exit_code": 0,
+      "result": "构建成功，生成三个 dist 资源"
+    },
+    {
+      "command": "node scripts/test.mjs",
+      "exit_code": 1,
+      "result": "spawn EPERM；文件测试失败 1、通过 0，五个测试主体未运行"
+    },
+    {
+      "command": "node scripts/serve.mjs --host 127.0.0.1 --port 4173",
+      "exit_code": 1,
+      "result": "启动成功；停止工具会话后退出 1，优雅退出未验证"
+    },
+    {
+      "command": "Node fetch 本机 HTTP 检查",
+      "exit_code": 0,
+      "result": "健康、首页、app.js、style.css、books 均返回 200；记录计数 3/2/1"
+    }
+  ],
+  "evidence": [
+    "validation/goal0/build.log",
+    "validation/goal0/build-recheck.log",
+    "validation/goal0/test.log",
+    "validation/goal0/runtime.log",
+    "validation/goal0/runtime-http.log",
+    "validation/goal0/source-sha256.json",
+    "validation/goal0/acceptance.md"
+  ],
+  "limitations": [
+    "真实浏览器、截图、trace、持久化重启及异常链路未验证；12 项 AC 均未完整通过。",
+    "一次验证轮次、一次构建修复复核；已停止。",
+    "未访问保护范围、参考项目或凭据；无其他 Agent、Git 操作、全局安装或发布。",
+    "外部 Reviewer 验收未发生。"
+  ],
+  "questions": []
+}

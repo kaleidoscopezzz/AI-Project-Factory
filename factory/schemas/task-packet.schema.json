@@ -1,0 +1,236 @@
+{
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string",
+      "pattern": "^p-[a-f0-9]{12}$"
+    },
+    "original_request": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 16000
+    },
+    "goal": {
+      "type": "string",
+      "const": "Goal 0"
+    },
+    "project_type": {
+      "type": "string"
+    },
+    "technology": {
+      "type": "string"
+    },
+    "workspace": {
+      "type": "string"
+    },
+    "allow_write": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "deny_write": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prompt_path": {
+      "type": "string"
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "requirement_id": {
+            "type": "string"
+          },
+          "goal_id": {
+            "type": "string"
+          },
+          "task_id": {
+            "type": "string"
+          },
+          "criterion": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "requirement_id",
+          "goal_id",
+          "task_id",
+          "criterion",
+          "method"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "build",
+              "test"
+            ]
+          },
+          "argv": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "purpose",
+          "argv"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "path": {
+          "type": "string"
+        },
+        "expected_text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "argv",
+        "path",
+        "expected_text"
+      ],
+      "additionalProperties": false
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "max_agent_calls": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "agent_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1800
+        },
+        "check_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 180
+        },
+        "max_validation_rounds": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        }
+      },
+      "required": [
+        "max_agent_calls",
+        "max_retries",
+        "agent_timeout_seconds",
+        "check_timeout_seconds",
+        "max_validation_rounds"
+      ],
+      "additionalProperties": false
+    },
+    "input_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "plan.md": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "goals.md": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "goal0-blueprint.md": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "goal0-prompt.md": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "planner-result.json": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "plan.md",
+        "goals.md",
+        "goal0-blueprint.md",
+        "goal0-prompt.md",
+        "planner-result.json"
+      ],
+      "additionalProperties": false
+    },
+    "state": {
+      "type": "string",
+      "const": "任务包已验证"
+    }
+  },
+  "required": [
+    "format_version",
+    "task_id",
+    "project_id",
+    "original_request",
+    "goal",
+    "project_type",
+    "technology",
+    "workspace",
+    "allow_write",
+    "deny_write",
+    "prompt_path",
+    "acceptance",
+    "checks",
+    "runtime",
+    "budget",
+    "input_fingerprint",
+    "artifacts",
+    "state"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TaskPacket 1.0"
+}

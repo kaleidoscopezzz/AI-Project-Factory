@@ -1,0 +1,17 @@
+{
+  "time": "2026-10-09T09:57:44.5361044+08:00",
+  "sandbox_mode": "danger-full-access",
+  "approval_policy": "never",
+  "user_privilege": "current user; no administrator elevation",
+  "source": "Actual session developer permissions and user authorization; no global configuration read",
+  "browser_channel": "msedge",
+  "chromiumSandbox": true,
+  "agents_called": 0,
+  "node_pipe": {
+    "stderr": "",
+    "status": 0,
+    "exit_code": 0,
+    "stdout": "42",
+    "command": "node -e fixed spawnSync child emitting 42"
+  }
+}

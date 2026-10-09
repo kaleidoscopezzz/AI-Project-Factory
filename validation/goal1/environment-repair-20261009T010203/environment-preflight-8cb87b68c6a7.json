@@ -1,0 +1,12 @@
+{
+  "exit_code": 1,
+  "timed_out": false,
+  "elapsed_seconds": 0.155,
+  "stdout": "{\"status\":null,\"error\":\"EPERM\"}\n",
+  "stderr": "",
+  "kind": "trusted Windows Node piped child preflight",
+  "sandbox": "unelevated / :workspace / default private desktop",
+  "business_tests_run": false,
+  "browser_acceptance_run": false,
+  "passed": false
+}

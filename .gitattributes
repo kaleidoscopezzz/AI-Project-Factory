@@ -1,0 +1,12 @@
+# Goal 1 byte-level acceptance hashes must survive staging and checkout.
+# These scoped rules do not change Goal 0 Skills or other frozen files.
+/factory/** -text
+/tests/** -text
+/projects/** -text
+/docs/GOAL1_TASK_PACKET.md -text
+/docs/GOAL1_USAGE.md -text
+/scripts/factory.ps1 -text
+/scripts/goal1_guard.py -text
+/scripts/diagnose_goal1_environment.py -text
+/validation/goal1/** -text
+/validation/sandbox-compatibility-*/** -text

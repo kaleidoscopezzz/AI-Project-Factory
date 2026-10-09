@@ -1,0 +1,19 @@
+{
+  "exit_code": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.154,
+  "stdout": "{\"status\":0,\"stdout\":\"v26.3.0\\r\\n\"}\n",
+  "stderr": "",
+  "kind": "trusted Windows Node piped child preflight",
+  "sandbox": "danger-full-access / native current-user",
+  "business_tests_run": false,
+  "browser_acceptance_run": false,
+  "passed": true,
+  "browser_environment_probe": {
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 2.633,
+    "stdout": "{\"passed\":true,\"channel\":\"msedge\",\"chromiumSandbox\":true,\"version\":\"154.0.4258.62\"}\n",
+    "stderr": ""
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "authorized_at_utc": "2026-10-09T01:54:59.159244+00:00",
+  "source": "direct user async reply",
+  "reply": "同意本次启用并复验一次",
+  "project_id": "p-dc1e9d42b5ae",
+  "planner_calls_allowed": 0,
+  "coder_calls_allowed": 1,
+  "coder_timeout_seconds": 900,
+  "check_timeout_seconds": 180,
+  "mode": "danger-full-access",
+  "admin_elevation": false,
+  "os_file_boundary": false,
+  "regression_report": "validation/goal1/exception-tests-229a7fff70.json",
+  "old_workspace_evidence": {
+    "goal0/acceptance.md": "37cfa4e501c3f01a6cedc895c27d0db71c80b9bc54bffe533b354d924495dadf",
+    "goal0/build-recheck.log": "395ced3e76c432d39f21f0ae1f056f4a3a3375435a81080d014c34bdc016e317",
+    "goal0/build.log": "aa82166ce4a0891a42ac8d6eda21c6048c86cafb311055d81266ac61d6167350",
+    "goal0/runtime-http.log": "caeb73d4a733fa0c731dc6327a0cbd179dcb39e9a421848b444197b5fc1b348d",
+    "goal0/runtime.log": "d287a0d29065f3bdc262ea0ecf0c669117263654e0f4f6a6f6e92db3e9bf19ac",
+    "goal0/source-sha256.json": "48ff440502c276b0ae4d9d28b7e19a9bfc0fd6e73ce6b3d0233b5c8b0b41d8b8",
+    "goal0/test.log": "8ad4f4797c43c11064996904441590a78943784c4b11f4bdae19ad38215a927b"
+  }
+}

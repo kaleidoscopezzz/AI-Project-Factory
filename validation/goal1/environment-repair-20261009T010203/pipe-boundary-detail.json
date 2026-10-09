@@ -1,0 +1,88 @@
+{
+  "pipe": {
+    "is_restricted": true,
+    "restricted_sids": [
+      {
+        "sid": "S-1-5-21-1935653998-1198536376-4121108842-335144655",
+        "attributes": 7
+      },
+      {
+        "sid": "S-1-5-21-1713691168-2934237178-1159928225-2666959805",
+        "attributes": 7
+      },
+      {
+        "sid": "S-1-5-5-0-1126584",
+        "attributes": 7
+      },
+      {
+        "sid": "S-1-1-0",
+        "attributes": 7
+      }
+    ],
+    "is_app_container": 0,
+    "integrity_info_obtained": true,
+    "named_pipe_server_error": 0,
+    "named_pipe_acl_query_error": 87,
+    "named_pipe_client_read_write_error": 5,
+    "named_pipe_client_read_error": 0,
+    "named_pipe_client_write_error": 5
+  },
+  "boundaries": [
+    {
+      "path": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\control",
+      "exists": true,
+      "write_access_denied": true,
+      "winerror": 5,
+      "mutated": false
+    },
+    {
+      "path": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\control\\state.json",
+      "exists": true,
+      "write_access_denied": true,
+      "winerror": 5,
+      "mutated": false
+    },
+    {
+      "path": "C:\\AI-Project-Factory\\skills",
+      "exists": true,
+      "write_access_denied": true,
+      "winerror": 5,
+      "mutated": false
+    },
+    {
+      "path": "C:\\AI-Project-Factory\\skills\\goal-prompt-writer\\SKILL.md",
+      "exists": true,
+      "write_access_denied": true,
+      "winerror": 5,
+      "mutated": false
+    },
+    {
+      "path": "C:\\AI-Project-Factory\\.git",
+      "exists": true,
+      "write_access_denied": true,
+      "winerror": 5,
+      "mutated": false
+    },
+    {
+      "path": "C:\\AI-Project-Factory\\AGENTS.md",
+      "exists": true,
+      "write_access_denied": true,
+      "winerror": 5,
+      "mutated": false
+    },
+    {
+      "path": "C:\\910Program",
+      "exists": true,
+      "write_access_denied": true,
+      "winerror": 5,
+      "mutated": false
+    },
+    {
+      "path": "C:\\910Program\\PROJECT_STATUS.md",
+      "exists": true,
+      "write_access_denied": true,
+      "winerror": 5,
+      "mutated": false
+    }
+  ]
+}

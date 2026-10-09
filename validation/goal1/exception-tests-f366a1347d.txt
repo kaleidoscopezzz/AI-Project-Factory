@@ -1,0 +1,31 @@
+test_artifact_tamper_rejected (__main__.FactoryTests.test_artifact_tamper_rejected) ... ok
+test_blank_request_rejected (__main__.FactoryTests.test_blank_request_rejected) ... ok
+test_changed_completed_files_invalidates_success (__main__.FactoryTests.test_changed_completed_files_invalidates_success) ... ok
+test_child_env_excludes_desktop_context_and_secrets (__main__.FactoryTests.test_child_env_excludes_desktop_context_and_secrets) ... ok
+test_coder_failure_persisted (__main__.FactoryTests.test_coder_failure_persisted) ... ok
+test_coder_reported_failure_is_not_success (__main__.FactoryTests.test_coder_reported_failure_is_not_success) ... ok
+test_coder_timeout_persisted (__main__.FactoryTests.test_coder_timeout_persisted) ... ok
+test_completed_task_no_agent_calls (__main__.FactoryTests.test_completed_task_no_agent_calls) ... ok
+test_concurrent_controller_lock (__main__.FactoryTests.test_concurrent_controller_lock) ... ok
+test_dependency_cycle_rejected (__main__.FactoryTests.test_dependency_cycle_rejected) ... ok
+test_environment_failure_preserves_retry_and_planning (__main__.FactoryTests.test_environment_failure_preserves_retry_and_planning) ... ok
+test_external_absolute_workdir_no_coder (__main__.FactoryTests.test_external_absolute_workdir_no_coder) ... ok
+test_ids_cannot_construct_path (__main__.FactoryTests.test_ids_cannot_construct_path) ... ok
+test_incomplete_planner_no_coder (__main__.FactoryTests.test_incomplete_planner_no_coder) ... ok
+test_interruption_never_success (__main__.FactoryTests.test_interruption_never_success) ... ok
+test_invalid_packet_no_coder (__main__.FactoryTests.test_invalid_packet_no_coder) ... ok
+test_invalid_packet_type_no_coder (__main__.FactoryTests.test_invalid_packet_type_no_coder) ... ok
+test_logs_redact_credentials (__main__.FactoryTests.test_logs_redact_credentials) ... ok
+test_major_question_no_coder (__main__.FactoryTests.test_major_question_no_coder) ... ok
+test_plan_mode_does_not_call_coder (__main__.FactoryTests.test_plan_mode_does_not_call_coder) ... ok
+test_process_timeout_really_stops_child (__main__.FactoryTests.test_process_timeout_really_stops_child) ... ok
+test_request_with_secret_rejected (__main__.FactoryTests.test_request_with_secret_rejected) ... ok
+test_resume_reuses_planner (__main__.FactoryTests.test_resume_reuses_planner) ... ok
+test_retry_limit_stops (__main__.FactoryTests.test_retry_limit_stops) ... ok
+test_shell_commands_not_accepted (__main__.FactoryTests.test_shell_commands_not_accepted) ... ok
+test_unsafe_workdir_no_coder (__main__.FactoryTests.test_unsafe_workdir_no_coder) ... ok
+
+----------------------------------------------------------------------
+Ran 26 tests in 3.168s
+
+OK

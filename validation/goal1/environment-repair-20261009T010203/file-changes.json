@@ -1,0 +1,19 @@
+{
+  "modified_files": {
+    "factory/controller.py": "72209719330817a4c381cf73b86403eb6fc23b619d4576b246da639e18197275",
+    "factory/executor.py": "4bb75a5510897b39bc6d1e1719107156b4d15ddd0bb93a8eb8c16a15cf11029e",
+    "tests/test_factory.py": "336b9879027a5069d51c0e20ead4a6f9aa3b77076667f76d0d532eec4e49697c",
+    "docs/GOAL1_USAGE.md": "34a450139bb6daac6c1f2a06629d17c33f78b76bb472ac031df3ff000be551db",
+    "PROJECT_STATUS.md": "335d7292a705d6976864692fd9fa1a7e9a8f3e3250fdc6a35188837f50e233a9"
+  },
+  "added_code_files": {
+    "factory/windows_probe.py": "1008e4d9a813df53ccfc78b2b72388971454fb51d86187fef5d6b057ba3f7f25",
+    "scripts/diagnose_goal1_environment.py": "cc423edca24eb06f134ad1486c52fca61e222353bfcc082825a657c0e0c81460"
+  },
+  "operational_existing_file_change": "projects/p-dc1e9d42b5ae/control/controller.lock: appended ASCII 0x30 once before fix; no truncation",
+  "new_evidence_directory": "C:\\AI-Project-Factory\\validation\\goal1\\environment-repair-20261009T010203",
+  "generated_project_source_changed": false,
+  "frozen_skills_changed": false,
+  "reference_project_changed": false,
+  "observed_external_drift": "factory .git objects/refs and user config hash; see guard-final.json"
+}

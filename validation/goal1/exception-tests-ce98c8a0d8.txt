@@ -1,0 +1,46 @@
+test_actual_adapter_role_modes_remain_explicit (__main__.FactoryTests.test_actual_adapter_role_modes_remain_explicit) ... ok
+test_artifact_tamper_rejected (__main__.FactoryTests.test_artifact_tamper_rejected) ... ok
+test_blank_request_rejected (__main__.FactoryTests.test_blank_request_rejected) ... ok
+test_changed_completed_files_invalidates_success (__main__.FactoryTests.test_changed_completed_files_invalidates_success) ... ok
+test_check_cli_does_not_create_or_execute_task (__main__.FactoryTests.test_check_cli_does_not_create_or_execute_task) ... ok
+test_child_env_excludes_desktop_context_and_secrets (__main__.FactoryTests.test_child_env_excludes_desktop_context_and_secrets) ... ok
+test_cli_main_default_does_not_enable_full_access (__main__.FactoryTests.test_cli_main_default_does_not_enable_full_access) ... ok
+test_cli_main_new_full_access_request_is_explicit (__main__.FactoryTests.test_cli_main_new_full_access_request_is_explicit) ... ok
+test_cli_wrong_version_or_timeout_rejected (__main__.FactoryTests.test_cli_wrong_version_or_timeout_rejected) ... ok
+test_coder_failure_persisted (__main__.FactoryTests.test_coder_failure_persisted) ... ok
+test_coder_reported_failure_is_not_success (__main__.FactoryTests.test_coder_reported_failure_is_not_success) ... ok
+test_coder_timeout_persisted (__main__.FactoryTests.test_coder_timeout_persisted) ... ok
+test_completed_task_no_agent_calls (__main__.FactoryTests.test_completed_task_no_agent_calls) ... ok
+test_concurrent_controller_lock (__main__.FactoryTests.test_concurrent_controller_lock) ... ok
+test_default_new_request_does_not_enable_full_access (__main__.FactoryTests.test_default_new_request_does_not_enable_full_access) ... ok
+test_dependency_cycle_rejected (__main__.FactoryTests.test_dependency_cycle_rejected) ... ok
+test_environment_failure_preserves_retry_and_planning (__main__.FactoryTests.test_environment_failure_preserves_retry_and_planning) ... ok
+test_explicit_cli_path_without_path_lookup (__main__.FactoryTests.test_explicit_cli_path_without_path_lookup) ... ok
+test_external_absolute_workdir_no_coder (__main__.FactoryTests.test_external_absolute_workdir_no_coder) ... ok
+test_full_access_command_is_explicit_and_boundary_truthful (__main__.FactoryTests.test_full_access_command_is_explicit_and_boundary_truthful) ... ok
+test_full_access_rejects_plan_mode (__main__.FactoryTests.test_full_access_rejects_plan_mode) ... ok
+test_ids_cannot_construct_path (__main__.FactoryTests.test_ids_cannot_construct_path) ... ok
+test_incomplete_planner_no_coder (__main__.FactoryTests.test_incomplete_planner_no_coder) ... ok
+test_interruption_never_success (__main__.FactoryTests.test_interruption_never_success) ... ok
+test_invalid_explicit_cli_path_never_falls_back (__main__.FactoryTests.test_invalid_explicit_cli_path_never_falls_back) ... ok
+test_invalid_packet_no_coder (__main__.FactoryTests.test_invalid_packet_no_coder) ... ok
+test_invalid_packet_type_no_coder (__main__.FactoryTests.test_invalid_packet_type_no_coder) ... ok
+test_logs_redact_credentials (__main__.FactoryTests.test_logs_redact_credentials) ... ok
+test_major_question_no_coder (__main__.FactoryTests.test_major_question_no_coder) ... ok
+test_new_full_access_preflight_failure_does_not_call_coder (__main__.FactoryTests.test_new_full_access_preflight_failure_does_not_call_coder) ... ok
+test_new_full_access_request_planner_packet_coder_control_flow (__main__.FactoryTests.test_new_full_access_request_planner_packet_coder_control_flow) ... ok
+test_plan_mode_does_not_call_coder (__main__.FactoryTests.test_plan_mode_does_not_call_coder) ... ok
+test_process_timeout_really_stops_child (__main__.FactoryTests.test_process_timeout_really_stops_child) ... ok
+test_reopening_lock_preserves_existing_bytes (__main__.FactoryTests.test_reopening_lock_preserves_existing_bytes) ... ok
+test_request_with_secret_rejected (__main__.FactoryTests.test_request_with_secret_rejected) ... ok
+test_resume_reuses_planner (__main__.FactoryTests.test_resume_reuses_planner) ... ok
+test_retry_archives_old_evidence_before_preflight_failure (__main__.FactoryTests.test_retry_archives_old_evidence_before_preflight_failure) ... ok
+test_retry_existing_source_change_reaches_real_checks (__main__.FactoryTests.test_retry_existing_source_change_reaches_real_checks) ... ok
+test_retry_limit_stops (__main__.FactoryTests.test_retry_limit_stops) ... ok
+test_shell_commands_not_accepted (__main__.FactoryTests.test_shell_commands_not_accepted) ... ok
+test_unsafe_workdir_no_coder (__main__.FactoryTests.test_unsafe_workdir_no_coder) ... ok
+
+----------------------------------------------------------------------
+Ran 41 tests in 4.544s
+
+OK

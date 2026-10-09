@@ -1,0 +1,9 @@
+{
+  "codex_version": "codex-cli 0.162.0-alpha.2",
+  "codex_executable": "C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\bin\\9691020b546a15b2\\codex.exe",
+  "setup_error": {
+    "code": "helper_unknown_error",
+    "message": "setup refresh had errors"
+  },
+  "setup_error_observation": "read existing diagnostic only; elevated initialization was not retried"
+}

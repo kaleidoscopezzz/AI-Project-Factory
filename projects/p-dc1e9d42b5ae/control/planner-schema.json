@@ -1,0 +1,216 @@
+{
+  "type": "object",
+  "properties": {
+    "project_name": {
+      "type": "string"
+    },
+    "project_type": {
+      "type": "string"
+    },
+    "technology": {
+      "type": "string"
+    },
+    "skills_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "plan_md": {
+      "type": "string"
+    },
+    "goals_md": {
+      "type": "string"
+    },
+    "blueprint_md": {
+      "type": "string"
+    },
+    "prompt_md": {
+      "type": "string"
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "depends_on",
+          "scope"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "requirement_id": {
+            "type": "string"
+          },
+          "goal_id": {
+            "type": "string"
+          },
+          "task_id": {
+            "type": "string"
+          },
+          "criterion": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "requirement_id",
+          "goal_id",
+          "task_id",
+          "criterion",
+          "method"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "goal_id": {
+            "type": "string"
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "write_set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "acceptance_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "goal_id",
+          "depends_on",
+          "write_set",
+          "acceptance_ids"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "blocking_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "build",
+              "test"
+            ]
+          },
+          "argv": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "purpose",
+          "argv"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "argv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "path": {
+          "type": "string"
+        },
+        "expected_text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "argv",
+        "path",
+        "expected_text"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "project_name",
+    "project_type",
+    "technology",
+    "skills_used",
+    "plan_md",
+    "goals_md",
+    "blueprint_md",
+    "prompt_md",
+    "goals",
+    "acceptance",
+    "tasks",
+    "blocking_questions",
+    "risks",
+    "checks",
+    "runtime"
+  ],
+  "additionalProperties": false
+}

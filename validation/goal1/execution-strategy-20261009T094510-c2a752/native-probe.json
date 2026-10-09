@@ -1,0 +1,108 @@
+{
+  "source": "trusted environment diagnostic, not business tests",
+  "cwd": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace",
+  "temp": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp",
+  "scratch": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-29f605ba51",
+  "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+  "node_executable": "C:\\Program Files\\nodejs\\node.EXE",
+  "token_and_pipe": {
+    "is_restricted": false,
+    "restricted_sids": [],
+    "is_app_container": 0,
+    "integrity_info_obtained": true,
+    "token_default_acl": [
+      {
+        "type": 0,
+        "flags": 0,
+        "mask": "0x10000000",
+        "sid": "S-1-5-21-755082351-3030299698-3453349700-1001"
+      },
+      {
+        "type": 0,
+        "flags": 0,
+        "mask": "0x10000000",
+        "sid": "S-1-5-18"
+      },
+      {
+        "type": 0,
+        "flags": 0,
+        "mask": "0xa0000000",
+        "sid": "S-1-5-5-0-1126584"
+      }
+    ],
+    "named_pipe_server_error": 0,
+    "named_pipe_acl_query_error": 0,
+    "named_pipe_security_sddl": "O:S-1-5-21-755082351-3030299698-3453349700-1001G:S-1-5-21-755082351-3030299698-3453349700-1001D:(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;S-1-5-21-755082351-3030299698-3453349700-1001)(A;;FR;;;WD)(A;;FR;;;AN)",
+    "named_pipe_client_read_write_error": 0,
+    "named_pipe_client_read_error": 0,
+    "named_pipe_client_write_error": 0,
+    "named_pipe_client_read_write_dac_error": 0,
+    "named_pipe_client_libuv_write_error": 0,
+    "named_pipe_client_chromium_mojo_error": 0
+  },
+  "ordinary_command": {
+    "started": true,
+    "pid": 20648,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.078,
+    "stdout": "\r\nMicrosoft Windows [�汾 10.0.26200.9168]\r\n",
+    "stderr": ""
+  },
+  "python_child": {
+    "started": true,
+    "pid": 31148,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.072,
+    "stdout": "python-child-ok\r\n",
+    "stderr": ""
+  },
+  "node_version": {
+    "started": true,
+    "pid": 30216,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.119,
+    "stdout": "v26.3.0\r\n",
+    "stderr": ""
+  },
+  "node_matrix": {
+    "started": true,
+    "pid": 28756,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.457,
+    "stdout": "v26.3.0\r\nAPF_MATRIX=[{\"mode\":\"inherit\",\"status\":0,\"error\":null},{\"mode\":\"ignore\",\"status\":0,\"error\":null},{\"mode\":\"pipe\",\"status\":0,\"error\":null},{\"mode\":\"file\",\"status\":0,\"error\":null},{\"mode\":\"pipe-cwd\",\"cwd\":\"C:\\\\AI-Project-Factory\\\\projects\\\\p-dc1e9d42b5ae\\\\workspace\",\"status\":0,\"stdout\":\"v26.3.0\\r\\n\"},{\"mode\":\"pipe-cwd\",\"cwd\":\"C:\\\\AI-Project-Factory\\\\projects\\\\p-dc1e9d42b5ae\\\\workspace\\\\.factory-tmp\",\"status\":0,\"stdout\":\"v26.3.0\\r\\n\"},{\"mode\":\"pipe-cwd\",\"cwd\":\"C:\\\\AI-Project-Factory\\\\projects\\\\p-dc1e9d42b5ae\\\\workspace\\\\.factory-tmp\\\\environment-probe-29f605ba51\",\"status\":0,\"stdout\":\"v26.3.0\\r\\n\"}]\n",
+    "stderr": ""
+  },
+  "node_loopback_tcp": {
+    "started": true,
+    "pid": 30068,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.16,
+    "stdout": "ok\n",
+    "stderr": ""
+  },
+  "browsers": {
+    "chrome": {
+      "started": true,
+      "pid": 2636,
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 1.658,
+      "stdout": "<html><head></head><body></body></html>\r\n",
+      "stderr": ""
+    },
+    "edge": {
+      "started": true,
+      "pid": 26900,
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 2.529,
+      "stdout": "<html><head></head><body></body></html>\r\n",
+      "stderr": "[26900:436:1009/094521.445:ERROR:chrome\\browser\\importer\\edge_china_browsers\\edge_qqbrowser_importer_utils_win.cc:165] QQBrowser user data path not found.\r\n"
+    }
+  }
+}

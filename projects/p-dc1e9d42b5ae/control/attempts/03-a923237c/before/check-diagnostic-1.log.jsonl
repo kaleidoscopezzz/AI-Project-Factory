@@ -1,0 +1,29 @@
+{"stream": "stdout", "text": "✖ tests\\goal0.test.mjs (1.8883ms)\n"}
+{"stream": "stdout", "text": "ℹ tests 1\n"}
+{"stream": "stdout", "text": "ℹ suites 0\n"}
+{"stream": "stdout", "text": "ℹ pass 0\n"}
+{"stream": "stdout", "text": "ℹ fail 1\n"}
+{"stream": "stdout", "text": "ℹ cancelled 0\n"}
+{"stream": "stdout", "text": "ℹ skipped 0\n"}
+{"stream": "stdout", "text": "ℹ todo 0\n"}
+{"stream": "stdout", "text": "ℹ duration_ms 7.1126\n"}
+{"stream": "stdout", "text": "\n"}
+{"stream": "stdout", "text": "✖ failing tests:\n"}
+{"stream": "stdout", "text": "\n"}
+{"stream": "stdout", "text": "test at tests\\goal0.test.mjs:1:1\n"}
+{"stream": "stdout", "text": "✖ tests\\goal0.test.mjs (1.8883ms)\n"}
+{"stream": "stdout", "text": "  Error: spawn EPERM\n"}
+{"stream": "stdout", "text": "      at ChildProcess.spawn (node:internal/child_process:440:11)\n"}
+{"stream": "stdout", "text": "      at spawn (node:child_process:797:9)\n"}
+{"stream": "stdout", "text": "      at TestContext.<anonymous> (node:internal/test_runner/runner:514:19)\n"}
+{"stream": "stdout", "text": "      at FileTest.runInAsyncScope (node:async_hooks:226:14)\n"}
+{"stream": "stdout", "text": "      at FileTest.run (node:internal/test_runner/test:1382:25)\n"}
+{"stream": "stdout", "text": "      at FileTest.start (node:internal/test_runner/test:1242:17)\n"}
+{"stream": "stdout", "text": "      at runTestFile (node:internal/test_runner/runner:596:32)\n"}
+{"stream": "stdout", "text": "      at node:internal/test_runner/runner:1009:25\n"}
+{"stream": "stdout", "text": "      at node:internal/per_context/primordials:561:37\n"}
+{"stream": "stdout", "text": "      at new Promise (<anonymous>) {\n"}
+{"stream": "stdout", "text": "    errno: -4048,\n"}
+{"stream": "stdout", "text": "    code: 'EPERM',\n"}
+{"stream": "stdout", "text": "    syscall: 'spawn'\n"}
+{"stream": "stdout", "text": "  }\n"}

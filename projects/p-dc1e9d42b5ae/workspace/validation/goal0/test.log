@@ -1,0 +1,13 @@
+✔ AC-002/003/004 domain counts and search (1.2635ms)
+✔ AC-006/007/008/009/011 real file HTTP boundaries (118.3717ms)
+✔ AC-011 non-loopback startup rejected (75.2947ms)
+✔ AC-001..011 real offline browser, restart, keyboard, screenshots (4805.8551ms)
+✔ AC-005 foreground contrast >=4.5:1 (1.1294ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5135.6313

@@ -1,0 +1,2 @@
+{"stream": "stdout", "text": "{\"defaultBrowser\":\"C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\ms-playwright\\\\chromium-1234\\\\chrome-win64\\\\chrome.exe\",\"defaultExists\":false}\n"}
+{"stream": "stdout", "text": "{\"channel\":\"msedge\",\"browserVersion\":\"154.0.4258.62\",\"dom\":\"APF_ENV_PROBE\",\"chromiumSandbox\":true,\"passed\":true}\n"}

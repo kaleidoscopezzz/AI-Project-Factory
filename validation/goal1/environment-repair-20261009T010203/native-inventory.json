@@ -1,0 +1,12 @@
+{
+  "node_version": {
+    "exit_code": 0,
+    "stdout": "v26.3.0\r\n",
+    "stderr": ""
+  },
+  "wsl_list": {
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "未安装适用于 Linux 的 Windows 子系统。可通过运行 “wsl.exe --install” 进行安装。\r\r\n有关详细信息，请访问 https://aka.ms/wslinstall\r\r\n"
+  }
+}

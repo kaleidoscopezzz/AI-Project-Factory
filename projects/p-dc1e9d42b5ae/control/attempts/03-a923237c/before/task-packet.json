@@ -1,0 +1,163 @@
+{
+  "format_version": "1.0",
+  "task_id": "t-c8f44dfbe70c4bbebb93419a9f347cc8",
+  "project_id": "p-dc1e9d42b5ae",
+  "original_request": "帮我开发一个离线图书借阅管理演示系统，要有图书列表、借阅状态、简单搜索，界面专业，以后方便增加更多功能。",
+  "goal": "Goal 0",
+  "project_type": "离线本地 Web DEMO；本次仅规划 Goal 0 工程基座与纵向样板",
+  "technology": "选用 Node 原生 HTTP 服务、原生 HTML/CSS/JavaScript、隔离 JSON 文件演示存储、Node 原生测试及本机只读 Playwright；不引入外部运行依赖",
+  "workspace": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace",
+  "allow_write": [
+    "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace"
+  ],
+  "deny_write": [
+    "C:\\AI-Project-Factory\\skills",
+    "C:\\AI-Project-Factory\\validation",
+    "C:\\AI-Project-Factory\\.git",
+    "C:\\910Program",
+    "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\control"
+  ],
+  "prompt_path": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\control\\goal0-prompt.md",
+  "acceptance": [
+    {
+      "id": "AC-001",
+      "requirement_id": "R-001",
+      "goal_id": "Goal 0",
+      "task_id": "T-001",
+      "criterion": "构建退出 0；服务绑定 127.0.0.1 指定端口，健康接口返回 200、status=ok、project=offline-library-demo，首页及构建资源加载成功，静态资源来自 dist。",
+      "method": "Node 构建脚本、HTTP 集成检查、真实浏览器资源请求记录。"
+    },
+    {
+      "id": "AC-002",
+      "requirement_id": "R-002",
+      "goal_id": "Goal 0",
+      "task_id": "T-003",
+      "criterion": "初始显示 B-001、B-002、B-003 及各自书名作者，总数 3；刷新 ID 不变，数量由同一记录集计算。",
+      "method": "Playwright 列表断言、API 数据比对及刷新交互。"
+    },
+    {
+      "id": "AC-003",
+      "requirement_id": "R-003",
+      "goal_id": "Goal 0",
+      "task_id": "T-003",
+      "criterion": "初始两条可借、一条已借出，分类之和等于总数；状态有文字；不存在本阶段借还状态修改入口或 API。",
+      "method": "领域单元测试、浏览器状态/汇总断言、接口范围检查。"
+    },
+    {
+      "id": "AC-004",
+      "requirement_id": "R-004",
+      "goal_id": "Goal 0",
+      "task_id": "T-003",
+      "criterion": "书名/作者片段搜索结果准确，外围空白修剪且拉丁大小写匹配一致；无结果显示空态，清空恢复三条且不改变记录。",
+      "method": "Playwright 输入、搜索、清空及持久化内容比对。"
+    },
+    {
+      "id": "AC-005",
+      "requirement_id": "R-005",
+      "goal_id": "Goal 0",
+      "task_id": "T-003",
+      "criterion": "1440×900 和 390×844 下主内容可达，无页面横向溢出；键盘可搜索及确认/取消，焦点可见、文字对比度至少 4.5:1；有两视口真实原始 PNG。",
+      "method": "Playwright 视口/键盘/几何断言、颜色对比计算和人工截图审查。"
+    },
+    {
+      "id": "AC-006",
+      "requirement_id": "R-006",
+      "goal_id": "Goal 0",
+      "task_id": "T-002",
+      "criterion": "经 UI 确认更新 B-001 工程备注，刷新及服务进程重启后同 ID 值保留，UI/API/文件 revision 一致。",
+      "method": "真实浏览器保存链路、隔离文件检查、停止并重启自身服务。"
+    },
+    {
+      "id": "AC-007",
+      "requirement_id": "R-007",
+      "goal_id": "Goal 0",
+      "task_id": "T-002",
+      "criterion": "取消确认不改变备注、revision 和操作元数据；空白或超 120 码点输入被 UI 拒绝，直接 API 返回 400 且记录不变。",
+      "method": "Playwright 取消/输入边界测试、API 校验及文件前后比较。"
+    },
+    {
+      "id": "AC-008",
+      "requirement_id": "R-007",
+      "goal_id": "Goal 0",
+      "task_id": "T-002",
+      "criterion": "延迟提交期间按钮禁用，重复点击不增加请求；相同 operationId 重试 revision 仅加一；旧 revision 返回 409 且记录不变。",
+      "method": "隔离延迟夹具、Playwright 请求计数、真实文件集成和 API 重复请求。"
+    },
+    {
+      "id": "AC-009",
+      "requirement_id": "R-008",
+      "goal_id": "Goal 0",
+      "task_id": "T-002",
+      "criterion": "写失败返回 503，UI 保留草稿、原记录不变；损坏/未知 schema 明确失败，不覆盖或 fallback；恢复有效夹具后读取成功。",
+      "method": "隔离适配器故障注入、真实文件损坏夹具、浏览器错误交互及恢复检查。"
+    },
+    {
+      "id": "AC-010",
+      "requirement_id": "R-001",
+      "goal_id": "Goal 0",
+      "task_id": "T-004",
+      "criterion": "阻断全部外域后真实浏览器完成列表、搜索、备注保存和刷新；请求清单无外域尝试，正常链路无意外控制台/请求错误。",
+      "method": "Playwright 本机请求白名单、行为断言、trace 和请求日志。"
+    },
+    {
+      "id": "AC-011",
+      "requirement_id": "R-009",
+      "goal_id": "Goal 0",
+      "task_id": "T-003",
+      "criterion": "页面明确虚构 DEMO、无真实身份认证；非回环监听配置失败；错误浏览器 Origin 写请求拒绝且文件不变，不声称生产授权已实现。",
+      "method": "浏览器文案检查、启动配置测试、直接 HTTP Origin 边界测试。"
+    },
+    {
+      "id": "AC-012",
+      "requirement_id": "R-010",
+      "goal_id": "Goal 0",
+      "task_id": "T-005",
+      "criterion": "中文说明、状态、R/AC/Task 验收矩阵、实际命令及数量、源码指纹、日志、PNG/trace 索引完整；未执行标未运行、外部结论标未发生；未访问或写入保护范围，Git 写操作为零。",
+      "method": "按状态及验收模板人工核对证据清单、操作日志与逐项映射。"
+    }
+  ],
+  "checks": [
+    {
+      "purpose": "build",
+      "argv": [
+        "node",
+        "scripts/build.mjs"
+      ]
+    },
+    {
+      "purpose": "test",
+      "argv": [
+        "node",
+        "scripts/test.mjs"
+      ]
+    }
+  ],
+  "runtime": {
+    "argv": [
+      "node",
+      "scripts/serve.mjs",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "{port}"
+    ],
+    "path": "/api/health",
+    "expected_text": "offline-library-demo"
+  },
+  "budget": {
+    "max_agent_calls": 3,
+    "max_retries": 1,
+    "agent_timeout_seconds": 900,
+    "check_timeout_seconds": 180,
+    "max_validation_rounds": 1
+  },
+  "input_fingerprint": "983f5c09cbeb95891903c7df23527af53376a29438a7b7005b0c05d192772014",
+  "artifacts": {
+    "plan.md": "f6a6208c20cb0309abcc53f597ce5ac237d03ffbe16b9f89519b8d5d8c470f5c",
+    "goals.md": "0fcfce0e60df4ff4fc2bcba45525a11b22d04fb1f6f37b5407264ffd3c9cfce1",
+    "goal0-blueprint.md": "0f61e6b1f25964f39e510a8af89bdaaf848801111a3a25440ce6377262d2a24a",
+    "goal0-prompt.md": "24cef6aae78b3c6a6f668dc19ad4105a54fdc32ffa5a601be4e4876f688bfd41",
+    "planner-result.json": "0b190c11585965715e7b52fc7f5ff7a1e6e6e3a5518f740b4915f8345be9b301"
+  },
+  "state": "任务包已验证"
+}

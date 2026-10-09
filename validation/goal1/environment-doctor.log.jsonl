@@ -1,0 +1,465 @@
+{"stream": "stdout", "text": "{\n"}
+{"stream": "stdout", "text": "  \"schemaVersion\": 1,\n"}
+{"stream": "stdout", "text": "  \"generatedAt\": \"1791476645s since unix epoch\",\n"}
+{"stream": "stdout", "text": "  \"overallStatus\": \"fail\",\n"}
+{"stream": "stdout", "text": "  \"codexVersion\": \"0.162.0-alpha.2\",\n"}
+{"stream": "stdout", "text": "  \"checks\": {\n"}
+{"stream": "stdout", "text": "    \"app_server.status\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"app_server.status\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"app-server\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"background server is not running\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"control socket\": \"C:\\\\Users\\\\44725\\\\.codex\\\\app-server-control\\\\app-server-control.sock\",\n"}
+{"stream": "stdout", "text": "        \"daemon state dir\": \"C:\\\\Users\\\\44725\\\\.codex\\\\app-server-daemon\",\n"}
+{"stream": "stdout", "text": "        \"dedicated pid file\": \"C:\\\\Users\\\\44725\\\\.codex\\\\app-server-daemon\\\\daemon.pid (missing)\",\n"}
+{"stream": "stdout", "text": "        \"dedicated update-loop pid file\": \"C:\\\\Users\\\\44725\\\\.codex\\\\app-server-daemon\\\\daemon-updater.pid (missing)\",\n"}
+{"stream": "stdout", "text": "        \"mode\": \"ephemeral\",\n"}
+{"stream": "stdout", "text": "        \"pid file\": \"C:\\\\Users\\\\44725\\\\.codex\\\\app-server-daemon\\\\app-server.pid (missing)\",\n"}
+{"stream": "stdout", "text": "        \"settings\": \"C:\\\\Users\\\\44725\\\\.codex\\\\app-server-daemon\\\\settings.json (missing)\",\n"}
+{"stream": "stdout", "text": "        \"status\": \"not running\",\n"}
+{"stream": "stdout", "text": "        \"update-loop pid file\": \"C:\\\\Users\\\\44725\\\\.codex\\\\app-server-daemon\\\\app-server-updater.pid (missing)\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"auth.credentials\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"auth.credentials\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"auth\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"auth is configured\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"auth file\": \"C:\\\\Users\\\\44725\\\\.codex\\\\auth.json\",\n"}
+{"stream": "stdout", "text": "        \"auth storage mode\": \"File\",\n"}
+{"stream": "stdout", "text": "        \"stored API key\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"stored ChatGPT tokens\": \"true\",\n"}
+{"stream": "stdout", "text": "        \"stored agent identity\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"stored auth mode\": \"chatgpt\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"config.load\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"config.load\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"config\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"config loaded\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"CODEX_HOME\": \"C:\\\\Users\\\\44725\\\\.codex\",\n"}
+{"stream": "stdout", "text": "        \"active thread overrides\": \"not inspected\",\n"}
+{"stream": "stdout", "text": "        \"config.toml\": \"C:\\\\Users\\\\44725\\\\.codex\\\\config.toml\",\n"}
+{"stream": "stdout", "text": "        \"config.toml parse\": \"ok\",\n"}
+{"stream": "stdout", "text": "        \"configuration load ms\": \"5\",\n"}
+{"stream": "stdout", "text": "        \"configuration scope\": \"invocation config, including cloud-managed policy\",\n"}
+{"stream": "stdout", "text": "        \"cwd\": \"C:\\\\AI-Project-Factory\",\n"}
+{"stream": "stdout", "text": "        \"enabled feature flags\": \"<redacted>\",\n"}
+{"stream": "stdout", "text": "        \"feature flag overrides\": \"memories=true\",\n"}
+{"stream": "stdout", "text": "        \"feature flags enabled\": \"57\",\n"}
+{"stream": "stdout", "text": "        \"log dir\": \"C:\\\\Users\\\\44725\\\\.codex\\\\log\",\n"}
+{"stream": "stdout", "text": "        \"mcp servers\": \"1\",\n"}
+{"stream": "stdout", "text": "        \"model\": \"gpt-6.1-sol\",\n"}
+{"stream": "stdout", "text": "        \"model provider\": \"openai\",\n"}
+{"stream": "stdout", "text": "        \"sqlite home\": \"C:\\\\Users\\\\44725\\\\.codex\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"desktop.app.version\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"desktop.app.version\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"desktop\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"the desktop application is installed\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"log directory\": \"$HOME\\\\AppData\\\\Local\\\\Codex/Logs\",\n"}
+{"stream": "stdout", "text": "        \"running\": \"true\",\n"}
+{"stream": "stdout", "text": "        \"version\": \"26.1002.7124.0\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"desktop.app_server.handshake\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"desktop.app_server.handshake\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"desktop\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"the desktop app-server initialized successfully\",\n"}
+{"stream": "stdout", "text": "      \"details\": {},\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"desktop.security.enforcement\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"desktop.security.enforcement\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"desktop\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"no locally visible recent Codex security enforcement was found\",\n"}
+{"stream": "stdout", "text": "      \"details\": {},\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"git.environment\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"git.environment\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"git\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"git executable found; execution not verified\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \".git entry\": \"directory\",\n"}
+{"stream": "stdout", "text": "        \"PATH git #1\": \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\",\n"}
+{"stream": "stdout", "text": "        \"PATH git #2\": \"C:\\\\Users\\\\44725\\\\.cache\\\\codex-runtimes\\\\codex-primary-runtime\\\\dependencies\\\\native\\\\git\\\\cmd\\\\git.exe\",\n"}
+{"stream": "stdout", "text": "        \"PATH git entries\": \"2\",\n"}
+{"stream": "stdout", "text": "        \"git execution\": \"not inspected (PATH helpers are not executed)\",\n"}
+{"stream": "stdout", "text": "        \"repo detected\": \"true\",\n"}
+{"stream": "stdout", "text": "        \"repo root\": \"C:\\\\AI-Project-Factory\",\n"}
+{"stream": "stdout", "text": "        \"selected git\": \"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 6\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"git.worktree.dev_drive\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"git.worktree.dev_drive\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"git\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"warning\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"this worktree is not on a Windows Dev Drive; moving it to a trusted Dev Drive can significantly improve repository and filesystem performance\",\n"}
+{"stream": "stdout", "text": "      \"details\": {},\n"}
+{"stream": "stdout", "text": "      \"remediation\": \"create a trusted Windows Dev Drive for source repositories: https://learn.microsoft.com/en-us/<redacted>\",\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"installation\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"installation\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"install\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"installation looks consistent\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"PATH codex #1\": \"C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\bin\\\\9691020b546a15b2\\\\codex.exe\",\n"}
+{"stream": "stdout", "text": "        \"current executable\": \"C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\bin\\\\9691020b546a15b2\\\\codex.EXE\",\n"}
+{"stream": "stdout", "text": "        \"install context\": \"other\",\n"}
+{"stream": "stdout", "text": "        \"managed by Vite+\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"managed by bun\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"managed by npm\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"managed by pnpm\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"managed package root\": \"not set\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 4\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"mcp.config\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"mcp.config\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"mcp\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"warning\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"MCP configuration has optional issues\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"configured servers\": \"1\",\n"}
+{"stream": "stdout", "text": "        \"disabled servers\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"node_repl\": \"env var CODEX_WINDOWS_REGISTERED_CORE is not set\",\n"}
+{"stream": "stdout", "text": "        \"stdio servers\": \"1\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": \"Set the missing MCP env vars or disable the affected server.\",\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"network.env\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"network.env\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"network\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"network-related environment looks readable\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"managed proxy\": \"not configured\",\n"}
+{"stream": "stdout", "text": "        \"proxy env vars\": \"none\",\n"}
+{"stream": "stdout", "text": "        \"respect system proxy\": \"disabled\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"network.provider_reachability\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"network.provider_reachability\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"reachability\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"active provider endpoints are reachable over HTTP\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"ChatGPT inference URL\": \"https://chatgpt.com/backend-api/<redacted> reachable (HTTP 405)\",\n"}
+{"stream": "stdout", "text": "        \"desktop assets CDN\": \"https://persistent.oaistatic.com/codex-app-prod/<redacted> reachable (HTTP 200)\",\n"}
+{"stream": "stdout", "text": "        \"reachability mode\": \"ChatGPT auth\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 441\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"network.websocket_reachability\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"network.websocket_reachability\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"websocket\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"warning\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"Responses WebSocket timed out; HTTPS fallback may still work\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"DNS\": \"1 IPv4, 1 IPv6, first IPv6\",\n"}
+{"stream": "stdout", "text": "        \"auth mode\": \"chatgpt\",\n"}
+{"stream": "stdout", "text": "        \"connect timeout\": \"15000 ms\",\n"}
+{"stream": "stdout", "text": "        \"endpoint\": \"wss://chatgpt.com/backend-api/<redacted>\",\n"}
+{"stream": "stdout", "text": "        \"model provider\": \"openai\",\n"}
+{"stream": "stdout", "text": "        \"provider name\": \"OpenAI\",\n"}
+{"stream": "stdout", "text": "        \"proxy env vars\": \"none\",\n"}
+{"stream": "stdout", "text": "        \"supports websockets\": \"true\",\n"}
+{"stream": "stdout", "text": "        \"wire API\": \"responses\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"notes\": [\n"}
+{"stream": "stdout", "text": "        \"handshake timed out\"\n"}
+{"stream": "stdout", "text": "      ],\n"}
+{"stream": "stdout", "text": "      \"remediation\": \"Check proxy, VPN, firewall, DNS, custom CA, and WebSocket policy support.\",\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 15017\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"runtime.provenance\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"runtime.provenance\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"runtime\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"running local build on windows-x86_64\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"commit\": \"unknown\",\n"}
+{"stream": "stdout", "text": "        \"current executable\": \"C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\bin\\\\9691020b546a15b2\\\\codex.EXE\",\n"}
+{"stream": "stdout", "text": "        \"install method\": \"other\",\n"}
+{"stream": "stdout", "text": "        \"platform\": \"windows-x86_64\",\n"}
+{"stream": "stdout", "text": "        \"version\": \"0.162.0-alpha.2\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"runtime.search\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"runtime.search\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"search\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"search command found (system); execution not verified\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"search command\": \"rg.exe\",\n"}
+{"stream": "stdout", "text": "        \"search command path\": \"C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\bin\\\\441edec208d1681c\\\\rg.exe\",\n"}
+{"stream": "stdout", "text": "        \"search command readiness\": \"found; execution not verified\",\n"}
+{"stream": "stdout", "text": "        \"search provider\": \"system\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"sandbox.filesystem_paths\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"sandbox.filesystem_paths\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"sandbox\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"no explicit filesystem paths to probe\",\n"}
+{"stream": "stdout", "text": "      \"details\": {},\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"sandbox.helpers\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"sandbox.helpers\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"sandbox\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"fail\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"elevated Windows sandbox provisioning recorded a structured failure\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"approval policy\": \"Never\",\n"}
+{"stream": "stdout", "text": "        \"codex-linux-sandbox helper\": \"none\",\n"}
+{"stream": "stdout", "text": "        \"denied-read glob rules\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"denied-read restrictions\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"denied-read rules\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"error code\": \"helper_unknown_error\",\n"}
+{"stream": "stdout", "text": "        \"execve wrapper helper\": \"none\",\n"}
+{"stream": "stdout", "text": "        \"filesystem sandbox\": \"unrestricted\",\n"}
+{"stream": "stdout", "text": "        \"glob scan max depth\": \"unbounded\",\n"}
+{"stream": "stdout", "text": "        \"managed filesystem source\": \"none\",\n"}
+{"stream": "stdout", "text": "        \"network sandbox\": \"enabled\",\n"}
+{"stream": "stdout", "text": "        \"sandbox backend\": \"elevated\",\n"}
+{"stream": "stdout", "text": "        \"sandbox provisioning\": \"failed\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"issues\": [\n"}
+{"stream": "stdout", "text": "        {\n"}
+{"stream": "stdout", "text": "          \"severity\": \"fail\",\n"}
+{"stream": "stdout", "text": "          \"cause\": \"elevated Windows sandbox provisioning recorded a structured failure\",\n"}
+{"stream": "stdout", "text": "          \"measured\": \"helper_unknown_error\",\n"}
+{"stream": "stdout", "text": "          \"expected\": null,\n"}
+{"stream": "stdout", "text": "          \"remedy\": \"repair or reinstall the Codex CLI from an approved distribution\",\n"}
+{"stream": "stdout", "text": "          \"fields\": [\n"}
+{"stream": "stdout", "text": "            \"error code\"\n"}
+{"stream": "stdout", "text": "          ]\n"}
+{"stream": "stdout", "text": "        }\n"}
+{"stream": "stdout", "text": "      ],\n"}
+{"stream": "stdout", "text": "      \"remediation\": \"repair or reinstall the Codex CLI from an approved distribution\",\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"security.endpoint\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"security.endpoint\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"security\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"warning\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"endpoint protection detected; Codex exclusions are unverified\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"Codex exclusions\": \"not verified\",\n"}
+{"stream": "stdout", "text": "        \"endpoint products\": \"Microsoft Defender\",\n"}
+{"stream": "stdout", "text": "        \"exclusion targets\": \"signed Codex app; codex.exe; codex-windows-sandbox-setup.exe; codex-command-runner.exe; codex-code-mode-host.exe\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"issues\": [\n"}
+{"stream": "stdout", "text": "        {\n"}
+{"stream": "stdout", "text": "          \"severity\": \"warning\",\n"}
+{"stream": "stdout", "text": "          \"cause\": \"Microsoft Defender can interfere with Codex. Verify Codex exclusions.\",\n"}
+{"stream": "stdout", "text": "          \"measured\": \"not verified\",\n"}
+{"stream": "stdout", "text": "          \"expected\": \"Codex application and helper exclusions\",\n"}
+{"stream": "stdout", "text": "          \"remedy\": \"Microsoft Defender: Add a certificate or executable-path exclusion for Codex and its helpers. If Attack Surface Reduction blocks Codex, add a rule exclusion. If Controlled Folder Access blocks Codex, allow the app.\",\n"}
+{"stream": "stdout", "text": "          \"fields\": [\n"}
+{"stream": "stdout", "text": "            \"Codex exclusions\"\n"}
+{"stream": "stdout", "text": "          ]\n"}
+{"stream": "stdout", "text": "        }\n"}
+{"stream": "stdout", "text": "      ],\n"}
+{"stream": "stdout", "text": "      \"remediation\": \"ask your security administrator to verify Codex exclusions and required helper allowances\",\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 34\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"state.paths\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"state.paths\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"state\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"state paths and databases are inspectable\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"CODEX_HOME\": \"C:\\\\Users\\\\44725\\\\.codex (dir)\",\n"}
+{"stream": "stdout", "text": "        \"active rollout files\": \"4 files, 6729680 total bytes, 1682420 average bytes\",\n"}
+{"stream": "stdout", "text": "        \"archived rollout files\": \"13 files, 27415669 total bytes, 2108897 average bytes\",\n"}
+{"stream": "stdout", "text": "        \"goals DB\": \"C:\\\\Users\\\\44725\\\\.codex\\\\goals_1.sqlite (file)\",\n"}
+{"stream": "stdout", "text": "        \"goals DB integrity\": \"ok\",\n"}
+{"stream": "stdout", "text": "        \"log DB\": \"C:\\\\Users\\\\44725\\\\.codex\\\\logs_2.sqlite (file)\",\n"}
+{"stream": "stdout", "text": "        \"log DB integrity\": \"ok\",\n"}
+{"stream": "stdout", "text": "        \"log dir\": \"C:\\\\Users\\\\44725\\\\.codex\\\\log (missing)\",\n"}
+{"stream": "stdout", "text": "        \"memories DB\": \"C:\\\\Users\\\\44725\\\\.codex\\\\memories_1.sqlite (file)\",\n"}
+{"stream": "stdout", "text": "        \"memories DB integrity\": \"ok\",\n"}
+{"stream": "stdout", "text": "        \"memories v2 DB\": \"C:\\\\Users\\\\44725\\\\.codex\\\\memories_v2_1.sqlite (missing)\",\n"}
+{"stream": "stdout", "text": "        \"memories v2 DB integrity\": \"skipped (missing)\",\n"}
+{"stream": "stdout", "text": "        \"queue DB\": \"C:\\\\Users\\\\44725\\\\.codex\\\\queue_1.sqlite (file)\",\n"}
+{"stream": "stdout", "text": "        \"queue DB integrity\": \"ok\",\n"}
+{"stream": "stdout", "text": "        \"sqlite home\": \"C:\\\\Users\\\\44725\\\\.codex (dir)\",\n"}
+{"stream": "stdout", "text": "        \"state DB\": \"C:\\\\Users\\\\44725\\\\.codex\\\\state_5.sqlite (file)\",\n"}
+{"stream": "stdout", "text": "        \"state DB integrity\": \"ok\",\n"}
+{"stream": "stdout", "text": "        \"thread history DB\": \"C:\\\\Users\\\\44725\\\\.codex\\\\thread_history_1.sqlite (file)\",\n"}
+{"stream": "stdout", "text": "        \"thread history DB integrity\": \"ok\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 67\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"state.rollout_db_parity\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"state.rollout_db_parity\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"threads\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"rollout files and state DB thread inventory agree\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"default model provider\": \"openai\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB active files\": \"4\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB active rows\": \"4\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB archive mismatches\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB archived files\": \"13\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB archived rows\": \"13\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB duplicate DB paths\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB duplicate rollout thread ids\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB malformed file names\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB missing active rows\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB missing archived rows\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB model providers\": \"openai=14, custom=3\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB rows\": \"17\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB scan cap reached\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB scan errors\": \"0\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB sources\": \"vscode=14, subagent:thread_spawn=3\",\n"}
+{"stream": "stdout", "text": "        \"rollout DB stale rows\": \"0\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 25\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"system.disk\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"system.disk\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"disk\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"sufficient free disk space (282.3 GiB)\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"CODEX_HOME available\": \"282.3 GiB\",\n"}
+{"stream": "stdout", "text": "        \"failure threshold\": \"1.0 GiB\",\n"}
+{"stream": "stdout", "text": "        \"warning threshold\": \"5.0 GiB\",\n"}
+{"stream": "stdout", "text": "        \"worktree available\": \"282.3 GiB\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"system.environment\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"system.environment\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"system\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"OS language zh-CN\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"EDITOR\": \"not set\",\n"}
+{"stream": "stdout", "text": "        \"GH_PAGER\": \"set\",\n"}
+{"stream": "stdout", "text": "        \"GIT_PAGER\": \"set\",\n"}
+{"stream": "stdout", "text": "        \"LANG\": \"C.UTF-8\",\n"}
+{"stream": "stdout", "text": "        \"LC_ALL\": \"C.UTF-8\",\n"}
+{"stream": "stdout", "text": "        \"LC_CTYPE\": \"C.UTF-8\",\n"}
+{"stream": "stdout", "text": "        \"PAGER\": \"set\",\n"}
+{"stream": "stdout", "text": "        \"VISUAL\": \"not set\",\n"}
+{"stream": "stdout", "text": "        \"os\": \"Windows 10.0.26200 (Windows 11 CoreCountrySpecific) [64-bit]\",\n"}
+{"stream": "stdout", "text": "        \"os language\": \"zh-CN\",\n"}
+{"stream": "stdout", "text": "        \"os type\": \"Windows\",\n"}
+{"stream": "stdout", "text": "        \"os version\": \"10.0.26200\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"terminal.env\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"terminal.env\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"terminal\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"warning\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"TERM=dumb - colors and cursor control are disabled in this non-interactive run\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"COLORTERM\": \"present\",\n"}
+{"stream": "stdout", "text": "        \"NO_COLOR\": \"1\",\n"}
+{"stream": "stdout", "text": "        \"TERM\": \"dumb\",\n"}
+{"stream": "stdout", "text": "        \"color output\": \"disabled (NO_COLOR)\",\n"}
+{"stream": "stdout", "text": "        \"console input code page\": \"936\",\n"}
+{"stream": "stdout", "text": "        \"console output code page\": \"936\",\n"}
+{"stream": "stdout", "text": "        \"effective locale\": \"C.UTF-8\",\n"}
+{"stream": "stdout", "text": "        \"stderr console mode\": \"unavailable\",\n"}
+{"stream": "stdout", "text": "        \"stderr is terminal\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"stdin is terminal\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"stdout console mode\": \"unavailable\",\n"}
+{"stream": "stdout", "text": "        \"stdout is terminal\": \"false\",\n"}
+{"stream": "stdout", "text": "        \"terminal\": \"dumb\",\n"}
+{"stream": "stdout", "text": "        \"terminal size\": \"120x30\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"issues\": [\n"}
+{"stream": "stdout", "text": "        {\n"}
+{"stream": "stdout", "text": "          \"severity\": \"warning\",\n"}
+{"stream": "stdout", "text": "          \"cause\": \"TERM=dumb - colors and cursor control are disabled in this non-interactive run\",\n"}
+{"stream": "stdout", "text": "          \"measured\": \"TERM=dumb\",\n"}
+{"stream": "stdout", "text": "          \"expected\": null,\n"}
+{"stream": "stdout", "text": "          \"remedy\": null,\n"}
+{"stream": "stdout", "text": "          \"fields\": [\n"}
+{"stream": "stdout", "text": "            \"TERM\"\n"}
+{"stream": "stdout", "text": "          ]\n"}
+{"stream": "stdout", "text": "        }\n"}
+{"stream": "stdout", "text": "      ],\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"terminal.title\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"terminal.title\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"title\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"terminal title default\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"terminal title activity\": \"true\",\n"}
+{"stream": "stdout", "text": "        \"terminal title items\": \"activity, project-name\",\n"}
+{"stream": "stdout", "text": "        \"terminal title project source\": \"git repo root\",\n"}
+{"stream": "stdout", "text": "        \"terminal title project value\": \"AI-Project-Factory\",\n"}
+{"stream": "stdout", "text": "        \"terminal title source\": \"default\"\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 0\n"}
+{"stream": "stdout", "text": "    },\n"}
+{"stream": "stdout", "text": "    \"updates.status\": {\n"}
+{"stream": "stdout", "text": "      \"id\": \"updates.status\",\n"}
+{"stream": "stdout", "text": "      \"category\": \"updates\",\n"}
+{"stream": "stdout", "text": "      \"status\": \"ok\",\n"}
+{"stream": "stdout", "text": "      \"summary\": \"update configuration is locally consistent\",\n"}
+{"stream": "stdout", "text": "      \"details\": {\n"}
+{"stream": "stdout", "text": "        \"check for update on startup\": \"true\",\n"}
+{"stream": "stdout", "text": "        \"latest version\": \"0.161.0\",\n"}
+{"stream": "stdout", "text": "        \"latest version status\": \"current version is not older\",\n"}
+{"stream": "stdout", "text": "        \"update action\": \"manual or unknown\",\n"}
+{"stream": "stdout", "text": "        \"version cache\": [\n"}
+{"stream": "stdout", "text": "          \"C:\\\\Users\\\\44725\\\\.codex\\\\version.json\",\n"}
+{"stream": "stdout", "text": "          \"missing\"\n"}
+{"stream": "stdout", "text": "        ]\n"}
+{"stream": "stdout", "text": "      },\n"}
+{"stream": "stdout", "text": "      \"remediation\": null,\n"}
+{"stream": "stdout", "text": "      \"durationMs\": 1286\n"}
+{"stream": "stdout", "text": "    }\n"}
+{"stream": "stdout", "text": "  }\n"}
+{"stream": "stdout", "text": "}\n"}

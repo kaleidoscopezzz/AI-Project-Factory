@@ -1,0 +1,28 @@
+{
+  "algorithm": "SHA-256",
+  "self_excluded": true,
+  "files": {
+    "validation/goal1/reviewer-fixes-20261009T103057/before.json": "f805955ac0a6f9b38ed0c592410b0dbf521e665eecbc6e9e4cb7911347c7fb4a",
+    "validation/goal1/reviewer-fixes-20261009T103057/changes.patch": "66f8baf1d3cccba801151be52367c5047494a6bbae5903a553bd1a17d435553f",
+    "validation/goal1/reviewer-fixes-20261009T103057/control-flow-double-results.json": "96dcbd5e81c8f06226aedb39cdd1ad2a8105607c13e8ab60107ab2a5aa2c0dd3",
+    "validation/goal1/reviewer-fixes-20261009T103057/git-readonly.json": "fdb9bd7a7d0c390157fe9750c3f5b4a7a846e5d9a0e28e115a4b48a76e5fda67",
+    "validation/goal1/reviewer-fixes-20261009T103057/guard-after.json": "5c1aa5e427edfdd1519fefdc23f159a1c653f93ee717f166b6bd68583dc0eb43",
+    "validation/goal1/reviewer-fixes-20261009T103057/REPORT.md": "e40228e308eada9b9a013311a1049e8013fcdfc1c55341503223b7f4aeff3f57",
+    "validation/goal1/reviewer-fixes-20261009T103057/RESULTS.json": "6556f16e30069b36c1f501f87608446b795aed5d168d89546e525b9dd3bb2ae3",
+    "validation/goal1/reviewer-fixes-20261009T103057/standalone-powershell-cli-check.json": "16c192afcb4488e07b174b765420ba5fb622890bc13b1708936fb654671653e0",
+    "validation/goal1/reviewer-fixes-20261009T103057/source-before/PROJECT_STATUS.md": "84af47e6a417298329f69359afc427925cdae8a862753957799ac1a1b3348a1d",
+    "validation/goal1/reviewer-fixes-20261009T103057/source-before/docs/GOAL1_USAGE.md": "898512de4d755d76b6e32b0cb8acd6cb9ffecff06c3d46cfdd889ae94d8c04a9",
+    "validation/goal1/reviewer-fixes-20261009T103057/source-before/factory/controller.py": "397b77ef172358f5f5e6d7d6e251fa55a36a4600e240f0cd4faf6d2ee6e8da96",
+    "validation/goal1/reviewer-fixes-20261009T103057/source-before/factory/executor.py": "36a136751ff56ddcab1a5c3069dad5450d4c2e2cde6fb3e6edeead458bdb1b8f",
+    "validation/goal1/reviewer-fixes-20261009T103057/source-before/scripts/factory.ps1": "400028fb697c4bea40ceedf49affeb166205108b0b50ea7ae003066bc3ca19ee",
+    "validation/goal1/reviewer-fixes-20261009T103057/source-before/tests/test_factory.py": "cf638236eff74ec65819b0865621ed8fe3dbe24626c14af4f5d149ae91592623",
+    "factory/controller.py": "0991bacda8166581f3f3b7fc393b9b6c29a6e7c25bc371ea43193e81a4a8e068",
+    "factory/executor.py": "2e0d4e314c68390aa238c93fd0a65bdc6bfccd6fff11948f063118c763df36b3",
+    "scripts/factory.ps1": "29a79f9ec971cddd37a411c283abb1a670cf12ff3a54527a7722e09e117bd5bc",
+    "tests/test_factory.py": "698bf85378bbabb0905947d8518caf40e5418157c3712dc70148dbfbae972117",
+    "docs/GOAL1_USAGE.md": "2aa438e7b85b27c0a60dae4cff842b06959c3b540f5fc9aab920b74b7371035c",
+    "PROJECT_STATUS.md": "d397d714924352b04412f4186abd0240ad9e3a844e0e7212cbfb10bcc8992125",
+    "validation/goal1/exception-tests-ce98c8a0d8.json": "67752df9a6f34fc35e59bcdc28a3f6de28c401b61743af79d233e50770dd8d7a",
+    "validation/goal1/exception-tests-ce98c8a0d8.txt": "401d98f175b227e8948bd7a8b89c6615135c4f28c17c0753ca49831c57f2df5e"
+  }
+}

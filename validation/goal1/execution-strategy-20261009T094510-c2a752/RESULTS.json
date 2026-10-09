@@ -1,0 +1,113 @@
+{
+  "goal1_status": "已完成，待外部 Reviewer 验收",
+  "external_review_occurred": false,
+  "successful_real_e2e_count": 1,
+  "current_phase_agent_calls": {
+    "Planner": 0,
+    "Coder": 1
+  },
+  "total_task_calls": 3,
+  "total_task_retries": 1,
+  "permission_mode": "danger-full-access",
+  "os_file_boundary_enforced": false,
+  "coder_thread": [
+    "01a11e5e-f939-7f53-8586-661ef84f3ddd"
+  ],
+  "coder_exit_code": 0,
+  "coder_elapsed_seconds": 276.844,
+  "usage": {
+    "input_tokens": 297757,
+    "cached_input_tokens": 258560,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 5413,
+    "reasoning_output_tokens": 148
+  },
+  "input_plus_output_tokens": 303170,
+  "uncached_input_tokens": 39197,
+  "parent_session_tokens": null,
+  "hard_token_limit_enforced": false,
+  "build_and_test_checks": [
+    {
+      "purpose": "build",
+      "argv": [
+        "node",
+        "scripts/build.mjs"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 0.153
+    },
+    {
+      "purpose": "test",
+      "argv": [
+        "node",
+        "scripts/test.mjs"
+      ],
+      "exit_code": 0,
+      "timed_out": false,
+      "elapsed_seconds": 6.469
+    }
+  ],
+  "runtime": {
+    "passed": true,
+    "url": "http://127.0.0.1:54350/api/health",
+    "argv": [
+      "node",
+      "scripts/serve.mjs",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "54350"
+    ],
+    "port": 54350,
+    "http_status": 200,
+    "response_sha256": "80baa4d8bf1279accd302387a58d5a276045b78c896fbb46fb71d1648fed1f68",
+    "expected_text_found": true,
+    "process_stopped": true
+  },
+  "regression_report": {
+    "kind": "deterministic exception tests with explicit AgentDouble; timeout and redaction subprocess tests use real local processes",
+    "run_id": "229a7fff70",
+    "tests_run": 31,
+    "failures": 0,
+    "errors": 0,
+    "passed": true,
+    "elapsed_seconds": 4.453,
+    "log": "C:\\AI-Project-Factory\\validation\\goal1\\exception-tests-229a7fff70.txt",
+    "fixtures": "C:\\AI-Project-Factory\\validation\\goal1\\test-workspaces\\229a7fff70"
+  },
+  "packet_validation_passed": true,
+  "source_fingerprint_count": 13,
+  "source_fingerprint_differences": [],
+  "guard_passed": true,
+  "completed_manifest_matches": true,
+  "resume": {
+    "exit_code": 0,
+    "no_agent_reexecution_message": true,
+    "calls_after_resume": 3
+  },
+  "coder_fixed_node_pipe_observed": true,
+  "visible_file_changes_outside_workspace": [],
+  "business_tests": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "source": "control/check-1.log.jsonl"
+  },
+  "browser_errors": {
+    "external": [],
+    "unexpected": [],
+    "consoleErrors": [],
+    "expectedConsoleErrors": [
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "expectedResponses": [
+      {
+        "status": 503,
+        "url": "http://127.0.0.1:52507/api/books/B-001/engineering-note"
+      }
+    ]
+  },
+  "outer_e2e_shell_exit_code": null,
+  "git_write_commands_executed": false
+}

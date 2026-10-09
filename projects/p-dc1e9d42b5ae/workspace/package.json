@@ -1,0 +1,1 @@
+{"name":"offline-library-demo","private":true,"type":"module","scripts":{"build":"node scripts/build.mjs","test":"node scripts/test.mjs","start":"node scripts/serve.mjs --host 127.0.0.1 --port 4173"}}

@@ -1,0 +1,50 @@
+[
+  {
+    "path": "src\\adapters\\store.mjs",
+    "sha256": "7f824481c4e852d1a5b4cb2bc02a2a250bbb8f52315b5cf048d1b4f2d3c2803f"
+  },
+  {
+    "path": "src\\contracts\\index.mjs",
+    "sha256": "2f95eab136ac4d59e2e5ebd6af05abc48e45363285c04971db85a1023cfc0fb4"
+  },
+  {
+    "path": "src\\domain\\books.mjs",
+    "sha256": "d5b598fb6f564e1a19ff2f5f26450151794888843c52d434099d6d48b45a300e"
+  },
+  {
+    "path": "src\\server\\server.mjs",
+    "sha256": "636457dd369fbadbab40a8e6af46ab5418d95acbd1ffe3abd5c231c6d4974677"
+  },
+  {
+    "path": "src\\web\\app.js",
+    "sha256": "cb24d2f54a434d7de599b2c607ca39791cdf955e55f5d708082c78bd815cd1d4"
+  },
+  {
+    "path": "src\\web\\index.html",
+    "sha256": "d6a1470099beb5e595787e48562248ce6f0489001ecd86ee8084e7e20e4a955a"
+  },
+  {
+    "path": "src\\web\\style.css",
+    "sha256": "4a716999e04d4654e6221fdf5c8ac1dc0ec19acb65162d4924d745a0fb503950"
+  },
+  {
+    "path": "scripts\\build.mjs",
+    "sha256": "a1a49b9f781484f4911f3169bba26d608d05ba4c49ffbe5a49ad0a9750ec1e8c"
+  },
+  {
+    "path": "scripts\\serve.mjs",
+    "sha256": "20f65eab2e416ac46ea5f947f0438cbeca5cc291992b2f6ae1171b103ea41c1f"
+  },
+  {
+    "path": "scripts\\test.mjs",
+    "sha256": "8684b0a08a6a4d4d79ee7206c9ca7539d92f78428b9da2b124bb3cf597695195"
+  },
+  {
+    "path": "tests\\goal0.test.mjs",
+    "sha256": "dab1ed47ae7a127d46fc745f2bdcc3da4bdeff53e40c20ada1394c16fbe0d1a1"
+  },
+  {
+    "path": "data\\seed.json",
+    "sha256": "fbc1d3230b39e61acac1d9d3f86f0deb85e768313ecb020e29e3bc1cbc6db6bc"
+  }
+]

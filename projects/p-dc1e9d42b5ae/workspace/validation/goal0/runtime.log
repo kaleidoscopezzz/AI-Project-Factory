@@ -1,0 +1,5 @@
+Actual tool session 15517:
+node scripts/serve.mjs --host 127.0.0.1 --port 4173
+Listening http://127.0.0.1:4173
+HTTP checks: see runtime-http.log (exit 0).
+Owned tool session stopped using Ctrl+C; tool reported exit 1. Graceful shutdown not verified.

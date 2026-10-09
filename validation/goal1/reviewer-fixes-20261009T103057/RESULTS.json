@@ -1,0 +1,156 @@
+{
+  "state": "最小整改已完成，待外部Reviewer复审",
+  "changed_files": [
+    "factory/controller.py",
+    "factory/executor.py",
+    "scripts/factory.ps1",
+    "tests/test_factory.py",
+    "docs/GOAL1_USAGE.md",
+    "PROJECT_STATUS.md"
+  ],
+  "regression": {
+    "kind": "deterministic exception tests with explicit AgentDouble; timeout and redaction subprocess tests use real local processes",
+    "run_id": "ce98c8a0d8",
+    "tests_run": 41,
+    "failures": 0,
+    "errors": 0,
+    "passed": true,
+    "elapsed_seconds": 4.545,
+    "log": "C:\\AI-Project-Factory\\validation\\goal1\\exception-tests-ce98c8a0d8.txt",
+    "fixtures": "C:\\AI-Project-Factory\\validation\\goal1\\test-workspaces\\ce98c8a0d8"
+  },
+  "new_request_control_flow": {
+    "kind": "read-back of already executed deterministic control fixtures",
+    "real_model_calls": 0,
+    "new_real_e2e_run": false,
+    "cases": [
+      {
+        "kind": "AgentDouble control fixture, not real Planner/Coder/E2E",
+        "project_id": "p-26d7f214553d",
+        "request": "开发一个离线图书管理 Demo",
+        "status": "已完成",
+        "execution_mode": "danger-full-access",
+        "roles": [
+          "Planner",
+          "Coder"
+        ],
+        "thread_ids": [
+          [
+            "test-double-Planner"
+          ],
+          [
+            "test-double-Coder"
+          ]
+        ],
+        "retries": 0,
+        "error": null,
+        "control": "validation\\goal1\\test-workspaces\\ce98c8a0d8\\projects\\p-26d7f214553d\\control",
+        "packet_fingerprint": "a99d2bdf5571b52910ac28f2b5cabab34a26682d5e37cbe3f8bdba07d9f091b8"
+      },
+      {
+        "kind": "AgentDouble control fixture, not real Planner/Coder/E2E",
+        "project_id": "p-524c65055159",
+        "request": "测试输入，不是实际 Agent E2E",
+        "status": "已失败",
+        "execution_mode": "danger-full-access",
+        "roles": [
+          "Planner"
+        ],
+        "thread_ids": [
+          [
+            "test-double-Planner"
+          ]
+        ],
+        "retries": 0,
+        "error": "explicit test-double preflight failure",
+        "control": "validation\\goal1\\test-workspaces\\ce98c8a0d8\\projects\\p-524c65055159\\control",
+        "packet_fingerprint": "6c2f133d0a676b91d5dfc4307eacb734f620451b0092d3af19012dc603203a1f"
+      },
+      {
+        "kind": "AgentDouble control fixture, not real Planner/Coder/E2E",
+        "project_id": "p-9d020a4d859b",
+        "request": "fixture default request",
+        "status": "已完成",
+        "execution_mode": "default-restricted",
+        "roles": [
+          "Planner",
+          "Coder"
+        ],
+        "thread_ids": [
+          [
+            "test-double-Planner"
+          ],
+          [
+            "test-double-Coder"
+          ]
+        ],
+        "retries": 0,
+        "error": null,
+        "control": "validation\\goal1\\test-workspaces\\ce98c8a0d8\\projects\\p-9d020a4d859b\\control",
+        "packet_fingerprint": "9fa66dec7a58437425f7c0d4a372e7c23e4cd9579c183299ff85dd682942b481"
+      }
+    ],
+    "regression_coverage": {
+      "before_count": 31,
+      "after_count": 41,
+      "unchanged_tests": 30,
+      "removed_old_contract_test": [
+        "test_full_access_cannot_create_or_replan"
+      ],
+      "new_or_updated_tests": [
+        "test_actual_adapter_role_modes_remain_explicit",
+        "test_check_cli_does_not_create_or_execute_task",
+        "test_cli_main_default_does_not_enable_full_access",
+        "test_cli_main_new_full_access_request_is_explicit",
+        "test_cli_wrong_version_or_timeout_rejected",
+        "test_default_new_request_does_not_enable_full_access",
+        "test_explicit_cli_path_without_path_lookup",
+        "test_full_access_rejects_plan_mode",
+        "test_invalid_explicit_cli_path_never_falls_back",
+        "test_new_full_access_preflight_failure_does_not_call_coder",
+        "test_new_full_access_request_planner_packet_coder_control_flow"
+      ],
+      "mapping": "test_full_access_cannot_create_or_replan -> test_full_access_rejects_plan_mode; new requirements explicitly permit new Auto Full Access"
+    }
+  },
+  "standalone_powershell_cli": {
+    "kind": "real independent Windows PowerShell CLI path/version check only",
+    "powershell": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "codex_not_in_child_PATH": true,
+    "selected_cli": "C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\bin\\9691020b546a15b2\\codex.exe",
+    "exit_code": 0,
+    "stdout": "codex_in_path=false\n{\n  \"Codex路径\": \"C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\OpenAI\\\\Codex\\\\bin\\\\9691020b546a15b2\\\\codex.exe\",\n  \"版本\": \"codex-cli 0.162.0-alpha.2\",\n  \"Agent调用\": 0\n}\n",
+    "stderr": "",
+    "agent_calls": 0,
+    "e2e_or_browser_run": false,
+    "global_env_or_policy_changed": false
+  },
+  "guard": {
+    "frozen_file_differences": [],
+    "frozen_files": 44,
+    "existing_project_differences": [],
+    "existing_project_files": 146,
+    "reference_file_differences": [],
+    "reference_git_differences": [],
+    "reference_files": 35839,
+    "reference_coverage": "All files size/mtime; SHA-256 except node_modules. No access-time comparison.",
+    "real_planner_calls": 0,
+    "real_coder_calls": 0,
+    "real_e2e_runs": 0,
+    "browser_test_runs": 0,
+    "git_write_commands": 0,
+    "passed": true
+  },
+  "git": {
+    "head": "11aa80e1dc345d63f9b325d14227b078c0f924bb",
+    "tag_commit": "11aa80e1dc345d63f9b325d14227b078c0f924bb",
+    "branch": "main",
+    "status": "M PROJECT_STATUS.md\n?? docs/GOAL1_TASK_PACKET.md\n?? docs/GOAL1_USAGE.md\n?? factory/\n?? projects/\n?? scripts/diagnose_goal1_environment.py\n?? scripts/factory.ps1\n?? scripts/goal1_guard.py\n?? tests/\n?? validation/goal1/\n?? validation/sandbox-compatibility-20261009T092118187/",
+    "diff_stat": "PROJECT_STATUS.md | 83 +++++++++++++++++++++++++++++++++++++++++++++++++------\n 1 file changed, 74 insertions(+), 9 deletions(-)"
+  },
+  "new_real_e2e_success_claimed": false,
+  "needs_separate_authorization": [
+    "new one-sentence Full Access real Planner/Coder/E2E verification"
+  ],
+  "previous_report_hashes": "Historical manifests retained; authorized source/doc/status revisions are recorded in this new changes.patch and manifest."
+}

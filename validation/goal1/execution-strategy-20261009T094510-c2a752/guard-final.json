@@ -1,0 +1,106 @@
+{
+  "captured_utc": "2026-10-09T02:02:14.817439+00:00",
+  "frozen_differences": [],
+  "reference_file_differences": [],
+  "reference_git_differences": [],
+  "reference_files_compared": 35839,
+  "reference_coverage": "All files size/mtime; SHA-256 except node_modules. No access-time comparison.",
+  "planning_and_packet_differences": [],
+  "workspace_changes": [
+    "PROJECT_STATUS.md",
+    "README.zh-CN.md",
+    "tests/goal0.test.mjs",
+    "validation/goal0/acceptance.md",
+    "validation/goal0/behavior.log",
+    "validation/goal0/browser-errors.json",
+    "validation/goal0/browser-trace.zip",
+    "validation/goal0/build.log",
+    "validation/goal0/contrast.json",
+    "validation/goal0/desktop-1440x900.png",
+    "validation/goal0/mobile-390x844.png",
+    "validation/goal0/requests.json",
+    "validation/goal0/runtime-restart.log",
+    "validation/goal0/session-environment.json",
+    "validation/goal0/source-sha256.json",
+    "validation/goal0/test.log",
+    "validation/history-20261009-095732-444/PROJECT_STATUS.md",
+    "validation/history-20261009-095732-444/README.zh-CN.md",
+    "validation/history-20261009-095732-444/goal0/acceptance.md",
+    "validation/history-20261009-095732-444/goal0/build-recheck.log",
+    "validation/history-20261009-095732-444/goal0/build.log",
+    "validation/history-20261009-095732-444/goal0/runtime-http.log",
+    "validation/history-20261009-095732-444/goal0/runtime.log",
+    "validation/history-20261009-095732-444/goal0/source-sha256.json",
+    "validation/history-20261009-095732-444/goal0/test.log",
+    "validation/history-20261009-095808-578/goal0.test.mjs",
+    "validation/history-20261009-095808-578/goal0/acceptance.md",
+    "validation/history-20261009-095808-578/goal0/behavior.log",
+    "validation/history-20261009-095808-578/goal0/browser-trace.zip",
+    "validation/history-20261009-095808-578/goal0/build-recheck.log",
+    "validation/history-20261009-095808-578/goal0/build.log",
+    "validation/history-20261009-095808-578/goal0/contrast.json",
+    "validation/history-20261009-095808-578/goal0/desktop-1440x900.png",
+    "validation/history-20261009-095808-578/goal0/mobile-390x844.png",
+    "validation/history-20261009-095808-578/goal0/requests.json",
+    "validation/history-20261009-095808-578/goal0/runtime-http.log",
+    "validation/history-20261009-095808-578/goal0/runtime-restart.log",
+    "validation/history-20261009-095808-578/goal0/runtime.log",
+    "validation/history-20261009-095808-578/goal0/session-environment.json",
+    "validation/history-20261009-095808-578/goal0/source-sha256.json",
+    "validation/history-20261009-095808-578/goal0/test.log",
+    "var/tests/run-8sZd9k/store.json",
+    "var/tests/run-BNhgVf/store.json",
+    "var/tests/run-IQmrYC/store.json",
+    "var/tests/run-afpbR3/store.json",
+    "var/tests/run-nTjMWR/store.json",
+    "var/tests/run-vcKT8u/store.json"
+  ],
+  "changed_existing_source": [
+    "tests/goal0.test.mjs"
+  ],
+  "workspace_agents_unchanged": true,
+  "state": "已完成",
+  "calls": 3,
+  "retries": 1,
+  "execution_mode": "danger-full-access",
+  "os_write_boundary_enforced": false,
+  "packet_validation_passed": true,
+  "completed_manifest_matches": true,
+  "archive_checks": [
+    {
+      "manifest": "projects\\p-dc1e9d42b5ae\\control\\attempts\\03-a923237c\\archive-manifest.json",
+      "files": 30,
+      "differences": []
+    }
+  ],
+  "png": {
+    "desktop-1440x900.png": {
+      "dimensions": [
+        1440,
+        900
+      ],
+      "sha256": "517240877a1b613a077f48dc5ee5979f815f9664873e8593889c03e13b319ba4"
+    },
+    "mobile-390x844.png": {
+      "dimensions": [
+        390,
+        844
+      ],
+      "sha256": "cae5b843a3bb5deab6f3aedfdae52950b928f8eb1d1c14cf1a0b1a564fc1e04e"
+    }
+  },
+  "trace": {
+    "sha256": "47ca07f0cad0320b39de36557b2cad42167a597b741238c7cd5a87c1cb3728f9",
+    "entries": 63,
+    "corrupt_entry": null
+  },
+  "git": {
+    "head": "11aa80e1dc345d63f9b325d14227b078c0f924bb",
+    "tag_commit": "11aa80e1dc345d63f9b325d14227b078c0f924bb",
+    "branch": "main",
+    "status": "M PROJECT_STATUS.md\n?? docs/GOAL1_TASK_PACKET.md\n?? docs/GOAL1_USAGE.md\n?? factory/\n?? projects/\n?? scripts/diagnose_goal1_environment.py\n?? scripts/factory.ps1\n?? scripts/goal1_guard.py\n?? tests/\n?? validation/goal1/\n?? validation/sandbox-compatibility-20261009T092118187/",
+    "diff_stat": "PROJECT_STATUS.md | 63 +++++++++++++++++++++++++++++++++++++++++++++++--------\n 1 file changed, 54 insertions(+), 9 deletions(-)",
+    "git_write_commands_executed": false
+  },
+  "passed": true
+}

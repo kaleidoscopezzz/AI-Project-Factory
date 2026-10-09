@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "differences": [],
+  "files_compared": 96,
+  "coverage": "factory .git bytes, baseline captured after Planner started and before Coder; initial HEAD/tag/status also verified"
+}

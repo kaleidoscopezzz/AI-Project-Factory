@@ -1,0 +1,65 @@
+[
+  {
+    "path": "/api/health",
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "project": "offline-library-demo"
+    }
+  },
+  {
+    "path": "/",
+    "status": 200,
+    "body": 1756
+  },
+  {
+    "path": "/app.js",
+    "status": 200,
+    "body": 2620
+  },
+  {
+    "path": "/style.css",
+    "status": 200,
+    "body": 2974
+  },
+  {
+    "path": "/api/books",
+    "status": 200,
+    "body": {
+      "books": [
+        {
+          "id": "B-001",
+          "title": "星河图书馆",
+          "author": "林知远",
+          "status": "available",
+          "engineeringNote": "纵向样板初始备注",
+          "revision": 0,
+          "updatedAt": null
+        },
+        {
+          "id": "B-002",
+          "title": "The Quiet Atlas",
+          "author": "Maya Chen",
+          "status": "borrowed",
+          "engineeringNote": "只读样例",
+          "revision": 0,
+          "updatedAt": null
+        },
+        {
+          "id": "B-003",
+          "title": "城市里的四季",
+          "author": "周小禾",
+          "status": "available",
+          "engineeringNote": "只读样例",
+          "revision": 0,
+          "updatedAt": null
+        }
+      ],
+      "counts": {
+        "total": 3,
+        "available": 2,
+        "borrowed": 1
+      }
+    }
+  }
+]

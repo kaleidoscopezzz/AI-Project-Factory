@@ -1,0 +1,22 @@
+[
+  {
+    "purpose": "build",
+    "argv": [
+      "node",
+      "scripts/build.mjs"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.153
+  },
+  {
+    "purpose": "test",
+    "argv": [
+      "node",
+      "scripts/test.mjs"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 6.469
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "exit_code": 1,
+  "timed_out": false,
+  "elapsed_seconds": 0.052,
+  "stdout": "",
+  "stderr": "Error loading config.toml: model_providers contains reserved built-in provider IDs: `openai`. Built-in providers cannot be overridden. Rename your custom provider (for example, `openai-custom`).\nin `model_providers`\n\n"
+}

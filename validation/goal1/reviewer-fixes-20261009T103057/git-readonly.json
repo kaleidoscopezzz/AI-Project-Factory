@@ -1,0 +1,7 @@
+{
+  "head": "11aa80e1dc345d63f9b325d14227b078c0f924bb",
+  "tag_commit": "11aa80e1dc345d63f9b325d14227b078c0f924bb",
+  "branch": "main",
+  "status": "M PROJECT_STATUS.md\n?? docs/GOAL1_TASK_PACKET.md\n?? docs/GOAL1_USAGE.md\n?? factory/\n?? projects/\n?? scripts/diagnose_goal1_environment.py\n?? scripts/factory.ps1\n?? scripts/goal1_guard.py\n?? tests/\n?? validation/goal1/\n?? validation/sandbox-compatibility-20261009T092118187/",
+  "diff_stat": "PROJECT_STATUS.md | 83 +++++++++++++++++++++++++++++++++++++++++++++++++------\n 1 file changed, 74 insertions(+), 9 deletions(-)"
+}

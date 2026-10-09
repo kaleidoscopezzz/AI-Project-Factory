@@ -1,0 +1,16 @@
+{
+  "frozen_file_differences": [],
+  "frozen_files": 44,
+  "existing_project_differences": [],
+  "existing_project_files": 146,
+  "reference_file_differences": [],
+  "reference_git_differences": [],
+  "reference_files": 35839,
+  "reference_coverage": "All files size/mtime; SHA-256 except node_modules. No access-time comparison.",
+  "real_planner_calls": 0,
+  "real_coder_calls": 0,
+  "real_e2e_runs": 0,
+  "browser_test_runs": 0,
+  "git_write_commands": 0,
+  "passed": true
+}

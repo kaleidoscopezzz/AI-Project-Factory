@@ -1,0 +1,483 @@
+--- a/factory/controller.py
++++ b/factory/controller.py
+@@ -14,7 +14,7 @@
+ from pathlib import Path
+ from .contracts import (FactoryError,STATES,SKILLS,PLAN_SCHEMA,CODER_SCHEMA,digest,file_hash,
+                         safe_path,relative_file,validate_plan,validate_packet,schema_check,command_check)
+-from .executor import CodexExecutor,redact,popen,kill_tree
++from .executor import CodexExecutor,resolve_codex,redact,popen,kill_tree
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+ BUDGET = {'max_agent_calls':3,'max_retries':1,'agent_timeout_seconds':900,'check_timeout_seconds':180,'max_validation_rounds':1}
+@@ -70,9 +70,11 @@
+     return files
+ 
+ class Controller:
+-    def __init__(self,root=ROOT,executor=None):
++    def __init__(self,root=ROOT,executor=None,full_access=False,codex_path=None):
+         self.root=Path(root).resolve()
+         self.executor=executor
++        self.full_access=full_access
++        self.codex_path=codex_path
+ 
+     def create(self,request,timeout=900):
+         if not isinstance(request,str) or not request.strip():
+@@ -151,7 +153,8 @@
+                 '保持具体但避免冗长重复：plan_md 约900–1600字，goals_md 约300–600字，blueprint_md 约1200–2000字，prompt_md 约2600–4000字。不要复制模板/Skill全文到产物。四份材料各自可用，机器映射只输出必要节点。\n'
+                 '结构化 goals 使用 id "Goal 0"、"Goal 1" 等；任务/AC/需求稳定 ID，双向映射一致、依赖无环。write_set 使用相对路径或相对目录。\n'
+                 '按需求比较至少两个技术方案；不要默认 Vue/Mock/localStorage。Auto 首版支持 Node/Python/npm 工程，其他栈可 Plan，但不能编造接口。\n'
+-                '环境已核实：Windows PowerShell、Python 3.14.6、Node 26.3.0；沙箱禁止外部网络，优先现有工具和无运行外部依赖方案。\n'
++                '环境已核实：Windows PowerShell、Python 3.14.6、Node 26.3.0；Planner始终只读，优先现有工具和无运行外部依赖方案。\n'+
++                ('本次调用者显式选择Full Access，Coder及工程检查用当前用户权限；工作目录不是OS隔离。不自动安装依赖、扩大业务范围或访问无关数据。\n' if getattr(self.executor,'full_access',False) else '本次未选择Full Access，Coder及工程检查保持受限模式；不可自动放宽权限。\n')+
+                 '运行契约 checks 至少含 build/test，各 argv 用 node 或 python 的项目脚本，或 npm run build/test。runtime.argv 启动本地服务绑定 127.0.0.1，接受独立的 {port} 占位符参数；runtime.path 是 HTTP 路径，expected_text 是该响应可断言的真实内容。\n'
+                 '这些接口由 Coder 实现，不是已运行结果。UI 必须有可运行纵向样板和真实浏览器测试/截图，不能只抓 HTML 冒充交互。可用本机只读 Playwright：\n'
+                 r'C:\Users\44725\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\node_modules\playwright'+'\n'
+@@ -268,7 +271,7 @@
+     def diagnose(self,packet,workspace,control):
+         """Collect objective checks after a failed Coder; never declares success."""
+         if self.executor is None:
+-            self.executor=CodexExecutor()
++            self.executor=CodexExecutor(full_access=self.full_access,codex_path=self.codex_path)
+         result={'kind':'failed-task diagnostic; not E2E completion','checks':[],'runtime':None}
+         for index,item in enumerate(packet['checks']):
+             command_check(item['argv'])
+@@ -310,14 +313,14 @@
+                         raise FactoryError('重试/调用预算已用尽，停止并等待用户决定')
+                     retry_pending=True
+                 if self.executor is None:
+-                    self.executor=CodexExecutor()
++                    self.executor=CodexExecutor(full_access=self.full_access,codex_path=self.codex_path)
+                 # Validate preserved artifacts and the execution environment
+                 # BEFORE charging the remaining retry or overwriting evidence.
+                 packet=load(control/'task-packet.json') if (control/'task-packet.json').is_file() else None
+                 full_access=getattr(self.executor,'full_access',False)
+-                if full_access and (packet is None or mode!='Auto' or not retry_pending):
+-                    raise FactoryError('本阶段 Full Access 仅允许已有任务包的显式 Auto 重试，不重新规划')
+-                preflight_done=False
++                if full_access and mode!='Auto':
++                    raise FactoryError('Full Access 仅用于显式选择的 Auto；Planner仍只读')
++                preflight_done=False; preflight_result={}
+                 if packet is not None:
+                     validate_packet(packet,self.root,state)
+                     if retry_pending:
+@@ -331,7 +334,7 @@
+                                 shutil.copy2(p,archive/p.name); old_hashes[p.name]=file_hash(p)
+                         save(archive.parent/'archive-manifest.json',old_hashes)
+                     if mode=='Auto':
+-                        self.executor.preflight(packet,workspace,control)
++                        preflight_result=self.executor.preflight(packet,workspace,control)
+                         preflight_done=True
+                 verification=self.executor.probe(workspace,control)
+                 save(control/('sandbox-verification-'+uuid.uuid4().hex[:12]+'.json'),verification)
+@@ -355,7 +358,7 @@
+                     return state
+                 validate_packet(packet,self.root,state)
+                 if not preflight_done:
+-                    self.executor.preflight(packet,workspace,control)
++                    preflight_result=self.executor.preflight(packet,workspace,control)
+                 before=manifest(workspace)
+                 save(control/f'coder-before-{len(state["calls"])+1:02d}.json',before)
+                 protected={p.name:file_hash(p) for p in control.iterdir() if p.is_file() and p.name in (*packet['artifacts'],'task-packet.json','packet-validation.json')}
+@@ -366,8 +369,10 @@
+                 if retry:
+                     prompt+='上次失败记录：'+json.dumps(state.get('calls',[]) [-1:],ensure_ascii=False)+'\n仅修复当前失败，复用现有工程。\n'
+                 if full_access:
+-                    prompt+='本次用户已单独授权派生 Coder 和本工程验证使用 Full Access，当前用户权限、无管理员提权。实际模式 danger-full-access，不把工作目录当OS隔离。原提示词中的受限沙箱及禁止扩大执行模式说明仅在本次授权范围内被覆盖，其余边界与验收不变。\n'
+-                    prompt+='Node管道与Playwright/已安装Edge固定页面预检已通过；默认Playwright Chromium未安装。最小修复浏览器启动为channel:"msedge", chromiumSandbox:true，不下载浏览器、不关闭浏览器自身沙箱。不要重复生成工程；只修改已有失败所需内容。\n'
++                    prompt+='本次调用者显式通过--full-access授权派生 Coder 和本工程验证使用当前用户权限，无管理员提权。实际模式danger-full-access，工作目录不是OS隔离。原提示词中的受限执行限制仅在本次权限授权范围内被覆盖，其余边界与验收不变。\n'
++                    prompt+=('仅修复当前失败，复用已有工程，不重复生成。\n' if retry else '按已验证TaskPacket实现指定Goal0实际工程，不重新规划；环境预检不代替业务测试。\n')
++                    if preflight_result.get('browser_environment_probe',{}).get('exit_code')==0:
++                        prompt+='Node管道和已安装Edge固定页面预检已通过；UI浏览器测试优先channel:"msedge", chromiumSandbox:true，不自动下载浏览器或关闭浏览器自身沙箱。\n'
+                     prompt+='现有validation测试证据必须保留；若测试脚本写固定路径，先复制旧证据到workspace内唯一历史目录再运行，不删除/覆盖唯一旧副本。不要修改业务验收门槛或以跳过测试换成功。\n'
+                     prompt+='记录实际派生会话的sandbox配置及一次固定Node管道检查，不读取全局凭据/配置；真实完整业务测试必须包含桌面/移动截图及trace。完成后停止，不发布或Git写入。\n'
+                 prompt+='<validated-task-packet>\n'+json.dumps(packet,ensure_ascii=False,indent=2)+'\n</validated-task-packet>\n'
+@@ -412,27 +417,32 @@
+     parser.add_argument('--request'); parser.add_argument('--mode',choices=['Plan','Auto'],default='Auto')
+     parser.add_argument('--project-id'); parser.add_argument('--status',action='store_true'); parser.add_argument('--retry',action='store_true')
+     parser.add_argument('--timeout-seconds',type=int,default=900)
+-    parser.add_argument('--full-access',action='store_true',help='需用户本次明确授权；仅已有任务包 Auto 重试，当前用户完全访问')
++    parser.add_argument('--full-access',action='store_true',help='调用者显式授权Auto的Coder/工程检查使用当前用户完全访问；Planner只读')
++    parser.add_argument('--codex-path',help='Codex Desktop原生codex.exe绝对路径；显式值优先于PATH')
++    parser.add_argument('--check-cli',action='store_true',help='只检查CLI路径与版本，不登录/创建任务/调用Agent')
+     args=parser.parse_args(argv)
+-    controller=Controller()
+     try:
++        if args.check_cli:
++            if args.request is not None or args.project_id or args.status or args.retry or args.full_access:
++                raise FactoryError('CheckCli不能与开发/恢复/FullAccess参数组合')
++            exe,version=resolve_codex(args.codex_path)
++            print(json.dumps({'Codex路径':exe,'版本':version,'Agent调用':0},ensure_ascii=False,indent=2));return 0
++        controller=Controller(full_access=args.full_access,codex_path=args.codex_path)
+         if args.status and (not args.project_id or args.request is not None):
+             raise FactoryError('查询只能指定已有 ProjectId，不能提交新需求')
+         if args.retry and not args.project_id:
+             raise FactoryError('重试只能指定已有 ProjectId')
+         if args.request is not None and args.project_id:
+             raise FactoryError('不能同时提交新需求和恢复项目 ID')
+-        if args.full_access and (not args.project_id or args.request is not None or not args.retry or args.mode!='Auto' or args.status):
+-            raise FactoryError('Full Access 仅允许已有 ProjectId 的显式 Auto Retry，不得提交新需求/查询/重新规划')
++        if args.full_access and (args.mode!='Auto' or args.status):
++            raise FactoryError('Full Access仅用于显式Auto运行；Plan保持只读，查询不授权执行')
+         project_id=args.project_id or controller.create(args.request,args.timeout_seconds)
+         if args.status:
+             if not args.project_id:
+                 raise FactoryError('查询必须提供 ProjectId')
+             print(json.dumps(controller.locate(project_id)[3],ensure_ascii=False,indent=2)); return 0
+         if args.full_access:
+-            if not (controller.locate(project_id)[1]/'task-packet.json').is_file():
+-                raise FactoryError('Full Access 恢复缺少已有任务包，禁止调用 Planner')
+-            controller.executor=CodexExecutor(full_access=True)
++            print('[权限选择] 调用者显式选择Full Access：Planner只读；Coder/工程检查使用当前用户文件、进程和网络权限，工作目录不是OS隔离。',flush=True)
+         state=controller.run(project_id,args.mode,args.retry)
+         print(json.dumps({'项目':project_id,'状态':state['status'],'错误':state['error'],'Agent调用':len(state['calls']),
+                           '产物':str(ROOT/'projects'/project_id/'control'),'工程':str(ROOT/'projects'/project_id/'workspace')},ensure_ascii=False,indent=2))
+--- a/factory/executor.py
++++ b/factory/executor.py
+@@ -108,18 +108,35 @@
+     return {'exit_code':process.returncode,'timed_out':timed_out,'elapsed_seconds':round(time.monotonic()-started,3),
+             'stdout':''.join(output['stdout']),'stderr':''.join(output['stderr'])}
+ 
++def resolve_codex(codex_path=None):
++    """Explicit path wins; never fall back after a bad caller-supplied path."""
++    candidate=codex_path if codex_path is not None else (shutil.which('codex.exe') or shutil.which('codex'))
++    if not candidate:
++        raise FactoryError('未找到 Codex CLI；请用 -CodexPath 指定 Desktop 内 codex.exe 的绝对路径')
++    path=Path(candidate)
++    if not path.is_absolute() or not path.is_file():
++        raise FactoryError('Codex CLI 路径必须是实际存在的可执行文件绝对路径')
++    if os.name=='nt' and path.suffix.lower()!='.exe':
++        raise FactoryError('Windows 请指定原生 codex.exe，不接受脚本或命令字符串')
++    try:
++        result=subprocess.run([str(path),'--version'],capture_output=True,text=True,encoding='utf-8',errors='replace',
++                              timeout=10,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
++    except (OSError,subprocess.TimeoutExpired) as e:
++        raise FactoryError('Codex CLI 版本检查无法执行或超过10秒；请检查指定文件') from e
++    version=result.stdout.strip()
++    if result.returncode or not re.fullmatch(r'codex-cli\s+\S+',version):
++        raise FactoryError('指定程序没有返回有效 codex-cli 版本；停止，不回退到其他路径')
++    return str(path.resolve()),version
++
+ class CodexExecutor:
+-    def __init__(self,full_access=False):
++    def __init__(self,full_access=False,codex_path=None):
+         # Explicit per-run choice; never inherit desktop/user-config permissions.
+         self.full_access = full_access
+-        self.exe = shutil.which('codex.exe') or shutil.which('codex')
+-        if not self.exe:
+-            raise FactoryError('未找到 Codex CLI；真实 Agent 不可执行')
++        self.exe,self.version = resolve_codex(codex_path)
+         config = Path(os.environ.get('CODEX_HOME',str(Path.home()/'.codex')))/'config.toml'
+         self.model = None
+         if config.exists():
+             self.model = tomllib.loads(config.read_text(encoding='utf-8')).get('model')
+-        self.version = subprocess.check_output([self.exe,'--version'],encoding='utf-8').strip()
+         auth = subprocess.run([self.exe,'login','status'],capture_output=True,encoding='utf-8')
+         if auth.returncode:
+             raise FactoryError('Codex CLI 尚无可用登录；请自行登录后重试，不读取或索取凭据')
+@@ -159,7 +176,7 @@
+     def preflight(self,packet,cwd,control):
+         """Fail before spending an Agent retry on broken Node pipe transport.
+ 
+-        This tests a trusted literal command inside the SAME sandbox. It is not
++        This tests a trusted literal command in the SAME execution mode. It is not
+         a business test or a browser acceptance test, and never grants access.
+         """
+         commands = [c['argv'] for c in packet['checks']] + [packet['runtime']['argv']]
+--- a/scripts/factory.ps1
++++ b/scripts/factory.ps1
+@@ -6,6 +6,8 @@
+     [switch]$Status,
+     [switch]$Retry,
+     [switch]$FullAccess,
++    [string]$CodexPath,
++    [switch]$CheckCli,
+     [ValidateRange(1,1800)][int]$TimeoutSeconds = 900
+ )
+ $ErrorActionPreference = 'Stop'
+@@ -17,6 +19,8 @@
+ if ($Status) { $factoryArgs += '--status' }
+ if ($Retry) { $factoryArgs += '--retry' }
+ if ($FullAccess) { $factoryArgs += '--full-access' }
++if ($PSBoundParameters.ContainsKey('CodexPath')) { $factoryArgs += @('--codex-path', $CodexPath) }
++if ($CheckCli) { $factoryArgs += '--check-cli' }
+ $env:PYTHONIOENCODING = 'utf-8'
+ Push-Location -LiteralPath $factoryRoot
+ try { & $factoryPython @factoryArgs; $factoryExit = $LASTEXITCODE }
+--- a/tests/test_factory.py
++++ b/tests/test_factory.py
+@@ -12,7 +12,7 @@
+ from pathlib import Path
+ from factory.contracts import FactoryError,SKILLS,validate_packet,validate_plan,digest,command_check
+ from factory.controller import Controller,ROOT,save,load,manifest,locked
+-from factory.executor import bounded,redact,clean_env,CodexExecutor
++from factory.executor import bounded,redact,clean_env,CodexExecutor,resolve_codex
+ 
+ RUN_ROOT=ROOT/'validation/goal1/test-workspaces'/uuid.uuid4().hex[:10]
+ 
+@@ -52,6 +52,30 @@
+             output={'status':'failed','summary':'explicit double failure','files':[],'tests':[],'evidence':[],'limitations':[],'questions':[]}
+         return {'exit_code':7 if role=='Coder' and self.coder=='fail' else 0,'timed_out':role=='Coder' and self.coder=='timeout',
+                 'elapsed_seconds':.01,'turn_completed':True,'output':output,'usage':None,'thread_ids':['test-double-'+role]}
++
++class FlowDouble(AgentDouble):
++    """Successful CONTROL-flow fixture; no model/business/browser execution."""
++    def __init__(self,full_access=False):
++        super().__init__();self.full_access=full_access;self.steps=[]
++    def probe(self,*args):
++        self.steps.append('policy-probe-double')
++        return {'test_double':True,'os_write_boundary_enforced':not self.full_access}
++    def preflight(self,packet,workspace,control):
++        validate_packet(packet,control.parents[2],load(control/'state.json'))
++        self.steps.append('validated-packet-preflight-double')
++        return {'test_double':True,'passed':True}
++    def run(self,role,prompt,workspace,control,*args):
++        self.steps.append(role+'-double')
++        if role=='Planner':return super().run(role,prompt,workspace,control,*args)
++        validate_packet(load(control/'task-packet.json'),control.parents[2],load(control/'state.json'))
++        self.roles.append(role)
++        (workspace/'fixture.mjs').write_text('// AgentDouble control fixture, not business implementation\n',encoding='utf-8')
++        output={'status':'completed','summary':'Explicit AgentDouble; control flow only','files':['fixture.mjs'],
++                'tests':[{'command':'AgentDouble self-test fixture','exit_code':0,'result':'not a real test'}],
++                'evidence':[],'limitations':['No real Agent, build or browser execution'],'questions':[]}
++        return {'exit_code':0,'timed_out':False,'elapsed_seconds':0,'turn_completed':True,'output':output,'usage':None,'thread_ids':['test-double-Coder']}
++    def check(self,*args):
++        self.steps.append('check-double');return {'exit_code':0,'timed_out':False,'elapsed_seconds':0,'test_double':True}
+ 
+ class FactoryTests(unittest.TestCase):
+     @classmethod
+@@ -216,11 +240,11 @@
+         self.assertFalse(probe['os_write_boundary_enforced'])
+         self.assertFalse(probe['outside_write_denial_test_run'])
+         self.assertNotIn('passed',probe);self.assertEqual(before,list(self.root.iterdir()))
+-    def test_full_access_cannot_create_or_replan(self):
++    def test_full_access_rejects_plan_mode(self):
+         self.agent.full_access=True
+-        state=self.execute(self.task())
++        state=self.execute(self.task(),'Plan')
+         self.assertEqual(state['status'],'已失败'); self.assertEqual(self.agent.roles,[])
+-        self.assertIn('已有任务包',state['error'])
++        self.assertIn('Auto',state['error'])
+     def test_retry_archives_old_evidence_before_preflight_failure(self):
+         pid,project,control,workspace,state=self.plan()
+         (control/'coder-result.json').write_text('previous coder evidence',encoding='utf-8')
+@@ -244,6 +268,85 @@
+             self.controller.verify(load(control/'task-packet.json'),coder,workspace,control,before)
+         self.assertEqual(len(seen),1)
+         self.assertEqual(load(control/'coder-file-provenance.json')['changed'],['app.mjs'])
++    def full_flow_fixture(self,full_access):
++        agent=FlowDouble(full_access);self.controller.executor=agent
++        self.controller.runtime_check=lambda *a:{'passed':True,'test_double':True,'scope':'No HTTP/browser execution'}
++        return agent
++    def test_new_full_access_request_planner_packet_coder_control_flow(self):
++        agent=self.full_flow_fixture(True);pid=self.task();state=self.execute(pid)
++        self.assertEqual(state['status'],'已完成');self.assertEqual(agent.roles,['Planner','Coder'])
++        self.assertLess(agent.steps.index('Planner-double'),agent.steps.index('validated-packet-preflight-double'))
++        self.assertLess(agent.steps.index('validated-packet-preflight-double'),agent.steps.index('Coder-double'))
++        self.assertEqual(state['retries'],0);self.assertEqual(len(state['calls']),2)
++        project,control,workspace,state=self.controller.locate(pid)
++        validate_packet(load(control/'task-packet.json'),RUN_ROOT,state)
++        self.assertEqual(load(control/'handoff-02.json')['packet_sha256'],state['packet_fingerprint'])
++        self.assertFalse(state['os_write_boundary_enforced']);self.assertEqual(state['execution_mode'],'danger-full-access')
++        self.assertTrue(workspace.is_relative_to(RUN_ROOT/'projects'/pid))
++    def test_new_full_access_preflight_failure_does_not_call_coder(self):
++        agent=self.full_flow_fixture(True)
++        def fail(*a):raise FactoryError('explicit test-double preflight failure')
++        agent.preflight=fail;state=self.execute(self.task())
++        self.assertEqual(state['status'],'已失败');self.assertEqual(agent.roles,['Planner'])
++        self.assertEqual(state['retries'],0);self.assertEqual(len(state['calls']),1)
++    def test_default_new_request_does_not_enable_full_access(self):
++        agent=self.full_flow_fixture(False);state=self.execute(self.task())
++        self.assertEqual(state['status'],'已完成');self.assertFalse(agent.full_access)
++        self.assertNotIn('danger-full-access',state.get('execution_mode',''))
++        self.assertEqual(agent.roles,['Planner','Coder'])
++    def test_cli_main_new_full_access_request_is_explicit(self):
++        from unittest.mock import patch
++        from factory.controller import main
++        agent=self.full_flow_fixture(True)
++        with patch('factory.controller.Controller',return_value=self.controller) as ctor,contextlib.redirect_stdout(io.StringIO()) as output:
++            code=main(['--request','开发一个离线图书管理 Demo','--mode','Auto','--full-access','--codex-path','C:/explicit/codex.exe'])
++        self.assertEqual(code,0);self.assertEqual(agent.roles,['Planner','Coder'])
++        ctor.assert_called_once_with(full_access=True,codex_path='C:/explicit/codex.exe')
++        self.assertIn('工作目录不是OS隔离',output.getvalue())
++    def test_cli_main_default_does_not_enable_full_access(self):
++        from unittest.mock import patch
++        from factory.controller import main
++        agent=self.full_flow_fixture(False)
++        with patch('factory.controller.Controller',return_value=self.controller) as ctor,contextlib.redirect_stdout(io.StringIO()):
++            code=main(['--request','fixture default request'])
++        self.assertEqual(code,0);ctor.assert_called_once_with(full_access=False,codex_path=None)
++    def test_actual_adapter_role_modes_remain_explicit(self):
++        from unittest.mock import patch
++        executor=CodexExecutor.__new__(CodexExecutor);executor.exe='C:/fixture/codex.exe';executor.model=None;executor.version='fixture-only'
++        for full in (False,True):
++            executor.full_access=full
++            for role in ('Planner','Coder'):
++                with patch('factory.executor.bounded',return_value={'exit_code':0,'timed_out':False,'elapsed_seconds':0}) as call:
++                    executor.run(role,'fixture',self.root,self.root,1,{},10)
++                argv=call.call_args.args[0];mode=argv[argv.index('-s')+1]
++                self.assertEqual(mode,'read-only' if role=='Planner' else ('danger-full-access' if full else 'workspace-write'))
++    def test_explicit_cli_path_without_path_lookup(self):
++        from unittest.mock import patch
++        import subprocess
++        path=self.root/'path with spaces'/'codex.exe';path.parent.mkdir();path.write_bytes(b'fixture-not-an-executable')
++        with patch('factory.executor.shutil.which',return_value=None) as lookup,patch('factory.executor.subprocess.run',return_value=subprocess.CompletedProcess([],0,'codex-cli 0.0-fixture\n','')) as run:
++            exe,version=resolve_codex(str(path))
++        lookup.assert_not_called();self.assertEqual(exe,str(path.resolve()));self.assertEqual(version,'codex-cli 0.0-fixture')
++        self.assertEqual(run.call_args.args[0],[str(path),'--version']);self.assertEqual(run.call_args.kwargs['timeout'],10)
++    def test_invalid_explicit_cli_path_never_falls_back(self):
++        from unittest.mock import patch
++        with patch('factory.executor.shutil.which') as lookup,patch('factory.executor.subprocess.run') as run:
++            with self.assertRaises(FactoryError):resolve_codex(str(self.root/'missing.exe'))
++        lookup.assert_not_called();run.assert_not_called()
++    def test_cli_wrong_version_or_timeout_rejected(self):
++        from unittest.mock import patch
++        import subprocess
++        path=self.root/'codex.exe';path.write_bytes(b'fixture')
++        with patch('factory.executor.subprocess.run',return_value=subprocess.CompletedProcess([],0,'other-tool 1.0','')):
++            with self.assertRaises(FactoryError):resolve_codex(str(path))
++        with patch('factory.executor.subprocess.run',side_effect=subprocess.TimeoutExpired([],10)):
++            with self.assertRaises(FactoryError):resolve_codex(str(path))
++    def test_check_cli_does_not_create_or_execute_task(self):
++        from unittest.mock import patch
++        from factory.controller import main
++        with patch('factory.controller.resolve_codex',return_value=('C:/fixture/codex.exe','codex-cli fixture')),patch('factory.controller.Controller') as ctor,contextlib.redirect_stdout(io.StringIO()):
++            self.assertEqual(main(['--check-cli','--codex-path','C:/fixture/codex.exe']),0)
++        ctor.assert_not_called()
+ 
+ if __name__=='__main__':
+     suite=unittest.defaultTestLoader.loadTestsFromTestCase(FactoryTests)
+--- a/docs/GOAL1_USAGE.md
++++ b/docs/GOAL1_USAGE.md
+@@ -1,12 +1,40 @@
+ # Goal 1 本地工厂使用说明
+ 
+-在项目根目录用 PowerShell 运行，Python 3.11+ 和已登录的 Codex CLI 必须可通过 PATH 调用。当前实测环境见 `validation/goal1/environment.json`；无需安装全局 Skills、依赖服务或配置 API Key。本机 Codex CLI 为 alpha 版本，跨版本应重新核对 `codex exec --help` 和 `codex sandbox --help`。
++在项目根目录用 PowerShell 运行，Python 3.11+ 必须可通过 PATH 调用。Codex CLI 需已登录；可以从 PATH 查找，也可用 `-CodexPath` 显式指定 Desktop 内的原生可执行文件，不依赖桌面注入 PATH。无需安装全局 Skills、依赖服务或配置 API Key。本机 CLI 为 alpha 版本，跨版本需重新核对本机帮助。
++
++## 普通 PowerShell 指定 Codex CLI
++
++先查找已安装 Desktop 中的候选文件（目录布局可能随应用版本变化；此命令只列文件，不安装或升级）：
++
++```powershell
++Get-ChildItem -LiteralPath "$env:LOCALAPPDATA\OpenAI\Codex\bin" -Filter codex.exe -Recurse -File |
++    Select-Object -ExpandProperty FullName
++```
++
++选择可信的当前安装文件，把完整路径赋给变量；不把某个版本目录写死在工厂代码中。如果上述目录不存在，从本机 Desktop 安装位置找到实际 `codex.exe`，不要猜测或静默改用别的程序：
++
++```powershell
++$cli = '替换为实际 codex.exe 的绝对路径'
++.\scripts\factory.ps1 -CheckCli -CodexPath $cli
++```
++
++`CheckCli` 只确认文件存在、执行 `--version`（10秒上限）并输出路径和 `codex-cli` 版本；不检查登录、不创建任务、不调用模型或浏览器。显式路径优先于 PATH；错误/不存在的显式路径、脚本文件、无效版本或超时会停止，不回退到其他 CLI。不修改全局 PATH/配置/Windows权限。应用更新后旧文件若失效，重新选择并检查路径。普通 PowerShell 去掉 Codex PATH 后的本机验证见 `validation/goal1/reviewer-fixes-20261009T103057/standalone-powershell-cli-check.json`。
+ 
+ ## 一句话入口
+ 
+ ```powershell
+ .\scripts\factory.ps1 -Request "帮我开发一个离线图书借阅管理演示系统，要有图书列表、借阅状态、简单搜索，界面专业，以后方便增加更多功能。" -Mode Auto
+ ```
++
++调用者明确授权本次 Coder/工程检查使用 Full Access 时，可以直接提交新需求：
++
++```powershell
++.\scripts\factory.ps1 -Request "开发一个离线图书管理 Demo" -Mode Auto -FullAccess -CodexPath $cli
++```
++
++CLI 已在 PATH 中时可以省略 `-CodexPath`，对应 `-Request ... -Mode Auto -FullAccess`。`-FullAccess` 本身是调用者对本次运行的显式权限选择；入口会打印权限说明，不从桌面会话、任务旧状态或全局设置自动放宽。Planner 始终只读；新需求依次执行 Planner→规划校验→生成并验证TaskPacket→所选模式预检→Coder→独立工程检查。Coder与工程检查仅在明确选择后使用当前用户权限、不提权；工作目录不是OS访问边界。未指定时继续受限模式，受限环境失败会停止，不能自动切换。
++
++本轮新入口仅用明确标记的 AgentDouble 验证控制逻辑；没有新增真实 Planner/Coder/E2E 或浏览器验收。真实执行仍需另行授权，不能将41项回归当成新入口真实E2E成功。
+ 
+ `Plan` 只调用 Planner 并保存完整规划和经校验的任务包，不启动 Coder：
+ 
+@@ -38,23 +66,25 @@
+ 
+ 事件保存真实 CLI thread ID、exit code、耗时和 `turn.completed.usage`；没有可靠 usage 时保留 null，不推算费用。首次验证发现 WebSocket 超时，CLI 自身转为 HTTPS；本版本不允许覆盖内置 OpenAI provider，诊断中的该配置尝试被 CLI 拒绝并保留失败证据。适配器使用原服务商和用户已选模型，CLI 内部传输重试受单调用总超时限制；不更换模型服务商、不修改用户配置。
+ 
+-## 本次明确授权的 Full Access 恢复
++## 当前 Full Access 与恢复规则
+ 
+-2026-10-09 用户将 APF 收敛为个人 Windows 与 Codex，并明确确认现有 `p-dc1e9d42b5ae` 一次 Full Access Coder/工程验证。下方旧“绝不使用 danger-full-access”、受限环境修复路线保留为历史，不代表本次策略。默认仍受限；不继承桌面权限、不改全局配置。
++2026-10-09 用户将 APF 收敛为个人 Windows 与 Codex。现已支持新需求 Auto、已规划任务 Auto 及失败任务 Auto Retry 的显式 `-FullAccess`；Plan保持只读，不接受该参数。每次运行仍须调用者明确指定，不沿用历史 Full Access 授权。下面沙箱失败章节是历史。
+ 
+-只有本次明确授权才可运行：
++已有任务可以按其状态恢复，失败任务仍需 `-Retry`；以下只是调用形式示例，已完成的历史任务会复用结果，不再次开发：
+ 
+ ```powershell
+ .\scripts\factory.ps1 -ProjectId p-dc1e9d42b5ae -Mode Auto -Retry -FullAccess
+ ```
+ 
+-参数仅接受已有任务包的 Auto Retry；拒绝新需求或重新规划，先校验原包和规划。所选模式的固定 Node 管道与 Playwright/Edge 空白页预检通过后才计费重试。派生 Coder 显式 `-s danger-full-access`；主控工程验证采用当前账户原生子进程，工作目录和临时缓存放在项目内，不提权。Full Access 没有 OS 文件越界阻止能力；`execution-policy-03.json` 如实标记，不执行越界写拒绝探针冒充安全通过。浏览器自身 sandbox 保留。
++已有包先校验身份/路径/预算/规划哈希并复用，不重复Planner。新需求先正常规划和组包，校验失败或重大歧义不派发Coder。Windows Node/npm任务在Coder调用前执行固定Node管道预检；FullAccess模式同时执行Playwright/已安装Edge固定页面预检，已有失败任务预检通过后才扣重试。派生Coder显式 `-s danger-full-access`；检查用当前账户原生子进程，TMP/TEMP/cache在项目内。FullAccess无OS文件越界阻止能力，策略记录如实标记，不执行越界写拒绝探针冒充通过。浏览器自身sandbox保留。
+ 
+-运行前控制文件复制到 `control/attempts/<attempt>-<id>/before/` 并保存哈希（运行锁不复制）；不会删除旧证据。最新结果仍在既有路径，独立 Agent 的 input/launch/log/result 则按调用编号保存。重试源码只改已有文件也可验收，但必须有实际源码变化，且主控仍实际运行原 build/test/HTTP 契约。
++重试前控制文件复制到 `control/attempts/<attempt>-<id>/before/` 并保存哈希（运行锁不复制）；不会删除旧证据。最新结果仍在既有路径，独立Agent的input/launch/log/result按调用编号保存。新任务要求真实工程，重试只改已有源码也可接受；两者都必须有实际源码变化和原build/test/HTTP验证。
+ 
+-原预算保持3次总调用、1次重试、900秒 Coder 和180秒单项检查；不增加 Planner 调用。CLI usage 记录实际 Token；只有调用/时间硬上限，细分 Token 没有硬计数上限。超出本次授权需重新由用户决定，参数本身不能代替授权。环境预检不等于真实 E2E。
++预算保持3次总调用、1次显式重试、默认900秒每Agent和180秒单项检查；新任务通常Planner1+Coder1，恢复已有包不重复Planner。CLI usage记录实际Token，细分Token没有硬上限。调用者应只对已获授权的需求指定FullAccess，参数不扩展业务、冻结目录、Git或发布权限。环境预检不等于真实E2E。
+ 
+ ## Windows 环境预检与当前恢复限制（历史）
++
++以下整节记录旧受限环境阶段的失败和当时处理路线，不能当作当前执行规则。原沙箱底层问题未修复；用户后来单独授权的FullAccess真实复验已成功，新入口修正则仅做替身控制测试。
+ 
+ 2026-10-09 专项诊断见 `validation/goal1/environment-repair-20261009T010203/REPORT.md`。Node 本身与不使用管道的子进程可以运行；管道子进程 EPERM。Win32 命名管道读连接成功、写连接拒绝访问；Chrome/Edge 启动后在 Mojo/Crashpad IPC 处失败。换 cwd/TEMP 或移除桌面包环境变量没有解决 Node 问题。当前没有通过的安全工程执行方式，Goal 1 仍未完成。
+ 
+@@ -90,7 +120,7 @@
+ 
+ 主控只接受随机生成 ID、规范项目路径和 argv 数组；拒绝 `..`、绝对文件路径、symlink/junction、篡改包与产物。新项目不初始化 Git。冻结工厂 Skills 和旧案例不修改，参考项目只读。
+ 
+-Planner 用 read-only，Coder 和基础检查用 workspace-write Windows 受限令牌沙箱；每次派发前真实探针要求写入同项目 control 被拒。较强 elevated 沙箱在本机初始化失败，因此使用官方提供的 unelevated 模式，绝不使用 danger-full-access。该模式网络约束较弱、可读取部分本机文件，不是恶意代码或多租户安全产品；提示词中的禁止读取凭据不构成保密边界。Codex 本身可能维护用户目录内认证缓存、运行日志或沙箱状态，`--ephemeral` 不等于绝对零宿主写入；本工厂不主动编辑全局配置或安装全局依赖。
++Planner始终read-only。默认Coder及工程检查使用workspace-write/unelevated，并要求写边界探针通过；环境失败会停止，不能静默放宽。仅调用者显式选择FullAccess后使用danger-full-access/当前用户原生检查，不再要求OS越界拒绝，也不假称有隔离。两种模式都不构成恶意代码或多租户安全产品；提示词禁读凭据不构成保密边界。Codex可能维护认证缓存/运行日志，`--ephemeral`不代表绝对零宿主写入；工厂不主动编辑全局配置、安装依赖或改变Windows权限。
+ 
+ 首版 Auto 基础验证支持 Node、Python 和固定 npm run scripts 的本地 HTTP 工程。不是任意技术栈的全自动交付器。移动/桌面或其他栈需扩展受控验证适配器，不能跳过不支持的门槛宣布成功。UI 行为和截图由 Coder 自测并保存；主控执行这些测试接口并独立检查 HTTP，不能代替外部 Reviewer。测试不等于业务完工或外部验收。
+ 
+--- a/PROJECT_STATUS.md
++++ b/PROJECT_STATUS.md
+@@ -5,7 +5,7 @@
+ | 阶段 | 内容 | 状态 |
+ | --- | --- | --- |
+ | Goal 0 | 开发经验提炼与核心 Skills 建设 | 已验收冻结 |
+-| Goal 1 | Planner→TaskPacket→Coder 自动交接与基础验证 | 已完成，待外部 Reviewer 验收 |
++| Goal 1 | Planner→TaskPacket→Coder 自动交接与基础验证 | 最小整改已完成，待外部 Reviewer 复审 |
+ | Goal 2 及后续 | 扩展测试、审查与受控交付 | 尚未实施 |
+ 
+ ## Goal 1 当前授权与基线
+@@ -13,7 +13,19 @@
+ 
+ 本阶段只建设 Planner→TaskPacket→Coder→基础验证→结果回收。冻结 Skills、历史案例和报告保持原样；新验证写入 `validation/goal1/`，生成工程写入 `projects/`；不执行 Git 写操作。
+ 
+-## Goal 1：2026-10-09 执行策略调整
++## Goal 1：2026-10-09 外部 Reviewer 最小整改
++
++用户转述外部静态审查结论：原真实链路已有成功证据，但暂不批准Git封版。仅整改新需求显式FullAccess入口及普通PowerShell的CLI路径，不扩展Goal2。
++
++新入口支持 `-Request ... -Mode Auto -FullAccess`：调用者显式选择并打印权限范围，Planner保持read-only；新需求正常规划/校验/组包，TaskPacket验证及所选模式预检通过后才启动Coder。默认仍受限，不能从桌面权限、全局配置或旧任务状态自动升级。新任务创建Goal0工程，重试才限制为修复现有失败；预算/归档/恢复和独立工作目录规则保留，FullAccess不构成OS隔离。
++
++新增 `-CodexPath`（显式绝对exe路径优先、不回退）和 `-CheckCli`（只检查文件及10秒内版本，不创建任务/登录/调用Agent）；没有硬编码Desktop版本目录。独立Windows PowerShell移除Codex PATH后，实际显式路径检查退出0，版本codex-cli 0.162.0-alpha.2；未修改全局PATH、权限、配置或安装工具。
++
++41项回归通过，报告 `validation/goal1/exception-tests-ce98c8a0d8.json/txt`。原31项覆盖保留，旧“禁止新FullAccess任务”测试按新授权范围改为拒绝FullAccess Plan，另新增10项；新需求Planner→TaskPacket→预检→Coder完成及默认模式用明确标记AgentDouble验证，不能当作新增真实E2E。原完整业务/浏览器成功记录仅为上一版历史。本轮真实Planner/Coder调用均0、无E2E/浏览器重跑，未变更原图书项目与历史证据。新入口真实复验需要另行授权，本轮不执行。
++
++整改材料位于 `validation/goal1/reviewer-fixes-20261009T103057/`；使用说明 `docs/GOAL1_USAGE.md` 已修正矛盾，旧失败说明标为历史。现阶段仅表示最小整改与限定验证完成，等待外部Reviewer复审，不自行验收或Git封版。
++
++## Goal 1：2026-10-09 执行策略调整（历史：本轮整改前）
+ 
+ 用户将当前产品范围收敛为个人 Windows 电脑与 Codex，并明确原受限沙箱修复不再是前置条件；下方沙箱修复路线保留为历史，不再作为当前必做工作。启动链诊断时适配器显式使用 workspace-write/unelevated，未继承桌面 Full Access。说明具体范围和风险后，用户明确回复“同意本次启用并复验一次”，授权记录见本次专项目录 `authorization.json`。
+ 
+@@ -33,7 +45,7 @@
+ 
+ 最终报告：`validation/goal1/execution-strategy-20261009T094510-c2a752/FINAL_REPORT.md`；机器结果及证据哈希见`RESULTS.json`、`evidence-manifest.json`、`guard-final.json`。Goal 1：已完成，待外部 Reviewer 验收。停止，不进入Goal2，不自行验收/提交/Tag/Push。
+ 
+-## Goal 1：2026-10-09 环境专项诊断
++## Goal 1：2026-10-09 环境专项诊断（历史）
+ 
+ 已复用现有报告、日志、Planner 四份产物、TaskPacket 和工程；未重新规划，未调用 Planner/Coder，未进行正式端到端重试。新报告与原始诊断记录：`validation/goal1/environment-repair-20261009T010203/REPORT.md`。下方“实际进展与阻塞”保留上轮事实。
+ 
+@@ -49,7 +61,7 @@
+ 
+ 当前构建/业务测试仅保留上轮 build=0、test=1、HTTP200 的历史事实，本轮未运行业务测试或取得浏览器验收截图。Goal 1 保持“开发中，环境受阻，未完成”。下一步需用户选择管理员协助修复官方 elevated 环境，或授权受控 WSL2 环境建设；任何替代执行器都须重新验证权限与浏览器能力。停止，等待外部 Reviewer；不自行验收或 Git 收口。
+ 
+-## Goal 1 实际进展与阻塞
++## Goal 1 实际进展与阻塞（历史）
+ 主控、PowerShell入口、独立CLI执行适配、TaskPacket 1.0验证、状态/日志/查询/有限恢复、Plan与Auto分支已实现。最终25项异常/恢复测试通过，报告 `validation/goal1/exception-tests-cf44706865.json`；Agent替身只用于这些确定性测试。
+ 
+ 真实案例 `projects/p-dc1e9d42b5ae/`：Planner与Coder两个不同CLI thread实际执行，自动交接完整任务包和7734字符Goal0提示词；Planner四份产物、12项AC和无环依赖已验证。Coder实际创建工程代码并如实返回失败。主控独立诊断：构建退出0、测试退出1（Node spawn EPERM）、健康HTTP 200、临时服务已停止。没有成功的端到端链路，没有真实浏览器截图或完整AC通过结论，不宣布Goal1完成。

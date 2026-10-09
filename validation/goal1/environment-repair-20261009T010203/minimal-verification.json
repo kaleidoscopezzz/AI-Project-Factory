@@ -1,0 +1,9 @@
+{
+  "packet_valid": true,
+  "packet_fingerprint": "edb6c6afa62657c5dc2d899e4774bed1855b5e4dd5b9689ca67ac746207c8ad2",
+  "agent_calls_before": 2,
+  "retries_before": 0,
+  "source": "single actual adapter preflight verification; not formal E2E",
+  "environment_ready": false,
+  "error": "隔离环境预检失败（Node 管道子进程）；未调用 Agent、未消耗重试，不降级权限。证据：C:\\AI-Project-Factory\\validation\\goal1\\environment-repair-20261009T010203\\environment-preflight-8cb87b68c6a7.json"
+}

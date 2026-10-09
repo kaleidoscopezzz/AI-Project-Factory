@@ -1,0 +1,7 @@
+{
+  "exit_code": 0,
+  "timed_out": false,
+  "elapsed_seconds": 3.119,
+  "stdout": "{\"defaultBrowser\":\"C:\\\\Users\\\\44725\\\\AppData\\\\Local\\\\ms-playwright\\\\chromium-1234\\\\chrome-win64\\\\chrome.exe\",\"defaultExists\":false}\n{\"channel\":\"msedge\",\"browserVersion\":\"154.0.4258.62\",\"dom\":\"APF_ENV_PROBE\",\"chromiumSandbox\":true,\"passed\":true}\n",
+  "stderr": ""
+}

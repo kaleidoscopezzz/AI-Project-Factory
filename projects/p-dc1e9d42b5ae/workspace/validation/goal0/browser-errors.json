@@ -1,0 +1,14 @@
+{
+  "external": [],
+  "unexpected": [],
+  "consoleErrors": [],
+  "expectedConsoleErrors": [
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+  ],
+  "expectedResponses": [
+    {
+      "status": 503,
+      "url": "http://127.0.0.1:52507/api/books/B-001/engineering-note"
+    }
+  ]
+}

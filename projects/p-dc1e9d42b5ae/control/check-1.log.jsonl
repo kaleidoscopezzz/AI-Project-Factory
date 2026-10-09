@@ -1,0 +1,13 @@
+{"stream": "stdout", "text": "✔ AC-002/003/004 domain counts and search (1.642ms)\n"}
+{"stream": "stdout", "text": "✔ AC-006/007/008/009/011 real file HTTP boundaries (147.9042ms)\n"}
+{"stream": "stdout", "text": "✔ AC-011 non-loopback startup rejected (113.3159ms)\n"}
+{"stream": "stdout", "text": "✔ AC-001..011 real offline browser, restart, keyboard, screenshots (5884.3476ms)\n"}
+{"stream": "stdout", "text": "✔ AC-005 foreground contrast >=4.5:1 (1.694ms)\n"}
+{"stream": "stdout", "text": "ℹ tests 5\n"}
+{"stream": "stdout", "text": "ℹ suites 0\n"}
+{"stream": "stdout", "text": "ℹ pass 5\n"}
+{"stream": "stdout", "text": "ℹ fail 0\n"}
+{"stream": "stdout", "text": "ℹ cancelled 0\n"}
+{"stream": "stdout", "text": "ℹ skipped 0\n"}
+{"stream": "stdout", "text": "ℹ todo 0\n"}
+{"stream": "stdout", "text": "ℹ duration_ms 6304.0062\n"}

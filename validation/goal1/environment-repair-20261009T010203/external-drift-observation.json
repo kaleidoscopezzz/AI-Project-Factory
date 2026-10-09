@@ -1,0 +1,13 @@
+{
+  "current_config_mtime_ns": 1791507051452759700,
+  "current_selected_config": {
+    "model": "gpt-6.1-sol",
+    "approval_policy": "never",
+    "sandbox_mode": "danger-full-access"
+  },
+  "windows_sandbox": "elevated",
+  "windows_private_desktop": null,
+  "read_credentials": false,
+  "changed_by_agent": false,
+  "actor_of_observed_drift": "not independently established"
+}

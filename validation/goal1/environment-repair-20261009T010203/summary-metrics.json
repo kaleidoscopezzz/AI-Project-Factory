@@ -1,0 +1,19 @@
+{
+  "real_planner_calls": 0,
+  "real_coder_calls": 0,
+  "agent_elapsed_seconds": 0,
+  "new_agent_token_usage": 0,
+  "parent_chat_token_usage": null,
+  "diagnostic_script_seconds": 14.347,
+  "single_minimal_preflight_seconds": 0.155,
+  "controller_regression_seconds": [
+    3.169,
+    3.135,
+    3.181
+  ],
+  "resumed_readonly_pipe_probe_seconds": [
+    0.4,
+    0.338
+  ],
+  "scope": "Per-run durations only; not total wall time across interruption."
+}

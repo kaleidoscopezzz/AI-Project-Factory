@@ -1,0 +1,71 @@
+{
+  "codexVersion": "0.162.0-alpha.2",
+  "checks": {
+    "auth.credentials": {
+      "id": "auth.credentials",
+      "category": "auth",
+      "status": "ok",
+      "summary": "auth is configured",
+      "details": {
+        "auth file": "C:\\Users\\44725\\.codex\\auth.json",
+        "auth storage mode": "File",
+        "stored API key": "false",
+        "stored ChatGPT tokens": "true",
+        "stored agent identity": "false",
+        "stored auth mode": "chatgpt"
+      },
+      "remediation": null,
+      "durationMs": 0
+    },
+    "network.provider_reachability": {
+      "id": "network.provider_reachability",
+      "category": "reachability",
+      "status": "ok",
+      "summary": "active provider endpoints are reachable over HTTP",
+      "details": {
+        "ChatGPT inference URL": "https://chatgpt.com/backend-api/<redacted> reachable (HTTP 405)",
+        "desktop assets CDN": "https://persistent.oaistatic.com/codex-app-prod/<redacted> reachable (HTTP 200)",
+        "reachability mode": "ChatGPT auth"
+      },
+      "remediation": null,
+      "durationMs": 441
+    },
+    "network.websocket_reachability": {
+      "id": "network.websocket_reachability",
+      "category": "websocket",
+      "status": "warning",
+      "summary": "Responses WebSocket timed out; HTTPS fallback may still work",
+      "details": {
+        "DNS": "1 IPv4, 1 IPv6, first IPv6",
+        "auth mode": "chatgpt",
+        "connect timeout": "15000 ms",
+        "endpoint": "wss://chatgpt.com/backend-api/<redacted>",
+        "model provider": "openai",
+        "provider name": "OpenAI",
+        "proxy env vars": "none",
+        "supports websockets": "true",
+        "wire API": "responses"
+      },
+      "notes": [
+        "handshake timed out"
+      ],
+      "remediation": "Check proxy, VPN, firewall, DNS, custom CA, and WebSocket policy support.",
+      "durationMs": 15017
+    },
+    "runtime.provenance": {
+      "id": "runtime.provenance",
+      "category": "runtime",
+      "status": "ok",
+      "summary": "running local build on windows-x86_64",
+      "details": {
+        "commit": "unknown",
+        "current executable": "C:\\Users\\44725\\AppData\\Local\\OpenAI\\Codex\\bin\\9691020b546a15b2\\codex.EXE",
+        "install method": "other",
+        "platform": "windows-x86_64",
+        "version": "0.162.0-alpha.2"
+      },
+      "remediation": null,
+      "durationMs": 0
+    }
+  }
+}

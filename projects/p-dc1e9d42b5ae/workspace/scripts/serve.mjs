@@ -1,0 +1,5 @@
+import path from 'node:path';
+import {Store} from '../src/adapters/store.mjs';
+import {createServer} from '../src/server/server.mjs';
+const args=process.argv.slice(2);const host=args[args.indexOf('--host')+1]||'127.0.0.1';const port=Number(args[args.indexOf('--port')+1]||4173);
+try{if(host!=='127.0.0.1')throw new Error('Only 127.0.0.1 is allowed');if(!Number.isInteger(port)||port<0||port>65535)throw new Error('Invalid port');const dir=path.resolve(process.env.DEMO_DATA_DIR||'var/demo');const root=path.resolve('.')+path.sep;if(!dir.startsWith(root))throw new Error('Data path outside workspace');const store=new Store(dir);await store.init();const server=createServer(store);server.on('error',e=>{console.error('Startup failed:',e.code||e.message);process.exitCode=1;});server.listen(port,host,()=>console.log(`Listening http://${host}:${server.address().port}`));for(const sig of ['SIGINT','SIGTERM'])process.on(sig,()=>server.close(()=>process.exit(0)));}catch(e){console.error('Startup failed:',e.message);process.exitCode=1;}

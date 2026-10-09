@@ -1,0 +1,8 @@
+{
+  "mode": "danger-full-access",
+  "os_write_boundary_enforced": false,
+  "outside_write_denial_test_run": false,
+  "workspace": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace",
+  "authorization": "explicit per-run --full-access; current user, no elevation",
+  "scope": "path contract only; current-user filesystem/process/network permissions"
+}

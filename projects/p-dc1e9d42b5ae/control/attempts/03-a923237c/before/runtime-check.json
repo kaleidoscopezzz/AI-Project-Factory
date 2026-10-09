@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "url": "http://127.0.0.1:59181/api/health",
+  "argv": [
+    "node",
+    "scripts/serve.mjs",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "59181"
+  ],
+  "port": 59181,
+  "http_status": 200,
+  "response_sha256": "80baa4d8bf1279accd302387a58d5a276045b78c896fbb46fb71d1648fed1f68",
+  "expected_text_found": true,
+  "process_stopped": true
+}

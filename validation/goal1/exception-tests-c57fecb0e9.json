@@ -1,0 +1,11 @@
+{
+  "kind": "deterministic exception tests with explicit AgentDouble; timeout and redaction subprocess tests use real local processes",
+  "run_id": "c57fecb0e9",
+  "tests_run": 22,
+  "failures": 0,
+  "errors": 0,
+  "passed": true,
+  "elapsed_seconds": 3.249,
+  "log": "C:\\AI-Project-Factory\\validation\\goal1\\exception-tests-c57fecb0e9.txt",
+  "fixtures": "C:\\AI-Project-Factory\\validation\\goal1\\test-workspaces\\c57fecb0e9"
+}

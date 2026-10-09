@@ -1,0 +1,18 @@
+{
+  "real_e2e_successes": 0,
+  "real_pipeline_attempts": 1,
+  "agent_calls": 2,
+  "elapsed_seconds": 1244.812,
+  "usage": {
+    "input_tokens": 247901,
+    "cached_input_tokens": 208000,
+    "output_tokens": 25418,
+    "reasoning_output_tokens": 283
+  },
+  "source": "CLI reported main-chain usage; cached/reasoning are subsets, not extra billable totals",
+  "diagnostic_calls": 1,
+  "project_status": "已失败",
+  "final_exception_run": "cf44706865",
+  "exception_tests": 25,
+  "exception_passed": true
+}

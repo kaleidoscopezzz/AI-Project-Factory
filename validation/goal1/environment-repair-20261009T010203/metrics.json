@@ -1,0 +1,8 @@
+{
+  "elapsed_seconds": 14.347,
+  "real_planner_calls": 0,
+  "real_coder_calls": 0,
+  "formal_e2e_calls": 0,
+  "model_token_usage": null,
+  "token_note": "No model invoked by diagnostic script; parent chat tokens not exposed by CLI."
+}

@@ -1,0 +1,1 @@
+API expected refusals: 400 invalid/unknown input; 403 Origin; 409 revision; 404 status endpoint; 503 failed write/corrupt schema. All unchanged-file assertions passed.

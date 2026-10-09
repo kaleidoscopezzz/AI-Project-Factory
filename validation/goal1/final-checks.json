@@ -1,0 +1,11 @@
+{
+  "python_ast_passed": true,
+  "packet_valid": true,
+  "project_failed_not_success": true,
+  "no_completion_json": true,
+  "owned_service_ports_closed": {
+    "4173": true,
+    "59181": true
+  },
+  "source": "actual local verification; not E2E acceptance"
+}

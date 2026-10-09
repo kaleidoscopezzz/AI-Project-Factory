@@ -1,0 +1,98 @@
+{
+  "source": "trusted environment diagnostic, not business tests",
+  "cwd": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace",
+  "temp": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp",
+  "scratch": "C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-857cd684aa",
+  "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+  "node_executable": "C:\\Program Files\\nodejs\\node.EXE",
+  "token_and_pipe": {
+    "is_restricted": true,
+    "restricted_sids": [
+      {
+        "sid": "S-1-5-21-1935653998-1198536376-4121108842-335144655",
+        "attributes": 7
+      },
+      {
+        "sid": "S-1-5-21-1713691168-2934237178-1159928225-2666959805",
+        "attributes": 7
+      },
+      {
+        "sid": "S-1-5-5-0-1126584",
+        "attributes": 7
+      },
+      {
+        "sid": "S-1-1-0",
+        "attributes": 7
+      }
+    ],
+    "is_app_container": 0,
+    "integrity_info_obtained": true,
+    "named_pipe_server_error": 0,
+    "named_pipe_client_error": 5
+  },
+  "ordinary_command": {
+    "started": true,
+    "pid": 15776,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.031,
+    "stdout": "\r\nMicrosoft Windows [�汾 10.0.26200.9168]\r\n",
+    "stderr": ""
+  },
+  "python_child": {
+    "started": true,
+    "pid": 8940,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.044,
+    "stdout": "python-child-ok\r\n",
+    "stderr": ""
+  },
+  "node_version": {
+    "started": true,
+    "pid": 11848,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.039,
+    "stdout": "v26.3.0\r\n",
+    "stderr": ""
+  },
+  "node_matrix": {
+    "started": true,
+    "pid": 5512,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.14,
+    "stdout": "v26.3.0\r\nAPF_MATRIX=[{\"mode\":\"inherit\",\"status\":0,\"error\":null},{\"mode\":\"ignore\",\"status\":0,\"error\":null},{\"mode\":\"pipe\",\"status\":null,\"error\":{\"code\":\"EPERM\",\"syscall\":\"spawnSync C:\\\\Program Files\\\\nodejs\\\\node.EXE\",\"message\":\"spawnSync C:\\\\Program Files\\\\nodejs\\\\node.EXE EPERM\"}},{\"mode\":\"file\",\"status\":0,\"error\":null},{\"mode\":\"pipe-cwd\",\"cwd\":\"C:\\\\AI-Project-Factory\\\\projects\\\\p-dc1e9d42b5ae\\\\workspace\",\"status\":null,\"error\":\"EPERM\"},{\"mode\":\"pipe-cwd\",\"cwd\":\"C:\\\\AI-Project-Factory\\\\projects\\\\p-dc1e9d42b5ae\\\\workspace\\\\.factory-tmp\",\"status\":null,\"error\":\"EPERM\"},{\"mode\":\"pipe-cwd\",\"cwd\":\"C:\\\\AI-Project-Factory\\\\projects\\\\p-dc1e9d42b5ae\\\\workspace\\\\.factory-tmp\\\\environment-probe-857cd684aa\",\"status\":null,\"error\":\"EPERM\"}]\n",
+    "stderr": ""
+  },
+  "node_loopback_tcp": {
+    "started": true,
+    "pid": 28304,
+    "exit_code": 0,
+    "timed_out": false,
+    "elapsed_seconds": 0.087,
+    "stdout": "ok\n",
+    "stderr": ""
+  },
+  "browsers": {
+    "chrome": {
+      "started": true,
+      "pid": 23740,
+      "exit_code": 4294930433,
+      "timed_out": false,
+      "elapsed_seconds": 0.104,
+      "stdout": "",
+      "stderr": "[1009/010210.294:ERROR:third_party\\crashpad\\crashpad\\util\\win\\registration_protocol_win.cc:108] CreateFile: 拒绝访问。 (0x5)\r\n[23740:5072:1009/010210.372:FATAL:mojo\\public\\cpp\\platform\\platform_channel.cc:112] Check failed: . : 拒绝访问。 (0x5)\r\n[1009/010210.372:ERROR:third_party\\crashpad\\crashpad\\client\\crashpad_client_win.cc:142] crash server failed to launch, self-terminating\r\n"
+    },
+    "edge": {
+      "started": true,
+      "pid": 14084,
+      "exit_code": 2147483651,
+      "timed_out": false,
+      "elapsed_seconds": 7.082,
+      "stdout": "",
+      "stderr": "[1009/010210.475:ERROR:third_party\\crashpad\\crashpad\\util\\win\\registration_protocol_win.cc:108] CreateFile: 拒绝访问。 (0x5)\r\n[14084:12212:1009/010210.575:FATAL:mojo\\public\\cpp\\platform\\platform_channel.cc:187] Check failed: . : 拒绝访问。 (0x5)\r\n[1009/010210.576:ERROR:third_party\\crashpad\\crashpad\\client\\crashpad_client_win.cc:156] crash server failed to launch\r\n[14084:8652:1009/010210.580:ERROR:chrome\\installer\\util\\google_update_settings_win.cc:544] Failed opening key Software\\Microsoft\\EdgeUpdate\\ClientStateMedium\\{56EB18F8-B008-4CBD-B6D2-8C97FE7E9062} to set usagestats; result: 5\r\n[14084:8652:1009/010210.580:ERROR:chrome\\installer\\util\\google_update_settings_win.cc:587] Failed opening key Software\\Microsoft\\EdgeUpdate\\ClientStateMedium\\{56EB18F8-B008-4CBD-B6D2-8C97FE7E9062} to set urlstats; result: 5\r\n[14084:10896:1009/010210.640:ERROR:content\\browser\\network_sandbox.cc:410] Failed to grant sandbox access to cache directory C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-857cd684aa\\edge\\Default\\Cache\\Cache_Data: 拒绝访问。 (0x5)\r\n[14084:10896:1009/010210.656:ERROR:content\\browser\\network_sandbox.cc:335] Failed to grant sandbox access to SharedDictionary directory C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-857cd684aa\\edge\\Default\\Shared Dictionary: 拒绝访问。 (0x5)\r\n[14084:10896:1009/010210.656:ERROR:content\\browser\\network_sandbox.cc:518] Failed to grant sandbox access to network context data directory C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-857cd684aa\\edge\\Default\\Network: 拒绝访问。 (0x5)\r\n[14084:8652:1009/010210.783:ERROR:chrome\\installer\\util\\google_update_settings_win.cc:544] Failed opening key Software\\Microsoft\\EdgeUpdate\\ClientStateMedium\\{56EB18F8-B008-4CBD-B6D2-8C97FE7E9062} to set usagestats; result: 5\r\n[14084:4832:1009/010210.794:ERROR:content\\browser\\network_sandbox_grant_result_helper.cc:106] Encountered error while migrating network context data or granting sandbox access for C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-857cd684aa\\edge\\Default\\Network. Result: 6: 操作系统找不到已输入的环境选项。 (0xCB)\r\n[14084:8652:1009/010210.816:ERROR:content\\browser\\network_sandbox.cc:410] Failed to grant sandbox access to cache directory C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-857cd684aa\\edge\\Default\\Storage\\ext\\ihmafllikibpmigkcoadcmckbfhibefp\\def\\Cache\\Cache_Data: 拒绝访问。 (0x5)\r\n[14084:8652:1009/010210.816:ERROR:content\\browser\\network_sandbox.cc:335] Failed to grant sandbox access to SharedDictionary directory C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-857cd684aa\\edge\\Default\\Storage\\ext\\ihmafllikibpmigkcoadcmckbfhibefp\\def\\Shared Dictionary: 拒绝访问。 (0x5)\r\n[14084:8652:1009/010210.816:ERROR:content\\browser\\network_sandbox.cc:518] Failed to grant sandbox access to network context data directory C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-857cd684aa\\edge\\Default\\Storage\\ext\\ihmafllikibpmigkcoadcmckbfhibefp\\def\\Network: 拒绝访问。 (0x5)\r\n[14084:4832:1009/010210.850:ERROR:content\\browser\\network_sandbox_grant_result_helper.cc:106] Encountered error while migrating network context data or granting sandbox access for C:\\AI-Project-Factory\\projects\\p-dc1e9d42b5ae\\workspace\\.factory-tmp\\environment-probe-857cd684aa\\edge\\Default\\Storage\\ext\\ihmafllikibpmigkcoadcmckbfhibefp\\def\\Network. Result: 6: 操作成功完成。 (0x0)\r\n[14084:25948:1009/010215.788:ERROR:services\\device\\public\\cpp\\geolocation\\system_geolocation_source_win.cc:124] Failed to create IAppCapability: 拒绝访问。 (0x80070005)\r\n[14084:6076:1009/010216.032:FATAL:mojo\\public\\cpp\\platform\\platform_channel.cc:187] Check failed: . : 拒绝访问。 (0x5)\r\n[1009/010217.311:ERROR:third_party\\crashpad\\crashpad\\client\\crashpad_client_win.cc:156] crash server failed to launch\r\n"
+    }
+  }
+}

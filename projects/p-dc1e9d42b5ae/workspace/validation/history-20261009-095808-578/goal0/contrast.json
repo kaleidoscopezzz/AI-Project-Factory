@@ -1,0 +1,37 @@
+[
+  {
+    "foreground": "172033",
+    "background": "ffffff",
+    "ratio": 16.268480224545662
+  },
+  {
+    "foreground": "526077",
+    "background": "ffffff",
+    "ratio": 6.366920198884682
+  },
+  {
+    "foreground": "2457c5",
+    "background": "ffffff",
+    "ratio": 6.472421857201706
+  },
+  {
+    "foreground": "196039",
+    "background": "e7f4ed",
+    "ratio": 6.69208976794197
+  },
+  {
+    "foreground": "80500c",
+    "background": "fff0dc",
+    "ratio": 6.106110601807124
+  },
+  {
+    "foreground": "526077",
+    "background": "f5f7fa",
+    "ratio": 5.932522426739813
+  },
+  {
+    "foreground": "2457c5",
+    "background": "edf2ff",
+    "ratio": 5.77764042905354
+  }
+]
