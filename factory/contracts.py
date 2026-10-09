@@ -157,7 +157,9 @@ def validate_plan(plan, workspace):
 
 PACKET_FIELDS = {'format_version','task_id','project_id','original_request','goal','project_type','technology','workspace','allow_write','deny_write','prompt_path','acceptance','checks','runtime','budget','input_fingerprint','artifacts','state'}
 def validate_packet(packet, root, state):
-    if not isinstance(packet,dict) or set(packet)!=PACKET_FIELDS or packet['format_version']!='1.0':
+    incremental=isinstance(packet,dict) and packet.get('format_version')=='1.1'
+    fields=PACKET_FIELDS|{'predecessor'} if incremental else PACKET_FIELDS
+    if not isinstance(packet,dict) or set(packet)!=fields or packet['format_version'] not in ('1.0','1.1'):
         raise FactoryError('TaskPacket 格式/版本无效')
     for key in ('task_id','project_id','original_request','goal','project_type','technology','workspace','prompt_path','input_fingerprint','state'):
         if not isinstance(packet[key],str) or not packet[key].strip():
@@ -172,26 +174,34 @@ def validate_packet(packet, root, state):
         if packet[key] != state[key]:
             raise FactoryError('TaskPacket 与持久化任务身份不一致：'+key)
     project = safe_path(Path(root)/'projects'/state['project_id'],Path(root)/'projects')
+    control=project/'control'/'goals'/'goal-1' if incremental else project/'control'
     workspace = safe_path(packet['workspace'],project/'workspace',exact=True)
-    if packet['allow_write']!=[str(workspace)] or packet['goal']!='Goal 0' or packet['state']!='任务包已验证':
+    goal='Goal 1' if incremental else 'Goal 0'
+    if packet['allow_write']!=[str(workspace)] or packet['goal']!=goal or packet['state']!='任务包已验证':
         raise FactoryError('任务范围/状态无效')
     expected_deny = [str(Path(root)/'skills'),str(Path(root)/'validation'),str(Path(root)/'.git'),'C:\\910Program',str(project/'control')]
     if packet['deny_write'] != expected_deny or packet['budget']!=state['budget']:
         raise FactoryError('禁止范围或预算被篡改')
-    prompt = safe_path(packet['prompt_path'],project/'control'/'goal0-prompt.md',exact=True)
-    expected_files = ('plan.md','goals.md','goal0-blueprint.md','goal0-prompt.md','planner-result.json')
+    prompt = safe_path(packet['prompt_path'],control/('goal-prompt.md' if incremental else 'goal0-prompt.md'),exact=True)
+    expected_files = (('plan.md','goals.md','goal-prompt.md','goal-spec.json','planner-result.json','increment-before.json') if incremental
+                      else ('plan.md','goals.md','goal0-blueprint.md','goal0-prompt.md','planner-result.json'))
     if set(packet['artifacts'])!=set(expected_files):
         raise FactoryError('任务包产物不齐全')
     for name in expected_files:
-        p = safe_path(project/'control'/name,project/'control')
+        p = safe_path(control/name,control)
         if not p.is_file() or file_hash(p)!=packet['artifacts'][name]:
             raise FactoryError('规划文件哈希不匹配：'+name)
-    plan = json.loads((project/'control/planner-result.json').read_text(encoding='utf-8'))
+    plan = json.loads((control/'planner-result.json').read_text(encoding='utf-8'))
     validate_plan(plan,workspace)
-    for key in ('project_type','technology','checks','runtime'):
+    for key in ('project_type','technology'):
         if packet[key]!=plan[key]:
             raise FactoryError('任务包与规划不一致：'+key)
-    if packet['acceptance'] != [a for a in plan['acceptance'] if a['goal_id']=='Goal 0']:
+    if incremental:
+        from .sequence import validate_link
+        validate_link(packet,root,state,plan,control)
+    elif any(packet[key]!=plan[key] for key in ('checks','runtime')):
+        raise FactoryError('任务包与规划运行契约不一致')
+    if packet['acceptance'] != [a for a in plan['acceptance'] if a['goal_id']==goal]:
         raise FactoryError('任务包验收映射不一致')
     if digest(packet)!=state.get('packet_fingerprint'):
         raise FactoryError('任务包指纹不匹配')

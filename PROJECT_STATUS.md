@@ -6,10 +6,31 @@
 | --- | --- | --- |
 | Goal 0 | 开发经验提炼与核心 Skills 建设 | 已验收冻结 |
 | Goal 1 | Planner→TaskPacket→Coder 自动交接与基础验证 | 已验收冻结 |
-| Goal 2 | 独立 Tester/Reviewer、有限返工与恢复 | Goal 2 核心实现完成，有限范围外部验收待审查 |
-| Goal 3 及后续 | 另行授权的后续建设 | 尚未开始 |
+| Goal 2 | 独立 Tester/Reviewer、有限返工与恢复 | 有限范围外部批准，已验收封版 |
+| APF Goal 3 | 同一软件项目的两阶段串行执行第一增量 | 第一增量已实现并确定性验证，待外部审查；真实模型未验证 |
+| 后续建设 | 另行授权的后续建设 | 尚未开始 |
 
-## Goal 2：2026-10-09 有限范围收口，停止开发
+## 当前基线：Goal 2 已由用户手动完成有限范围封版
+
+2026-10-09用户亲自完成并核验Git收口及GitHub推送。只读核对main/HEAD/本地与远端main为551107e1041ce55570a9ec0fd396d55666ec0156；annotated tag goal-2-approved对象2fd33d9d0527f27034072124bb3e89356a6c461c，解引用至同一Commit，本地与远端对象一致。Goal0/Goal1既有Tag不变。暂存区空；原图书state/events/quality与探针遗留属于已核对的历史文件，不自动清理或重提交。
+
+批准性质是有限范围外部批准，已经封版；真实Tester与第三次12项AC/27条引用的确定性重校验、Windows 194项回归及外部静态审查已有依据。真实独立Reviewer批准和自动返工模型闭环仍未验证，Full Access无OS隔离、Token无硬上限、三条历史warning/unverified继续披露，但不据此重开Goal2验收。本轮不修复、重验或提交Goal2。
+
+APF自身Goal3与生成软件的Goal0/Goal1不同。本轮采用用户批准的两阶段串行第一增量，保留旧路线图的依赖/整合方向，复用现有Controller/TaskPacket/QualityGate；不开发并发DAG、Git/发行或通用审计平台。新真实模型调用未授权，只执行本地确定性夹具。历史段落均保留原貌。
+
+## APF Goal 3：两阶段串行第一增量已停止，待外部审查
+
+新增开发API prepare_goal_sequence/run_goal_sequence，复用现有Controller与QualityGate。完整原始需求/计划保留，调用者先确认软件Goal1独立提示词、AC/运行契约；软件Goal0质量门槛通过后才建立独立Goal1任务包1.1、state/events与质量记录，在同一workspace增量开发。旧包1.0及单任务入口保持兼容，已登记串行项目禁止从旧Auto入口重跑Goal0。没有新增正式CLI参数或修改根README。
+
+本轮确定性结果212/212：原Goal1 41、Goal2兼容62、证据18、复验执行器32、历史27、语义14，以及新增两阶段18。明确标记AgentDouble的项目p-49486fcfac43完成软件Goal0→Goal1，保留基础源码、使用独立Goal1 AC/提示词/TaskPacket及现有质量门槛。完成阶段续跑、完成检查点到游标间的中断恢复没有重复派发；缺入口条件/有效包、错误依赖、篡改、跨workspace、删除前序源码、越出写集及质量失败均拒绝或停止。未知部分调用中断仍停止等待人工，不开发新恢复执行器或隐式重试。
+
+Planner/Coder/Tester/Reviewer本轮新增真实调用均0，未运行真实业务E2E或浏览器。确定性通过不等于真实Reviewer批准或完整软件交付；真实自动返工仍未验证。本增量固定两个软件Goal，后续阶段提示词与范围需要调用者明确确认，自动后续规划/任意Goal/并发/Git/Release未实现，APF Goal3整体未宣布完成。
+
+新增factory/sequence.py、tests/test_sequence.py、docs/GOAL3_INCREMENT.md及Goal3测试目录忽略规则；最小修改controller.py/contracts.py与当前状态。Goal2质量实现、历史报告/账本、原图书源码、冻结Skills与历史Tag保持不变；不访问C:\910Program，无Git写入。当前基线仍551107e1041ce55570a9ec0fd396d55666ec0156/goal-2-approved，暂存区空。证据见validation/goal3/increment-20261009T204940-7f1010/REPORT.md、REGRESSIONS.json、TWO_GOAL_EXAMPLE.json及保护检查。
+
+下一次真实验证需另获授权：新非UI小项目，Planner最多1，两个阶段Coder/Tester/只读Reviewer各最多1，共最多7；每调用最多600秒、无Retry/NoAutoRepair，任一质量门槛未通过停止。仅为计划，不执行。Full Access无OS隔离、Token无硬上限继续披露。完成第一增量后停止，等待外部ChatGPT Reviewer审查，不自行Git封版。
+
+## 历史：Goal 2 2026-10-09 有限范围收口，停止开发
 
 用户已决定停止反复真实验证和恢复机制扩张；外部ChatGPT Reviewer同意按有限范围进入最终代码与证据审查。现有Tester、Reviewer、DefectPacket、有限返工、证据校验和恢复实现全部保留，本轮不修改实现、不新增测试/质量协议/审计工具、不尝试接续第三次失败账本。
 

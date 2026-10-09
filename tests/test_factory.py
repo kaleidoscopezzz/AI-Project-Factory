@@ -270,6 +270,7 @@ class FactoryTests(unittest.TestCase):
         self.assertEqual(load(control/'coder-file-provenance.json')['changed'],['app.mjs'])
     def full_flow_fixture(self,full_access):
         agent=FlowDouble(full_access);self.controller.executor=agent
+        self.controller.full_access=full_access
         self.controller.runtime_check=lambda *a:{'passed':True,'test_double':True,'scope':'No HTTP/browser execution'}
         return agent
     def test_new_full_access_request_planner_packet_coder_control_flow(self):
@@ -315,11 +316,68 @@ class FactoryTests(unittest.TestCase):
         executor=CodexExecutor.__new__(CodexExecutor);executor.exe='C:/fixture/codex.exe';executor.model=None;executor.version='fixture-only'
         for full in (False,True):
             executor.full_access=full
-            for role in ('Planner','Coder'):
+            for role in ('Planner','Reviewer','Coder'):
                 with patch('factory.executor.bounded',return_value={'exit_code':0,'timed_out':False,'elapsed_seconds':0}) as call:
                     executor.run(role,'fixture',self.root,self.root,1,{},10)
                 argv=call.call_args.args[0];mode=argv[argv.index('-s')+1]
-                self.assertEqual(mode,'read-only' if role=='Planner' else ('danger-full-access' if full else 'workspace-write'))
+                self.assertEqual(mode,'read-only' if role in ('Planner','Reviewer') else ('danger-full-access' if full else 'workspace-write'))
+    def test_plan_records_future_full_access_without_granting_it(self):
+        agent=self.full_flow_fixture(False);prompts=[]
+        original=agent.run
+        def capture(role,prompt,*args):
+            prompts.append(prompt);return original(role,prompt,*args)
+        agent.run=capture
+        pid=self.controller.create('Permission AgentDouble only',10,coder_execution_intent='danger-full-access')
+        state=self.execute(pid,'Plan')
+        self.assertEqual(state['status'],'任务包已验证')
+        self.assertEqual(state['coder_execution_intent'],'danger-full-access')
+        self.assertFalse(self.controller.full_access);self.assertFalse(agent.full_access)
+        self.assertEqual(agent.roles,['Planner']);self.assertNotIn('execution_mode',state)
+        self.assertIn('未来Coder/工程检查的Full Access执行意向',prompts[0])
+        self.assertIn('只是规划记录，不授予执行权限',prompts[0])
+        self.assertIn('Planner本次始终read-only',prompts[0])
+        self.assertNotIn('本次未选择Full Access',prompts[0])
+        self.controller.full_access=True;agent.full_access=True
+        self.assertEqual(self.execute(pid)['status'],'已完成')
+        self.assertEqual(agent.roles,['Planner','Coder'])
+    def test_plan_default_intent_stays_restricted_and_legacy_state_works(self):
+        agent=self.full_flow_fixture(False);pid=self.task()
+        self.assertEqual(self.execute(pid,'Plan')['status'],'任务包已验证')
+        _,control,workspace,state=self.controller.locate(pid)
+        self.assertEqual(state['coder_execution_intent'],'workspace-write')
+        self.assertIn('未确认未来Full Access意向',self.controller.planner_input(state,workspace))
+        # Old fixture records have no intent; do not migrate historic records.
+        del state['coder_execution_intent'];save(control/'state.json',state)
+        self.assertEqual(self.execute(pid)['status'],'已完成')
+        self.assertFalse(agent.full_access)
+    def test_plan_execution_intent_mismatch_stops_before_dispatch(self):
+        for intent,selected in [('danger-full-access',False),('workspace-write',True)]:
+            with self.subTest(intent=intent,selected=selected):
+                agent=self.full_flow_fixture(False)
+                pid=self.controller.create('Mismatch AgentDouble only',10,coder_execution_intent=intent)
+                self.assertEqual(self.execute(pid,'Plan')['status'],'任务包已验证')
+                count=len(agent.steps)
+                self.controller.full_access=selected;agent.full_access=selected
+                state=self.execute(pid)
+                self.assertEqual(state['status'],'已失败')
+                self.assertIn('规划确认',state['error'])
+                self.assertEqual(agent.roles,['Planner']);self.assertEqual(len(agent.steps),count)
+    def test_executor_full_access_without_caller_selection_is_rejected(self):
+        agent=self.full_flow_fixture(False);pid=self.task();agent.full_access=True
+        state=self.execute(pid)
+        self.assertEqual(state['status'],'已失败');self.assertEqual(agent.roles,[])
+        self.assertIn('调用者显式选择',state['error'])
+    def test_invalid_execution_intent_stops_before_model(self):
+        with self.assertRaisesRegex(FactoryError,'执行意向无效'):
+            self.controller.create('invalid intent',10,coder_execution_intent='')
+        pid=self.task();_,control,_,state=self.controller.locate(pid)
+        state['coder_execution_intent']='unrecognized-mode';save(control/'state.json',state)
+        self.assertEqual(self.execute(pid)['status'],'已失败');self.assertEqual(self.agent.roles,[])
+    def test_selected_full_access_with_restricted_executor_is_rejected(self):
+        agent=self.full_flow_fixture(False);self.controller.full_access=True
+        state=self.execute(self.task())
+        self.assertEqual(state['status'],'已失败');self.assertEqual(agent.roles,[])
+        self.assertIn('调用者显式选择',state['error'])
     def test_explicit_cli_path_without_path_lookup(self):
         from unittest.mock import patch
         import subprocess
