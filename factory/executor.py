@@ -47,6 +47,31 @@ def kill_tree(process):
             process.kill()
             process.wait(timeout=5)
 
+def process_identity(pid):
+    """Read a specific handle identity; never kill an unowned/reused PID."""
+    if os.name!='nt':
+        try:
+            fields=Path(f'/proc/{pid}/stat').read_text().split()
+            return {'live':fields[2]!='Z','creation':fields[21]}
+        except FileNotFoundError:return {'live':False,'creation':None}
+    import ctypes
+    from ctypes import wintypes
+    api=ctypes.WinDLL('kernel32',use_last_error=True)
+    api.OpenProcess.argtypes=[wintypes.DWORD,wintypes.BOOL,wintypes.DWORD];api.OpenProcess.restype=wintypes.HANDLE
+    api.GetExitCodeProcess.argtypes=[wintypes.HANDLE,ctypes.POINTER(wintypes.DWORD)]
+    api.GetProcessTimes.argtypes=[wintypes.HANDLE,*([ctypes.POINTER(wintypes.FILETIME)]*4)]
+    api.CloseHandle.argtypes=[wintypes.HANDLE]
+    handle=api.OpenProcess(0x1000,False,pid)
+    if not handle:
+        if ctypes.get_last_error()==87:return {'live':False,'creation':None}
+        raise FactoryError('无法只读确认指定Agent进程是否存活，禁止重复调用')
+    try:
+        code=wintypes.DWORD();times=[wintypes.FILETIME() for _ in range(4)]
+        if not api.GetExitCodeProcess(handle,ctypes.byref(code)) or not api.GetProcessTimes(handle,*(ctypes.byref(t) for t in times)):
+            raise FactoryError('无法读取指定Agent进程身份')
+        return {'live':code.value==259,'creation':str((times[0].dwHighDateTime<<32)|times[0].dwLowDateTime)}
+    finally:api.CloseHandle(handle)
+
 def popen(argv,cwd,env=None):
     return subprocess.Popen(argv,cwd=cwd,env=env or clean_env(cwd),stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                             text=True,encoding='utf-8',errors='replace',creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0,
@@ -76,6 +101,7 @@ def bounded(argv,cwd,timeout,stdin='',log=None,callback=None):
     timed_out, closed = False,set()
     stream = Path(log).open('w',encoding='utf-8') if log else None
     try:
+        if callback:callback('process_started',str(process.pid))
         process.stdin.write(stdin)
         process.stdin.close()
         while len(closed)<2:
@@ -215,7 +241,7 @@ class CodexExecutor:
         schema_path = Path(control)/(role.lower()+'-schema.json')
         schema_path.write_text(json.dumps(schema,ensure_ascii=False,indent=2),encoding='utf-8')
         args = [self.exe,'--no-daemon','-a','never','exec','--ignore-user-config','--ignore-rules','--ephemeral',
-                '--skip-git-repo-check','--json','--color','never','-s','read-only' if role=='Planner' else ('danger-full-access' if self.full_access else 'workspace-write'),
+                '--skip-git-repo-check','--json','--color','never','-s','read-only' if role in ('Planner','Reviewer') else ('danger-full-access' if self.full_access else 'workspace-write'),
                 '-C',str(cwd),'--output-schema',str(schema_path),'-c','windows.sandbox="unelevated"']
         for feature in ('multi_agent','memories','plugins','apps','hooks'):
             args += ['--disable',feature]
@@ -227,9 +253,12 @@ class CodexExecutor:
         path.with_suffix('.input.md').write_text(redact(prompt),encoding='utf-8')
         path.with_suffix('.launch.json').write_text(json.dumps({'argv':args,'cwd':str(cwd),
             'timeout_seconds':timeout,'desktop_permission_inherited':False,
-            'os_write_boundary_enforced':role=='Planner' or not self.full_access},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+            'os_write_boundary_enforced':role in ('Planner','Reviewer') or not self.full_access},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
         events, last = [],[time.monotonic()]
         def on_line(kind,line):
+            if kind=='process_started':
+                path.with_suffix('.process.json').write_text(json.dumps({'pid':int(line),**process_identity(int(line)),
+                    'workspace':str(cwd),'argv_sha256':__import__('hashlib').sha256(json.dumps(args).encode()).hexdigest()},ensure_ascii=False),encoding='utf-8')
             if kind=='stdout':
                 try:
                     events.append(json.loads(line))
@@ -243,9 +272,11 @@ class CodexExecutor:
         completed = [e for e in events if e.get('type')=='turn.completed']
         result = {k:result[k] for k in ('exit_code','timed_out','elapsed_seconds')}
         result.update({'role':role,'version':self.version,'thread_ids':[e['thread_id'] for e in events if e.get('type')=='thread.started'],
-                       'execution_mode':'read-only' if role=='Planner' else ('danger-full-access' if self.full_access else 'workspace-write'),
+                       'execution_mode':'read-only' if role in ('Planner','Reviewer') else ('danger-full-access' if self.full_access else 'workspace-write'),
                        'usage':[e.get('usage') for e in completed],'event_count':len(events),'turn_completed':bool(completed),
                        'error_events':[e for e in events if e.get('type') in ('turn.failed','error')], 'input_sha256':__import__('hashlib').sha256(prompt.encode()).hexdigest()})
+        result['command_executions']=[{k:e['item'].get(k) for k in ('command','exit_code','status')}
+            for e in events if e.get('type')=='item.completed' and e.get('item',{}).get('type')=='command_execution']
         result['output']=None
         if messages:
             try:

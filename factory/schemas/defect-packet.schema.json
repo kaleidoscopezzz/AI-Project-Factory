@@ -1,0 +1,119 @@
+{
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "type": "string",
+      "enum": [
+        "2.0"
+      ]
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "candidate_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "packet_fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ac_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "implementation",
+              "test",
+              "environment",
+              "ambiguity",
+              "permission",
+              "evidence"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "major",
+              "minor"
+            ]
+          },
+          "reproduce": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expected": {
+            "type": "string"
+          },
+          "actual": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "ac_ids",
+          "category",
+          "severity",
+          "reproduce",
+          "expected",
+          "actual",
+          "evidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "repair_number": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "format_version",
+    "project_id",
+    "task_id",
+    "candidate_fingerprint",
+    "packet_fingerprint",
+    "issues",
+    "repair_number"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "defect-packet Goal2/2.0"
+}

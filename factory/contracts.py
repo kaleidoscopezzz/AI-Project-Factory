@@ -5,7 +5,8 @@ import os
 import re
 from pathlib import Path
 
-STATES = ['待规划','规划中','规划完成','任务包已验证','Coder执行中','基础验证中','已完成','已失败','等待用户确认']
+STATES = ['待规划','规划中','规划完成','任务包已验证','Coder执行中','基础验证中','已完成','已失败','等待用户确认',
+          'Tester执行中','Reviewer审查中','等待返工','Coder返工中','质量门槛通过','质量门槛失败']
 SKILLS = ['requirement-planner','goal0-scaffolder','goal-prompt-writer']
 
 class FactoryError(Exception):
