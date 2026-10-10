@@ -1,16 +1,28 @@
 # AI Project Factory 项目状态
 
-更新时间：2026-10-09，Asia/Shanghai。
+更新时间：2026-10-11，Asia/Shanghai。
 
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
 | Goal 0 | 开发经验提炼与核心 Skills 建设 | 已验收冻结 |
 | Goal 1 | Planner→TaskPacket→Coder 自动交接与基础验证 | 已验收冻结 |
 | Goal 2 | 独立 Tester/Reviewer、有限返工与恢复 | 有限范围外部批准，已验收封版 |
-| APF Goal 3 | 同一软件项目的两阶段串行执行第一增量 | 第一增量已实现并确定性验证，待外部审查；真实模型未验证 |
+| APF Goal 3 | 同一软件项目的两阶段串行执行 | 待办软件 Goal 0、Goal 1 已获真实独立质量批准；APF Goal 3 待外部审查 |
 | 后续建设 | 另行授权的后续建设 | 尚未开始 |
 
-## 当前基线：Goal 2 已由用户手动完成有限范围封版
+## 当前开发状态：软件 Goal 1 已完成真实开发与独立质量批准
+
+当前 main、HEAD、origin/main 与远端 main 均为 2755392535b02cc92d34f18f14f23be327b46748，属于用户提交的 Goal 3 WIP；Goal 2 批准 Tag 对象仍为 2fd33d9d0527f27034072124bb3e89356a6c461c，解引用至 551107e1041ce55570a9ec0fd396d55666ec0156。没有本轮 Git 写入。
+
+复用 p-867ba2d6987a 及原 Planner 的 AC-101..104，经现有 Sequence 在已批准 Goal 0 工程上完成编辑、完成状态、三类筛选和旧数据兼容。独立 Goal 1 TaskPacket 指纹 2a62575bf78da0360efe32d12c437376fa9bcde2004742b03bc7d3b5e10a148d；新业务候选 209fc3ca875363d86a5a37e651cfbefe55f6c1e120adf06cbb4d3df9e21527a9。原 Goal 0 包、批准快照及历史未覆盖。
+
+本轮真实调用 Planner 0、Coder 1、CoderRepair 0、Tester 1、只读 Reviewer 1。Tester 原始四项正式 AC passed，独立构建、业务及 Edge 双视口证据有效；Reviewer 原始 decision=approved。原 Reviewer 另列一项非正式 AC-012 补充交付审查，完整保留在来源绑定的范围复核记录中，正式 AC 视图为原规划四项；没有新 Tester/Reviewer 调用或人工改写原始 JSON。宿主输入后缀与源码引用校验问题经局部修复后，现有 QualityGate 和 Sequence 生成正式阶段回执，89 份完成引用验证通过；已完成续跑新增模型调用 0。
+
+最终确定性回归 260/260（253.378 秒），失败/初始化错误/跳过均 0，原始日志保留 ResourceWarning 说明。阶段来源为 validation/goal3/goal1-delivery-20261010/stage-approval.json 与原项目 control/sequence/goal1-completion.json。交付说明、真实用量、回归与保护结果统一见同目录 FINAL_REPORT.md；旧准备失败、质量失败账本及首次 Coder 自测失败均保留。本轮没有软件 Goal 2 执行。
+
+真实 Coder 自动返工模型闭环仍未验证。Full Access 无 OS 工作区隔离，Token 无硬上限；移动验收为已安装 Edge 的视口模拟。两阶段真实接续成立，尚不代表任意数量 Goal 从一句话全自动完成、发行交付或 APF Goal 3 外部批准。
+
+## 历史基线：Goal 2 已由用户手动完成有限范围封版
 
 2026-10-09用户亲自完成并核验Git收口及GitHub推送。只读核对main/HEAD/本地与远端main为551107e1041ce55570a9ec0fd396d55666ec0156；annotated tag goal-2-approved对象2fd33d9d0527f27034072124bb3e89356a6c461c，解引用至同一Commit，本地与远端对象一致。Goal0/Goal1既有Tag不变。暂存区空；原图书state/events/quality与探针遗留属于已核对的历史文件，不自动清理或重提交。
 
@@ -18,7 +30,7 @@
 
 APF自身Goal3与生成软件的Goal0/Goal1不同。本轮采用用户批准的两阶段串行第一增量，保留旧路线图的依赖/整合方向，复用现有Controller/TaskPacket/QualityGate；不开发并发DAG、Git/发行或通用审计平台。新真实模型调用未授权，只执行本地确定性夹具。历史段落均保留原貌。
 
-## APF Goal 3：两阶段串行第一增量已停止，待外部审查
+## 历史：APF Goal 3 两阶段串行第一增量已停止，待外部审查
 
 新增开发API prepare_goal_sequence/run_goal_sequence，复用现有Controller与QualityGate。完整原始需求/计划保留，调用者先确认软件Goal1独立提示词、AC/运行契约；软件Goal0质量门槛通过后才建立独立Goal1任务包1.1、state/events与质量记录，在同一workspace增量开发。旧包1.0及单任务入口保持兼容，已登记串行项目禁止从旧Auto入口重跑Goal0。没有新增正式CLI参数或修改根README。
 

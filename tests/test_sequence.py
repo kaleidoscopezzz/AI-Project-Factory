@@ -29,6 +29,8 @@ class SequenceDouble(QualityDouble):
             base=workspace/'fixture.mjs';prior=file_hash(base)
             target=workspace/'src/business/increment.mjs';target.parent.mkdir(parents=True,exist_ok=True)
             target.write_text('// incremental fixture consumes existing foundation '+prior+'\n',encoding='utf-8')
+            acceptance=workspace/'validation/goal1/acceptance.md';acceptance.parent.mkdir(parents=True,exist_ok=True)
+            acceptance.write_text('AgentDouble Goal 1 documentation only; not real acceptance.\n',encoding='utf-8')
             if self.second_behavior=='delete':base.unlink()
             if self.second_behavior=='outside_write_set':base.write_text('// unexpected replacement')
             return {'exit_code':0,'timed_out':False,'elapsed_seconds':0,'turn_completed':True,
@@ -208,6 +210,149 @@ class SequenceTests(unittest.TestCase):
         self.assertEqual(self.run_chain()['status'],'停止')
         self.assertEqual(self.agent.roles,['Planner','Coder','Tester'])
         self.assertTrue((self.control/'quality/rounds/01/defect-packet.json').is_file())
+
+    def approval_fixture(self):
+        from factory.quality import candidate
+        (self.workspace/'fixture.mjs').write_text('// approved synthetic foundation, no business run\n',encoding='utf-8')
+        folder=RUN_ROOT/'approved-fixture'/uuid.uuid4().hex
+        qpath=folder/'control/quality/state.json'
+        qpath.parent.mkdir(parents=True);(folder/'control/sequence').mkdir()
+        save(qpath,{'status':'质量门槛通过','rounds':[{'tester':{'status':'passed'},'reviewer':{'decision':'approved'}}]})
+        record={'project_id':self.pid,'goal':'Goal 0','status':'质量门槛通过','candidate':candidate(self.workspace),
+                'packet_fingerprint':digest(load(self.control/'task-packet.json')),
+                'files':{'control/quality/state.json':file_hash(qpath)},'scope':'AgentDouble approval fixture only'}
+        save(folder/'control/sequence/goal0-completion.json',record)
+        save(folder/'stage-approval.json',{'project_id':self.pid,'goal':'Goal 0',
+             'candidate_fingerprint':record['candidate']['fingerprint'],'packet_fingerprint':record['packet_fingerprint'],
+             'completion':{'path':'goal0-completion.json','sha256':file_hash(folder/'control/sequence/goal0-completion.json')}})
+        return folder
+
+    def test_19_independent_receipt_skips_goal0_and_preserves_origin(self):
+        source=self.approval_fixture();before={p.relative_to(source).as_posix():file_hash(p) for p in source.rglob('*') if p.is_file()}
+        old_state=file_hash(self.control/'state.json');roles=list(self.agent.roles)
+        self.c.adopt_goal0_approval(self.pid,source)
+        self.assertEqual(self.run_chain()['status'],'两阶段已完成')
+        self.assertEqual(self.agent.roles[len(roles):],['Coder','Tester','Reviewer'])
+        self.assertEqual(file_hash(self.control/'state.json'),old_state)
+        self.assertEqual(before,{p.relative_to(source).as_posix():file_hash(p) for p in source.rglob('*') if p.is_file()})
+
+    def test_20_independent_receipt_source_tamper_refuses_dispatch(self):
+        source=self.approval_fixture();self.c.adopt_goal0_approval(self.pid,source)
+        roles=list(self.agent.roles);(source/'control/quality/state.json').write_text('{}')
+        with self.assertRaises(FactoryError):self.run_chain()
+        self.assertEqual(roles,self.agent.roles)
+
+    def test_21_independent_receipt_candidate_mismatch_refuses_dispatch(self):
+        source=self.approval_fixture();(self.workspace/'unexpected.mjs').write_text('// changed')
+        with self.assertRaises(FactoryError):self.c.adopt_goal0_approval(self.pid,source)
+        self.assertEqual(self.agent.roles,['Planner'])
+
+    def unlaunched_fixture(self):
+        self.run_chain('Goal 0');cursor=load(self.cursor)
+        stage=prepare_stage(self.c,self.project,self.control,self.workspace,self.c.locate(self.pid)[3],
+                            self.spec,cursor['completed']['Goal 0'])
+        control=stage.locate(self.pid)[1];state=load(control/'state.json')
+        state.update(status='已失败',error='fixture local preparation exception',
+                     calls=[{'role':'Coder','number':1,'status':'interrupted','started_at':'fixture'}])
+        save(control/'state.json',state);return stage,control
+
+    def test_22_unlaunched_local_failure_keeps_history_without_model_retry(self):
+        stage,control=self.unlaunched_fixture();h=file_hash(control/'state.json')
+        state=stage.resume_unlaunched_coder(self.pid)
+        archive=Path(state['calls'][0]['failure_archive'])
+        self.assertEqual(file_hash(archive/'state.json'),h)
+        self.assertEqual(state['calls'][0]['status'],'not_dispatched')
+        self.assertEqual(self.run_chain()['status'],'两阶段已完成')
+        self.assertEqual(self.agent.roles.count('Coder'),2)
+
+    def test_23_any_cli_launch_evidence_refuses_unlaunched_recovery(self):
+        stage,control=self.unlaunched_fixture();(control/'coder-01.launch.json').write_text('{}')
+        roles=list(self.agent.roles)
+        with self.assertRaises(FactoryError):stage.resume_unlaunched_coder(self.pid)
+        self.assertEqual(roles,self.agent.roles)
+
+    def test_24_zero_call_quality_preparation_can_use_new_context(self):
+        from factory.quality import QualityGate
+        from unittest.mock import patch
+        self.run_chain('Goal 0')
+        original=QualityGate.history_plan
+        def fail_second(gate):
+            if gate.packet['goal']=='Goal 1':raise FactoryError('fixture unresolved delivery citation')
+            return original(gate)
+        with patch.object(QualityGate,'history_plan',fail_second):self.assertEqual(self.run_chain()['status'],'停止')
+        stage=stage_controller(self.c);folder=stage.locate(self.pid)[1];old_hash=file_hash(folder/'quality/state.json')
+        stage.use_unstarted_quality_context(self.pid,'quality-goal1-fixture')
+        self.c._quality_context=stage._quality_context
+        self.assertEqual(self.run_chain()['status'],'两阶段已完成')
+        self.assertEqual(old_hash,file_hash(folder/'quality/state.json'))
+        self.assertEqual(self.agent.roles.count('Coder'),2)
+
+    def test_25_finished_tester_failure_cannot_reopen_quality_budget(self):
+        self.run_chain('Goal 0');self.agent.quality_calls=[];self.agent.scenario='tester_repair'
+        self.assertEqual(self.run_chain()['status'],'停止')
+        stage=stage_controller(self.c);roles=list(self.agent.roles)
+        with self.assertRaises(FactoryError):stage.use_unstarted_quality_context(self.pid,'quality-goal1-refused')
+        self.assertEqual(roles,self.agent.roles)
+
+    def suffix_fixture(self):
+        from unittest.mock import patch
+        self.run_chain('Goal 0');original=self.agent.run;suffix='\nAUTHORIZED synthetic fixture only'
+        def augmented(role,prompt,workspace,control,*args):
+            result=original(role,prompt,workspace,control,*args)
+            if role=='Tester':
+                (control/'tester-01.input.md').write_text(prompt+suffix,encoding='utf-8')
+                result.update(role='Tester',input_sha256=digest((prompt+suffix).encode()))
+            return result
+        with patch.object(self.agent,'run',side_effect=augmented):self.assertEqual(self.run_chain()['status'],'停止')
+        return suffix
+
+    def test_26_completed_tester_suffix_reuse_dispatches_only_reviewer(self):
+        suffix=self.suffix_fixture();stage=stage_controller(self.c);folder=stage.locate(self.pid)[1]
+        source_hash=file_hash(folder/'quality/state.json');tester_count=self.agent.roles.count('Tester')
+        stage.reuse_suffix_bound_tester(self.pid,'quality-goal1-review-fixture','quality',suffix)
+        self.c._quality_context=stage._quality_context
+        self.assertEqual(self.run_chain()['status'],'两阶段已完成')
+        self.assertEqual(self.agent.roles.count('Tester'),tester_count)
+        self.assertEqual(source_hash,file_hash(folder/'quality/state.json'))
+
+    def test_27_unknown_suffix_cannot_reuse_tester(self):
+        self.suffix_fixture();stage=stage_controller(self.c)
+        with self.assertRaises(FactoryError):stage.reuse_suffix_bound_tester(self.pid,'quality-goal1-refused-fixture','quality','unknown suffix')
+
+    def test_28_supplementary_delivery_review_is_preserved_without_new_models(self):
+        from unittest.mock import patch
+        suffix=self.suffix_fixture();stage=stage_controller(self.c)
+        stage.reuse_suffix_bound_tester(self.pid,'quality-goal1-review-fixture','quality',suffix)
+        self.c._quality_context=stage._quality_context;original=self.agent.run
+        def extra(role,prompt,workspace,control,*args):
+            result=original(role,prompt,workspace,control,*args)
+            if role=='Reviewer':
+                source=workspace/'fixture.mjs'
+                result['output']['acceptance'][0]['evidence'].append({'path':'workspace/fixture.mjs','sha256':file_hash(source)})
+                supplement=copy.deepcopy(result['output']['acceptance'][0]);supplement['id']='AC-012'
+                supplement['evidence']=supplement['evidence'][:1]
+                result['output']['acceptance'].append(supplement);result.update(role='Reviewer',execution_mode='read-only')
+                (control/'reviewer-02.input.md').write_text(prompt,encoding='utf-8')
+            return result
+        with patch.object(self.agent,'run',side_effect=extra):self.assertEqual(self.run_chain()['status'],'停止')
+        stage=stage_controller(self.c);control=stage.locate(self.pid)[1];roles=list(self.agent.roles)
+        source_hash=file_hash(control/'quality-goal1-review-fixture/state.json')
+        stage.reuse_suffix_bound_tester(self.pid,'quality-goal1-final-fixture','quality',suffix,reviewer_name='quality-goal1-review-fixture')
+        self.c._quality_context=stage._quality_context
+        self.assertEqual(self.run_chain()['status'],'两阶段已完成');self.assertEqual(roles,self.agent.roles)
+        self.assertEqual(source_hash,file_hash(control/'quality-goal1-review-fixture/state.json'))
+        proof=load(control/'quality-goal1-final-fixture/reviewer-scope-proof.json')
+        self.assertEqual(proof['detail']['supplement']['id'],'AC-012')
+        from factory.quality import QualityGate,reviewer_scope_view
+        gate=QualityGate(stage,*stage.locate(self.pid),allow_repair=False)
+        raw=load(gate.folder/proof['execution']['path'])['output'];row=gate.q['rounds'][0]
+        for kind in ('unknown','failed','issue','hash'):
+            invalid=copy.deepcopy(raw)
+            if kind=='unknown':invalid['acceptance'][-1]['id']='AC-999'
+            elif kind=='failed':invalid['acceptance'][0]['result']='failed'
+            elif kind=='issue':invalid['issues']=[{'id':'unresolved'}]
+            else:invalid['acceptance'][-1]['evidence'][0]['sha256']='0'*64
+            with self.assertRaises(FactoryError):reviewer_scope_view(invalid,gate.packet,row,gate)
 
 
 if __name__=='__main__':unittest.main()

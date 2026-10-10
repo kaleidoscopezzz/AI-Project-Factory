@@ -23,7 +23,7 @@ ARCHIVE_GAPS={
         '48ff440502c276b0ae4d9d28b7e19a9bfc0fd6e73ce6b3d0233b5c8b0b41d8b8',
 }
 
-def history_dependencies(workspace,completion,candidate,load,*,required_history=()):
+def history_dependencies(workspace,completion,candidate,load,*,required_history=(),acceptance_path=None):
     files=completion.get('workspace_manifest',{});nodes={};edges=[];unknown=[];warnings=[];absent=[];queue=[];runtime_mentions=[]
     def issue(parent,ref,reason,archive_gap=False,expected=None):
         pinned=ARCHIVE_GAPS.get((parent,ref,expected)) if archive_gap else None
@@ -45,12 +45,13 @@ def history_dependencies(workspace,completion,candidate,load,*,required_history=
             issue(parent,ref,'missing or not matched by original completion: '+name);return
         if expected is not None and h!=expected:
             issue(parent,ref,'referenced SHA256 differs from available original bytes: '+name);return
-        if not name.startswith('validation/') and candidate['files'].get(name)!=h:
+        generated=name.split('/')[0] in {'dist','build'}
+        if not name.startswith('validation/') and not generated and candidate['files'].get(name)!=h:
             issue(parent,ref,'delivery/source reference is not current candidate: '+name);return
         e={'parent':parent,'reference':ref,'source':name,'sha256':h,'kind':kind}
         if e not in edges:edges.append(e)
         if name not in nodes:
-            nodes[name]={'source':name,'sha256':h,'kind':'history' if name.startswith('validation/') else 'delivery',
+            nodes[name]={'source':name,'sha256':h,'kind':'history' if name.startswith('validation/') or generated else 'delivery',
                          'bytes':path.stat().st_size,'result':'verified original bytes, not AC approval'}
             queue.append(name)
     def resolve(parent,ref,expected=None,declared_absent=False,descriptive=False,context_refs=()):
@@ -130,9 +131,9 @@ def history_dependencies(workspace,completion,candidate,load,*,required_history=
         if name=='acceptance.md':
             # Two supported delivery layouts, selected from the original
             # completion only. Never discover arbitrary same-named files.
-            layouts=(path,'validation/acceptance.md')
+            layouts=(acceptance_path,) if acceptance_path is not None else (path,'validation/acceptance.md')
             registered=[p for p in layouts if p in files]
-            if not registered and name not in text:continue
+            if not registered and name not in text and acceptance_path is None:continue
             if len(registered)!=1:
                 issue('completion / delivery docs',name,'missing or ambiguous acceptance source in original completion');continue
             path=registered[0]
@@ -172,10 +173,14 @@ def history_dependencies(workspace,completion,candidate,load,*,required_history=
                 explicit=re.findall(r'`([^`]+)`|\[[^\]]*\]\(([^)]+)\)',line)
                 for pair in explicit:
                     ref=next(x for x in pair if x).strip()
+                    if re.match(r'^(node|python)\s+',ref):
+                        for script in FILE_REF.findall(ref):resolve(name,script,descriptive=True)
+                        continue
                     if re.search(r'\.[A-Za-z0-9]+$',ref):resolve(name,ref,declared_absent=planned,descriptive=True)
                 unsafe=re.findall(r'(?<![\w/])(?:\.\./|[A-Za-z]:[\\/]|/)[^\s`<>，、；;|]+\.(?:md|json|log|txt|png|zip)',line)
                 for ref in unsafe:resolve(name,ref)
-                for ref in FILE_REF.findall(line):
+                prose=re.sub(r'`[^`]+`|\[[^\]]*\]\([^)]+\)','',line)
+                for ref in FILE_REF.findall(prose):
                     # Bare source/asset mentions are descriptions, not evidence
                     # citations. Qualified source paths and evidence names count.
                     if '/' not in ref and ref.endswith(('.js','.mjs','.html','.css')):continue

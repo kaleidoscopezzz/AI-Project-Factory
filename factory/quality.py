@@ -179,13 +179,33 @@ def recovered_tester_event(execution, log_path, round_root):
            'derived_result_fingerprint':digest(derived),'new_Tester_calls':0}
     return derived,proof
 
+def reviewer_scope_view(value,packet,row,gate):
+    """Only the obsolete AC-012 instruction's supplementary delivery review."""
+    expected={a['id'] for a in packet['acceptance']}
+    if (packet['goal']!='Goal 1' or 'AC-012' in expected or value['decision']!='approved'
+        or value['issues'] or value['limitations'] or len(value['acceptance'])!=len(expected)+1
+        or {a['id'] for a in value['acceptance']}!=expected|{'AC-012'}
+        or any(a['result']!='passed' for a in value['acceptance'])):
+        raise FactoryError('不是已批准正式AC之外的一项非阻塞补充交付审查')
+    extra=next(a for a in value['acceptance'] if a['id']=='AC-012')
+    if not extra['evidence'] or not extra['reason']:raise FactoryError('补充审查缺少真实依据')
+    gate.verify_context(row);root=relative_file(row['path'],gate.folder)
+    allowed={e['path']:e['sha256'] for e in [*row['context']['indices'],row['context']['preflight']]}
+    for e in extra['evidence']:
+        if e['path'] in allowed:
+            if allowed[e['path']]!=e['sha256'] or file_hash(relative_file(e['path'],root))!=e['sha256']:raise FactoryError('补充交付索引被篡改')
+        else:gate.evidence(e,root)
+    view=copy.deepcopy(value);view['acceptance']=[a for a in view['acceptance'] if a['id'] in expected]
+    return view,{'kind':'AC-012 supplementary delivery review; not a Goal1 AC; original retained','supplement':extra}
+
+
 class QualityGate:
     def __init__(self,controller,project,control,workspace,state,retry=False,allow_repair=True):
         from .controller import load, save
         self.load,self.save=load,save
         self.c=controller;self.project=project;self.control=control;self.workspace=workspace;self.state=state;self.retry=retry
         self.allow_repair=allow_repair
-        self.folder=safe_path(control/'quality',control);self.folder.mkdir(exist_ok=True)
+        self.folder=safe_path(control/getattr(controller,'_quality_context','quality'),control);self.folder.mkdir(exist_ok=True)
         self.path=self.folder/'state.json'
         self.packet=load(control/'task-packet.json');validate_packet(self.packet,self.c.root,state)
         self.q=load(self.path) if self.path.exists() else {
@@ -195,6 +215,8 @@ class QualityGate:
             'initial_control_manifest':{p.name:file_hash(p) for p in control.iterdir() if p.is_file() and p.name not in {'state.json','events.jsonl','controller.lock'}}}
         if self.q['version']!='2.0' or self.q['packet_fingerprint']!=digest(self.packet) or self.q['budget']!=BUDGET:
             raise FactoryError('质量执行协议/任务包/预算不匹配')
+        if self.folder.name!='quality' and 'context_source_sha256' not in self.q:
+            self.q['context_source_sha256']=file_hash(self.folder/'source.json')
         self.save(self.path,self.q)
 
     def checkpoint(self):
@@ -216,6 +238,22 @@ class QualityGate:
         return self.state
 
     def guard(self):
+        if self.folder.name!='quality':
+            if file_hash(self.folder/'source.json')!=self.q['context_source_sha256']:raise FactoryError('独立质量来源声明变化')
+            source=self.load(self.folder/'source.json')
+            if (file_hash(safe_path(source['old_quality_path'],self.control))!=source['old_quality_sha256']
+                or file_hash(self.folder/'previous-state.json')!=source['previous_state_sha256']
+                or file_hash(self.control/'completion.json')!=source['completion_sha256']
+                or source['packet_fingerprint']!=digest(self.packet)):
+                raise FactoryError('独立质量准备来源变化')
+            if source.get('source_files'):
+                old=Path(source['old_quality_path']).parent
+                for name,h in source['source_files'].items():
+                    if file_hash(relative_file(name,old))!=h:raise FactoryError('复用Tester原始来源变化')
+            if source.get('reviewer_source_files'):
+                old=safe_path(source['reviewer_source'],self.control)
+                for name,h in source['reviewer_source_files'].items():
+                    if file_hash(relative_file(name,old))!=h:raise FactoryError('复用Reviewer原始来源变化')
         validate_packet(self.load(self.control/'task-packet.json'),self.c.root,self.state)
         for p,h in self.state['skill_hashes'].items():
             if file_hash(safe_path(self.c.root/p,self.c.root))!=h:
@@ -227,7 +265,7 @@ class QualityGate:
             path=relative_file(name,self.control)
             if not path.is_file() or file_hash(path)!=h:raise FactoryError('历史控制证据变化：'+name)
 
-    def evidence(self,entry,round_root):
+    def evidence(self,entry,round_root,*,source_inspection=False):
         path=relative_file(entry['path'],round_root)
         # Results cannot reference arbitrary copied source as proof of execution.
         rel=path.relative_to(round_root).as_posix()
@@ -248,6 +286,11 @@ class QualityGate:
             binding=self.load(binding_path)
             allowed.update({binding[k]['path']:binding[k]['sha256'] for k in ('execution','log','raw_result','proof')})
             if allowed.get(rel)!=entry['sha256']:raise FactoryError('复核引用不在受控清单')
+        elif source_inspection and rel.startswith('workspace/') and not rel.startswith(('workspace/validation/','workspace/.quality-evidence/')):
+            rows=[r for r in self.q['rounds'] if relative_file(r['path'],self.folder)==round_root]
+            name=rel[len('workspace/'):]
+            if len(rows)!=1 or rows[0]['candidate']['files'].get(name)!=entry['sha256']:
+                raise FactoryError('Reviewer源码引用不属于当前候选')
         elif not (rel.startswith('workspace/validation/') or rel.startswith('workspace/.quality-evidence/') or rel.startswith('checks/')):
             raise FactoryError('证据不在授权的测试/证据目录')
         if not path.is_file() or file_hash(path)!=entry['sha256']:
@@ -255,6 +298,15 @@ class QualityGate:
         return path
 
     def result(self,value,role,round_row,execution=None):
+        if role=='Reviewer' and round_row.get('reviewer_derivation'):
+            entry=round_row['reviewer_derivation'];root=relative_file(round_row['path'],self.folder)
+            proof_path=relative_file(entry['path'],self.folder)
+            if file_hash(proof_path)!=entry['sha256']:raise FactoryError('Reviewer范围复核依据变化')
+            proof=self.load(proof_path);raw_path=relative_file(proof['execution']['path'],self.folder)
+            if file_hash(raw_path)!=proof['execution']['sha256']:raise FactoryError('原始Reviewer来源变化')
+            raw_execution=self.load(raw_path);derived,detail=reviewer_scope_view(raw_execution['output'],self.packet,round_row,self)
+            if value!=derived or proof['detail']!=detail:raise FactoryError('Reviewer派生范围不能由原始结果重算')
+            execution=raw_execution
         schema=TESTER_SCHEMA if role=='Tester' else REVIEWER_SCHEMA
         validate_schema(value,schema)
         if role=='Tester' and round_row.get('tester_derivation'):
@@ -288,7 +340,7 @@ class QualityGate:
                 current_review=(role=='Reviewer' and ac['id']=='AC-012' and round_row.get('tester_derivation')
                                 and any(e['path']=='context/reviewer-evidence-index.json' for e in ac['evidence']))
                 if not current_review:raise FactoryError('历史记录不能单独证明当前 AC 通过；需要本轮审查/测试证据')
-            for e in ac['evidence']:self.evidence(e,root)
+            for e in ac['evidence']:self.evidence(e,root,source_inspection=role=='Reviewer')
         if candidate(self.workspace)!=round_row['candidate']:
             raise FactoryError('候选源码已变化；旧证据失效')
         self.verify_context(round_row)
@@ -436,7 +488,8 @@ class QualityGate:
         """Evidence closure only. Ready never means AC-012 passed."""
         completion=self.control/'completion.json'
         return history_dependencies(self.workspace,self.load(completion) if completion.is_file() else {},candidate(self.workspace),self.load,
-                                    required_history=getattr(self,'state',{}).get('independent_revalidation',{}).get('required_history',[]))
+                                    required_history=getattr(self,'state',{}).get('independent_revalidation',{}).get('required_history',[]),
+                                    acceptance_path='validation/goal1/acceptance.md' if self.packet['goal']=='Goal 1' else None)
 
     def history_files(self):
         plan=self.history_plan()
@@ -546,6 +599,13 @@ class QualityGate:
         entry=self.evidence_index(row,role)
         root=relative_file(row['path'],self.folder)
         return {'protocol':'Goal2/2.0','task_packet':self.packet,'packet_fingerprint':digest(self.packet),
+                'current_stage_authorization':({'goal':'Goal 1','approval':self.load(self.control.parents[1]/'sequence/config.json')['approval_id'],
+                    'scope':'Original request contains historical Plan-only limits; this verified incremental TaskPacket is authorized now.',
+                    'actual_run_caps':getattr(self.c,'_run_caps',None),'per_agent_seconds':600,'aggregate_agent_seconds':3600}
+                    if self.packet['goal']=='Goal 1' else None),
+                'tester_input_recovery':({'provenance':str(self.folder/'source.json'),'original_failed_ledger':self.load(self.folder/'source.json')['old_quality_path'],
+                    'meaning':'Real completed Tester reused after exact host authorization suffix verified; old failure remains failed; read-only provenance, not new AC evidence'}
+                    if any(c.get('reused') for c in self.q['calls']) else None),
                 'candidate':row['candidate'],'execution_workspace':str(relative_file(row['path'],self.folder)/'workspace'),
                 'round_root':str(root),'evidence_paths':'relative to round directory: workspace/validation/, workspace/.quality-evidence/, checks/; listed context/history/ for historical documentation only',
                 'evidence_index':{**entry,'absolute_path':str(root/entry['path'])},
@@ -813,7 +873,7 @@ class QualityGate:
                 if row['reviewer'] is None:
                     prompt=('你是独立内部 Reviewer，默认只读；禁止修改源码/测试/证据、运行带副作用命令、Git/发布或其他Agent。\n'
                             '审查候选源码、TaskPacket、Planner AC、Coder报告及Tester证据有效性/授权范围/覆盖与明显缺陷。\n'
-                            '不能因任何completed/pass自报自动批准；当前必需证据不足、未实现或AC unknown/unverified不能approved。按ac012_review_policy区分并在AC-012 reason、本轮审查证据及summary披露三条非关键历史archive_warnings；仅这些追溯限制不自动拒绝，不能扩大到其他关键来源。\n'
+                            '不能因任何completed/pass自报自动批准；当前必需证据不足、未实现或AC unknown/unverified不能approved。acceptance只能列TaskPacket正式AC，不能增添其他阶段AC；补充交付审查放summary。仅TaskPacket含AC-012时按ac012_review_policy披露实际存在的archive_warnings；不得编造三条说明或扩大豁免。\n'
                             'approved仅指当前TaskPacket质量门槛，不是APF外部验收/Git冻结/软件正式发布。\n'
                             '如 tester_recovery 存在，必须读取其中原始 Tester 输出、原始命令日志及恢复认定；独立判断工具事件是否确已恢复、是否漏掉关键检查。优先核验当前软件、测试和浏览器证据，勿扩展无关历史审计。\n'
                             'issues只列当前未解决缺陷；有真实恢复证据的辅助工具事件保留在summary及相关AC reason，不隐瞒失败也不当作未解决业务缺陷。limitations只列影响本阶段验收或无法核实的限制；Full Access无OS隔离、视口模拟、未发布等非阻塞事实在summary披露。真正关键未知仍须blocked。\n'

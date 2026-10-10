@@ -5,6 +5,7 @@ Completed stages are immutable receipts; unknown partial execution stops.
 """
 import copy
 import re
+import shutil
 import uuid
 from pathlib import Path
 from .controller import Controller, load, save, locked
@@ -56,6 +57,14 @@ def check_receipt(project, entry, goal, *, project_id=None):
     for name,h in value['files'].items():
         p=relative_file(name,project)
         if not p.is_file() or file_hash(p)!=h:raise FactoryError('已完成阶段的任务/质量/证据记录变化：'+name)
+    if 'source_approval' in value:
+        source=value['source_approval']
+        directory=safe_path(source['directory'],Path(__file__).resolve().parents[1]/'validation')
+        if file_hash(directory/'stage-approval.json')!=source['approval_sha256']:
+            raise FactoryError('独立前序批准来源变化')
+        prior=check_receipt(directory,{'path':'goal0-completion.json','sha256':source['receipt_sha256']},'Goal 0',project_id=value['project_id'])
+        if prior['candidate']!=value['candidate'] or prior['packet_fingerprint']!=value['packet_fingerprint']:
+            raise FactoryError('独立前序批准身份不匹配')
     return value
 
 
@@ -80,7 +89,7 @@ def validate_link(packet, root, state, plan, control):
         raise FactoryError('后续需求/提示词未经原阶段确认')
 
 
-def prepare(c, project_id, spec, approval_id):
+def prepare(c, project_id, spec, approval_id, *, allow_repair=False):
     project,control,workspace,state=c.locate(project_id)
     with locked(control):
         project,control,workspace,state=c.locate(project_id)
@@ -95,7 +104,7 @@ def prepare(c, project_id, spec, approval_id):
                 'request_fingerprint':digest(state['original_request']),
                 'goal0_packet_fingerprint':state['packet_fingerprint'],
                 'plan_sha256':file_hash(control/'planner-result.json'),
-                'spec_fingerprint':digest(spec),'retry':False,'auto_repair':False,'goals':['Goal 0','Goal 1']}
+                'spec_fingerprint':digest(spec),'retry':False,'auto_repair':bool(allow_repair),'goals':['Goal 0','Goal 1']}
         if folder.exists():
             if load(folder/'config.json')!=config or load(folder/'goal1-spec.json')!=spec:
                 raise FactoryError('已登记的阶段确认内容不同；不能覆盖')
@@ -103,6 +112,51 @@ def prepare(c, project_id, spec, approval_id):
         folder.mkdir();save(folder/'goal1-spec.json',spec);save(folder/'config.json',config)
         cursor={'project_id':project_id,'config_sha256':file_hash(folder/'config.json'),
                 'completed':{},'current_goal':'Goal 0','status':'待执行','error':None}
+        save(folder/'state.json',cursor);return cursor
+
+
+def adopt_goal0(c, project_id, approval_directory):
+    """Bind a genuine independent stage receipt; never rewrite its failed origin."""
+    project,control,workspace,state=c.locate(project_id)
+    source=safe_path(approval_directory,Path(__file__).resolve().parents[1]/'validation')
+    with locked(control):
+        approval=load(source/'stage-approval.json')
+        entry={'path':'goal0-completion.json','sha256':approval['completion']['sha256']}
+        prior=check_receipt(source,entry,'Goal 0',project_id=project_id)
+        if (approval['project_id']!=project_id or approval['goal']!='Goal 0'
+            or approval['completion']['path']!='goal0-completion.json'
+            or approval['candidate_fingerprint']!=prior['candidate']['fingerprint']
+            or approval['packet_fingerprint']!=prior['packet_fingerprint']
+            or candidate(workspace)!=prior['candidate']
+            or digest(load(control/'task-packet.json'))!=prior['packet_fingerprint']):
+            raise FactoryError('独立前序批准与当前项目/候选/任务包不匹配')
+        q=load(source/'control/quality/state.json');row=q['rounds'][-1]
+        if q['status']!='质量门槛通过' or row['tester']['status']!='passed' or row['reviewer']['decision']!='approved':
+            raise FactoryError('独立前序没有有效Tester/Reviewer批准')
+        folder=control/'sequence';cursor=load(folder/'state.json')
+        if cursor['completed']:
+            check_receipt(project,cursor['completed']['Goal 0'],'Goal 0')
+            return cursor
+        target=folder/'approved-goal0'
+        if target.exists() or (folder/'goal0-completion.json').exists():
+            raise FactoryError('前序导入存在不完整现场，禁止覆盖')
+        pins={}
+        for name,h in prior['files'].items():
+            src=relative_file(name,source);dst=relative_file(name,target)
+            dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dst)
+            if file_hash(dst)!=h:raise FactoryError('前序批准副本哈希错误')
+            pins[dst.relative_to(project).as_posix()]=h
+        for name,h in prior['candidate']['files'].items():
+            dst=relative_file('workspace/'+name,target);dst.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copy2(relative_file(name,workspace),dst)
+            if file_hash(dst)!=h:raise FactoryError('前序源码快照哈希错误')
+            pins[dst.relative_to(project).as_posix()]=h
+        record={**prior,'files':pins,'source_approval':{'directory':str(source),
+                'approval_sha256':file_hash(source/'stage-approval.json'),'receipt_sha256':entry['sha256']}}
+        path=folder/'goal0-completion.json';save(path,record)
+        local={'path':path.name,'sha256':file_hash(path)}
+        check_receipt(project,local,'Goal 0')
+        cursor['completed']['Goal 0']=local;cursor.update(current_goal='Goal 1',status='阶段完成',error=None)
         save(folder/'state.json',cursor);return cursor
 
 
@@ -134,6 +188,8 @@ def stage_controller(c):
     # Preserve an explicitly injected fixture, otherwise use the stage instance's
     # own method/executor (a resumed real controller may not have an executor yet).
     if 'runtime_check' in c.__dict__:stage.runtime_check=c.runtime_check
+    if hasattr(c,'_quality_context'):stage._quality_context=c._quality_context
+    if hasattr(c,'_run_caps'):stage._run_caps=c._run_caps
     return stage
 
 
@@ -174,17 +230,20 @@ def prepare_stage(c, project, control, workspace, original, spec, prior_entry):
 
 
 def finish(c, project, control, workspace, goal, *, project_id=None):
-    state=load(control/'state.json');q=load(control/'quality/state.json')
+    state=load(control/'state.json');quality=control/getattr(c,'_quality_context','quality');q=load(quality/'state.json')
     if state['status']!='质量门槛通过' or q['status']!='质量门槛通过':
         raise FactoryError('阶段未通过现有QualityGate')
     gate=QualityGate.__new__(QualityGate)
-    gate.c=c;gate.control=control;gate.folder=control/'quality';gate.workspace=workspace
+    gate.c=c;gate.control=control;gate.folder=quality;gate.workspace=workspace
     gate.state=state;gate.q=q;gate.packet=load(control/'task-packet.json');gate.load=load
     gate.guard();row=q['rounds'][-1]
     gate.result(row['tester'],'Tester',row);gate.result(row['reviewer'],'Reviewer',row)
     pins={control/n for n in ('state.json','task-packet.json','packet-validation.json','completion.json','coder-result.json')}
     pins.update(control/n for n in gate.packet['artifacts'])
     pins.update({gate.folder/'state.json',gate.folder/'completion.json'})
+    if quality.name!='quality':
+        pins.update(quality/n for n in ('source.json','previous-state.json','previous-quality-state.json'))
+    if row.get('reviewer_derivation'):pins.add(relative_file(row['reviewer_derivation']['path'],gate.folder))
     for call in q['calls']:
         pins.update(p for p in relative_file(call['path'],gate.folder).iterdir() if p.is_file())
     root=relative_file(row['path'],gate.folder)
@@ -194,9 +253,11 @@ def finish(c, project, control, workspace, goal, *, project_id=None):
         pins.update(relative_file(binding[k]['path'],root) for k in ('execution','log','raw_result','proof'))
         if row.get('reviewer_execution'):pins.add(relative_file(row['reviewer_execution']['path'],gate.folder))
     context=row['context']
-    refs=[e for role in ('tester','reviewer') for ac in row[role]['acceptance'] for e in ac['evidence']]
-    refs += [e for check in row['tester']['checks'] for e in check['evidence']]
-    for e in refs:pins.add(gate.evidence(e,root))
+    for role in ('tester','reviewer'):
+        for ac in row[role]['acceptance']:
+            for e in ac['evidence']:pins.add(gate.evidence(e,root,source_inspection=role=='reviewer'))
+    for check in row['tester']['checks']:
+        for e in check['evidence']:pins.add(gate.evidence(e,root))
     for e in [*context['history'],*context['delivery'],*context['run_records'],*context['indices'],context['preflight'],
               {'path':context['manifest_path'],'sha256':context['manifest_sha256']}]:
         pins.add(relative_file(e['path'],root))
@@ -222,7 +283,7 @@ def run(c, project_id, through):
         spec=load(folder/'goal1-spec.json')
         if cursor['project_id']!=project_id or file_hash(folder/'config.json')!=cursor['config_sha256'] or config['spec_fingerprint']!=digest(spec):
             raise FactoryError('串行计划/批准内容变化')
-        if config['goals']!=['Goal 0','Goal 1'] or config['retry'] or config['auto_repair'] or config['project_id']!=project_id:
+        if config['goals']!=['Goal 0','Goal 1'] or config['retry'] or type(config['auto_repair']) is not bool or config['project_id']!=project_id:
             raise FactoryError('本次两阶段/无Retry/NoAutoRepair约束变化')
         if config['plan_sha256']!=file_hash(control/'planner-result.json') or config['goal0_packet_fingerprint']!=digest(load(control/'task-packet.json')):
             raise FactoryError('原规划/Goal 0任务包变化')
@@ -238,7 +299,7 @@ def run(c, project_id, through):
                 stage_control=control if goal=='Goal 0' else project/'control/goals/goal-1'
                 state=load(stage_control/'state.json')
                 if state['status']!='质量门槛通过':
-                    state=stage.run(project_id,quality_gate=True,no_auto_repair=True,
+                    state=stage.run(project_id,quality_gate=True,no_auto_repair=not config['auto_repair'],
                                     _lock_held=goal=='Goal 0',_sequence_active=True)
                     if goal=='Goal 0':c.executor=stage.executor
                 if state['status']!='质量门槛通过':

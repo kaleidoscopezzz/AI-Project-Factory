@@ -70,3 +70,12 @@ tests/test_sequence.py使用明确标记的AgentDouble及小型源码夹具；�
 真实执行的下一步需另行授权新项目范围、FullAccess和调用预算。为遵守本轮不访问参考项目，测试使用独立Controller root，没有参考inventory文件；现有QualityGate在真实仓库root的参考守护仍存在，本轮未调用。若后续真实验证继续禁止参考访问，应使用明确指定的独立root及必要工厂资源副本，不把它当OS隔离。
 
 自动生成后续Goal提示词、任意数量Goal、并发依赖图、自动审批和全自动软件交付尚未实现。完成第一增量后停止，等待外部Reviewer审查，不宣布APF Goal3完成或Git封版。
+
+
+## 2026-10-11 已完成的真实两阶段接续
+
+待办项目 p-867ba2d6987a 的软件 Goal 0 独立批准由 adopt_goal0_approval(project_id, approval_directory) 验证并保存来源绑定快照；prepare_goal_sequence(..., allow_repair=True) 可显式允许既有 QualityGate 的有限返工，默认仍为 False。后续 Goal 1 复用原 Planner 四项 AC，在同一业务 workspace 增量实现，形成独立 TaskPacket、候选及完成回执。
+
+本轮 Planner 未重派，Coder/Tester/只读 Reviewer 各一次，返工未使用；正式结果为软件 Goal 1 质量批准。开发过程中的零调用准备失败、宿主输入后缀哈希冲突、Reviewer 额外非正式 AC-012 与源码引用问题，在保留旧账本的前提下使用绑定原执行及证据的独立质量上下文处理。源码引用只供 Reviewer 核对当前候选，不作为 Tester 执行证据；正式 AC、失败退出码和业务验收条件保持严格。派生范围复核不构成新的模型调用。
+
+现有开发 API 的这些局部接续方法只处理具有明确来源的已证实情况，不能用于任意失败重开调用额度或忽略未知缺陷。没有新正式 CLI，也未新增通用恢复平台。当前可运行软件、阶段回执与日志路径见 validation/goal3/goal1-delivery-20261010/FINAL_REPORT.md；软件 Goal 2 未执行，APF Goal 3 尚待外部审查。实际模型返工闭环、自动后续 Goal 任务生成及任意 Goal 交付能力仍未验证或未实现。

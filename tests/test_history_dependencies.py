@@ -117,6 +117,7 @@ class HistoryDependencyTests(unittest.TestCase):
         self.assertTrue(all(e['result']=='unverified' and not e['blocking'] for e in plan['archive_warnings']))
         self.assertTrue(any('dab1ed47' in e['reason'] for e in plan['archive_warnings']))
         reader=QualityGate.__new__(QualityGate);reader.control=ORIGINAL.parent/'control';reader.workspace=ORIGINAL;reader.load=load
+        reader.packet=load(reader.control/'task-packet.json')
         self.assertEqual(len(reader.history_files()),38)
     def test_14_missing_index_stops_dispatch_before_registration(self):
         (self.workspace/'validation/goal0/acceptance.md').write_text('Required `missing-index.json`');self.refresh()

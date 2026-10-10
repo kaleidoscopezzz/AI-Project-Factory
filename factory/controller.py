@@ -1,5 +1,6 @@
 """Sequential durable controller. No business-specific prompt generator."""
 import argparse
+import copy
 import json
 import os
 import re
@@ -189,7 +190,7 @@ class Controller:
                 f'<business-request>\n{state["original_request"]}\n</business-request>\n'+self.skill_input(state))
 
     def call(self,role,prompt,state,workspace,control,schema):
-        if len(state['calls'])>=state['budget']['max_agent_calls']:
+        if sum(r.get('status')!='not_dispatched' for r in state['calls'])>=state['budget']['max_agent_calls']:
             raise FactoryError('Agent 调用预算已用尽')
         record={'role':role,'number':len(state['calls'])+1,'status':'running','started_at':time.strftime('%Y-%m-%dT%H:%M:%S%z')}
         state['calls'].append(record); save(control/'state.json',state)
@@ -206,6 +207,34 @@ class Controller:
             raise FactoryError(role+' 执行失败或没有完整结构化结果；查看对应日志')
         schema_check(result['output'],schema)
         return result['output']
+
+    def resume_unlaunched_coder(self,project_id):
+        """Local preparation recovery only; CLI launch evidence always stops it."""
+        project,control,workspace,state=self.locate(project_id)
+        with locked(control):
+            project,control,workspace,state=self.locate(project_id)
+            if state.get('sequence_goal')!='Goal 1' or state['status']!='已失败' or len(state['calls'])!=1:
+                raise FactoryError('不是独立Goal1首次派发前失败')
+            call=state['calls'][0]
+            if call['role']!='Coder' or call['status']!='interrupted':raise FactoryError('调用状态不能证明未启动')
+            stem='coder-'+f"{call['number']:02d}"
+            if any((control/(stem+suffix)).exists() for suffix in ('.input.md','.launch.json','.process.json','.log.jsonl','.result.json')) or (control/'coder-schema.json').exists():
+                raise FactoryError('存在CLI启动准备/执行证据；禁止重试或释放额度')
+            validate_packet(load(control/'task-packet.json'),self.root,state)
+            from .quality import candidate
+            if candidate(workspace)!=load(control/'increment-before.json'):
+                raise FactoryError('尚未派发的候选已变化')
+            archive=control/'pre-dispatch-failures'/uuid.uuid4().hex;archive.mkdir(parents=True)
+            pins={}
+            for name in ('state.json','events.jsonl'):
+                if (control/name).exists():
+                    shutil.copy2(control/name,archive/name);pins[name]=file_hash(archive/name)
+            save(archive/'proof.json',{'kind':'local preparation failure; no CLI schema/input/launch/process/log/result',
+                  'original_failure':state['error'],'original_files':pins,'candidate':candidate(workspace)})
+            call.update(status='not_dispatched',failure_archive=str(archive),elapsed_seconds=0)
+            state['error']=None
+            self.transition(state,control,'任务包已验证','派发前准备失败已归档；确认CLI未启动，不是模型Retry')
+            return state
 
     def packet(self,plan,state,workspace,control):
         validate_plan(plan,workspace)
@@ -310,10 +339,121 @@ class Controller:
         save(control/'failed-task-diagnostics.json',result)
         return result
 
-    def prepare_goal_sequence(self,project_id,goal1_spec,approval_id):
+    def prepare_goal_sequence(self,project_id,goal1_spec,approval_id,*,allow_repair=False):
         """Development API only; validates a caller-approved second stage."""
         from .sequence import prepare
-        return prepare(self,project_id,goal1_spec,approval_id)
+        return prepare(self,project_id,goal1_spec,approval_id,allow_repair=allow_repair)
+
+    def adopt_goal0_approval(self,project_id,approval_directory):
+        from .sequence import adopt_goal0
+        return adopt_goal0(self,project_id,approval_directory)
+
+    def use_unstarted_quality_context(self,project_id,name):
+        """A new evidence context after zero-call preparation failure only."""
+        project,control,workspace,state=self.locate(project_id)
+        if state.get('sequence_goal')!='Goal 1' or not re.fullmatch(r'quality-goal1-[a-z0-9-]{1,40}',name):
+            raise FactoryError('独立质量上下文只用于本次增量Goal1')
+        with locked(control):
+            old=control/'quality';q=load(old/'state.json')
+            if q['status']!='质量门槛失败' or q['calls']:
+                raise FactoryError('已有质量Agent调用；禁止借准备接续重新派发')
+            validate_packet(load(control/'task-packet.json'),self.root,state)
+            completion=load(control/'completion.json');coder=load(control/'coder-result.json')
+            if (not completion['passed'] or not completion['runtime']['passed']
+                or any(r['exit_code'] or r['timed_out'] for r in completion['checks'])
+                or completion['packet_fingerprint']!=state['packet_fingerprint']
+                or completion['workspace_manifest']!=manifest(workspace) or coder['status']!='completed'):
+                raise FactoryError('现有Coder完成记录/候选不能复用')
+            folder=safe_path(control/name,control)
+            if folder.exists():raise FactoryError('新质量上下文身份已使用')
+            folder.mkdir();shutil.copy2(control/'state.json',folder/'previous-state.json')
+            shutil.copy2(old/'state.json',folder/'previous-quality-state.json')
+            save(folder/'source.json',{'kind':'zero-call quality preparation failure; same completed Coder',
+                'old_quality_path':str(old/'state.json'),'old_quality_sha256':file_hash(old/'state.json'),
+                'previous_state_sha256':file_hash(folder/'previous-state.json'),
+                'packet_fingerprint':state['packet_fingerprint'],'completion_sha256':file_hash(control/'completion.json')})
+            self._quality_context=name
+            return str(folder)
+
+    def reuse_suffix_bound_tester(self,project_id,name,old_name,authorized_suffix,*,reviewer_name=None):
+        """Reuse one completed CLI after a proven host-added permission suffix.
+
+        Original failure stays failed. Unknown input differences never qualify.
+        """
+        project,control,workspace,state=self.locate(project_id)
+        if (state.get('sequence_goal')!='Goal 1' or not re.fullmatch(r'quality-goal1-[a-z0-9-]{1,40}',name)
+            or (old_name!='quality' and not re.fullmatch(r'quality-goal1-[a-z0-9-]{1,40}',old_name))):
+            raise FactoryError('非法Goal1派生复核来源')
+        with locked(control):
+            old=safe_path(control/old_name,control);q=load(old/'state.json')
+            if q['status']!='质量门槛失败' or q['error']!='Agent输入哈希不匹配' or len(q['calls'])!=1 or len(q['rounds'])!=1:
+                raise FactoryError('仅处理一次Tester的已证实宿主输入后缀错误')
+            rec=q['calls'][0];row=q['rounds'][0]
+            call=relative_file(rec['path'],old);execution=load(call/'execution.json')
+            text=(call/'tester-01.input.md').read_text(encoding='utf-8')
+            if (rec['role']!='Tester' or execution['role']!='Tester' or execution['exit_code'] or execution['timed_out']
+                or not execution['turn_completed'] or not authorized_suffix or not text.endswith(authorized_suffix)
+                or digest(text.encode())!=execution['input_sha256']
+                or rec['key']!='Tester:'+digest(text[:-len(authorized_suffix)].encode())):
+                raise FactoryError('原始输入/后缀/真实Tester执行不能核实')
+            threads=execution['thread_ids'];prior={t for r in state['calls'] for t in r.get('thread_ids',[])}
+            if not threads or prior.intersection(threads):raise FactoryError('Tester独立线程无效')
+            from .quality import QualityGate,reviewer_scope_view
+            source_gate=QualityGate.__new__(QualityGate)
+            source_gate.c=self;source_gate.control=control;source_gate.folder=old;source_gate.workspace=workspace
+            source_gate.state=state;source_gate.q=q;source_gate.packet=load(control/'task-packet.json');source_gate.load=load
+            source_gate.result(execution['output'],'Tester',row,execution)
+            if execution['output']['status']!='passed':raise FactoryError('真实Tester未通过，禁止复用')
+            folder=safe_path(control/name,control)
+            if folder.exists():raise FactoryError('派生复核身份已使用')
+            reviewer_old=None;reviewer_q=None
+            if reviewer_name:
+                if not re.fullmatch(r'quality-goal1-[a-z0-9-]{1,40}',reviewer_name):raise FactoryError('Reviewer来源越界')
+                reviewer_old=safe_path(control/reviewer_name,control);reviewer_q=load(reviewer_old/'state.json')
+                if reviewer_q['error']!='质量结果遗漏或重复 AC' or reviewer_q['status']!='质量门槛失败' or len(reviewer_q['calls'])!=2:
+                    raise FactoryError('不是单次已完成Reviewer的范围格式问题')
+                reviewer_rec=reviewer_q['calls'][-1];reviewer_call=relative_file(reviewer_rec['path'],reviewer_old)
+                reviewer_execution=load(reviewer_call/'execution.json')
+                if (reviewer_rec['role']!='Reviewer' or reviewer_execution['execution_mode']!='read-only'
+                    or reviewer_execution['exit_code'] or reviewer_execution['timed_out'] or not reviewer_execution['turn_completed']
+                    or not reviewer_execution['thread_ids'] or set(reviewer_execution['thread_ids']) & (set(threads)|prior)
+                    or reviewer_execution['input_sha256']!=reviewer_rec['key'].split(':',1)[1]
+                    or digest((reviewer_call/'reviewer-02.input.md').read_text(encoding='utf-8').encode())!=reviewer_execution['input_sha256']):
+                    raise FactoryError('真实独立只读Reviewer来源无效')
+            folder.mkdir();shutil.copy2(control/'state.json',folder/'previous-state.json');shutil.copy2(old/'state.json',folder/'previous-quality-state.json')
+            copy_from=reviewer_old or old
+            for directory in ('rounds','calls'):shutil.copytree(copy_from/directory,folder/directory,ignore=shutil.ignore_patterns('.factory-tmp','__pycache__'))
+            pins={p.relative_to(old).as_posix():file_hash(p) for p in old.rglob('*') if p.is_file() and '.factory-tmp' not in p.parts}
+            save(folder/'source.json',{'kind':'zero-model authorized-input-suffix review; original Tester/failure unchanged',
+                'old_quality_path':str(old/'state.json'),'old_quality_sha256':file_hash(old/'state.json'),
+                'previous_state_sha256':file_hash(folder/'previous-state.json'),'completion_sha256':file_hash(control/'completion.json'),
+                'packet_fingerprint':state['packet_fingerprint'],'source_files':pins,
+                'original_prompt_sha256':rec['key'].split(':',1)[1],'actual_input_sha256':execution['input_sha256'],
+                'authorized_suffix':authorized_suffix})
+            self._quality_context=name
+            gate=QualityGate(self,project,control,workspace,state,allow_repair=True)
+            copied=copy.deepcopy(row);copied['tester']=execution['output']
+            copied['tester_execution']={'path':rec['path']+'/execution.json','sha256':file_hash(folder/rec['path']/'execution.json')}
+            reused=copy.deepcopy(rec);reused.update(status='finished',reused=True,source_status=rec['status'])
+            output=folder/rec['path']/'output.json';save(output,execution['output'])
+            reused.update(output_path=output.relative_to(folder).as_posix(),output_sha256=file_hash(output))
+            gate.q['rounds']=[copied];gate.q['calls']=[reused];gate.q['round']=1
+            gate.result(copied['tester'],'Tester',copied,execution);gate.checkpoint()
+            if reviewer_old:
+                copied=copy.deepcopy(reviewer_q['rounds'][0]);copied['tester']=execution['output'];copied['tester_execution']=gate.q['rounds'][0]['tester_execution']
+                gate.q['rounds']=[copied]
+                view,detail=reviewer_scope_view(reviewer_execution['output'],gate.packet,copied,gate)
+                raw_entry={'path':reviewer_rec['path']+'/execution.json','sha256':file_hash(folder/reviewer_rec['path']/'execution.json')}
+                proof=folder/'reviewer-scope-proof.json';save(proof,{'execution':raw_entry,'detail':detail})
+                copied.update(reviewer=view,reviewer_execution=raw_entry,reviewer_derivation={'path':proof.name,'sha256':file_hash(proof)})
+                output=folder/reviewer_rec['path']/'output.json';save(output,view)
+                review_copy=copy.deepcopy(reviewer_rec);review_copy.update(status='finished',reused=True,source_status=reviewer_rec['status'],output_path=output.relative_to(folder).as_posix(),output_sha256=file_hash(output))
+                gate.q['calls'].append(review_copy)
+                source=load(folder/'source.json');source.update(reviewer_source=str(reviewer_old),
+                    reviewer_source_files={p.relative_to(reviewer_old).as_posix():file_hash(p) for p in reviewer_old.rglob('*') if p.is_file() and '.factory-tmp' not in p.parts})
+                save(folder/'source.json',source);gate.q['context_source_sha256']=file_hash(folder/'source.json')
+                gate.result(view,'Reviewer',copied,reviewer_execution);gate.checkpoint()
+            return str(folder)
 
     def run_goal_sequence(self,project_id,through='Goal 1'):
         from .sequence import run
@@ -324,7 +464,8 @@ class Controller:
         project,control,workspace,state=self.locate(project_id)
         if (control/'sequence/state.json').exists() and not _sequence_active:
             raise FactoryError('项目已登记两阶段执行；使用run_goal_sequence，禁止旧入口重跑前序Goal')
-        quality_exists=(control/'quality/state.json').is_file()
+        quality_name=getattr(self,'_quality_context','quality')
+        quality_exists=(control/quality_name/'state.json').is_file()
         quality_gate=quality_gate or state.get('quality_gate_enabled',False)
         if not quality_gate and not quality_exists:
             return self._run_goal1(project_id,mode,retry,_lock_held=_lock_held)
@@ -340,7 +481,7 @@ class Controller:
                 state['error']=str(e)
                 self.transition(state,control,'质量门槛失败',state['error']);return state
             from .quality import QualityGate,protected_factory,reference_snapshot,stage_deadline
-            if not (control/'quality/state.json').is_file():
+            if not quality_exists and quality_name=='quality':
                 if state.get('quality_bootstrap_failure'):return state
                 state['quality_gate_enabled']=True;save(control/'state.json',state)
                 protected=protected_factory(self.root);reference=reference_snapshot(self.root)
