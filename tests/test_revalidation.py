@@ -26,7 +26,7 @@ class RevalidationTests(unittest.TestCase):
     def setUp(self):
         self.git_patch=patch('factory.revalidation.git_baseline',return_value={'synthetic':'no Git writes or repo init'})
         self.git_patch.start();self.addCleanup(self.git_patch.stop)
-        self.agent=QualityDouble(full_access=True);self.c=Controller(RUN_ROOT,self.agent)
+        self.agent=QualityDouble(full_access=True);self.c=Controller(RUN_ROOT,self.agent,full_access=True)
         self.c.runtime_check=lambda *a:{'passed':True,'test_double':True}
         self.pid=self.c.create('Independent runner AgentDouble fixture, NOT real validation',900)
         with contextlib.redirect_stdout(io.StringIO()):self.c.run(self.pid)

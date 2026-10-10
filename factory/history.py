@@ -53,7 +53,7 @@ def history_dependencies(workspace,completion,candidate,load):
             nodes[name]={'source':name,'sha256':h,'kind':'history' if name.startswith('validation/') else 'delivery',
                          'bytes':path.stat().st_size,'result':'verified original bytes, not AC approval'}
             queue.append(name)
-    def resolve(parent,ref,expected=None,declared_absent=False,descriptive=False):
+    def resolve(parent,ref,expected=None,declared_absent=False,descriptive=False,context_refs=()):
         if not isinstance(ref,str) or not ref:return
         # Legacy SHA indexes use Windows separators. Normalize only this data
         # spelling; relative_file still rejects drives, traversal and reparse links.
@@ -78,10 +78,35 @@ def history_dependencies(workspace,completion,candidate,load):
                 # These are current delivery inputs, not archived state records.
                 if ref in {'AGENTS.md','package.json'}:choices.append(ref)
             else:choices=[a+'/'+ref,ref]  # current source bytes require explicit hash match below
-        elif '/' not in ref:choices=[base+'/'+ref,'validation/goal0/'+ref,ref]
+        elif '/' not in ref:
+            choices=[base+'/'+ref,'validation/goal0/'+ref,ref]
+            if ref=='acceptance.md':choices.append('validation/acceptance.md')
         else:choices=[ref,base+'/'+ref]
         choices=list(dict.fromkeys(choices))
+        # A bare test.log in an acceptance table may share an explicitly cited
+        # results.json directory in the same cell. Bind that shorthand only to
+        # an original completion entry whose actual anchor bytes still match.
+        if ref=='test.log' and not a:
+            anchors={p for p in context_refs if p.startswith('validation/') and p.endswith('/results.json')}
+            if len(anchors)>1:
+                issue(parent,ref,'conflicting results.json directories for test.log');return
+            for anchor in context_refs:
+                if anchor.startswith('validation/') and anchor.endswith('/results.json'):
+                    try:anchor_path=relative_file(anchor,workspace)
+                    except FactoryError as e:issue(parent,anchor,str(e));return
+                    if anchor not in files or not anchor_path.is_file() or file_hash(anchor_path)!=files[anchor]:
+                        issue(parent,anchor,'test.log context anchor not matched by original completion');return
+                    choices.append(str(PurePosixPath(anchor).parent/ref))
+            choices=list(dict.fromkeys(choices))
+            # Do not fall back from an unrecorded local file to a convenient
+            # remote log; both would constitute conflicting source claims.
+            try:local=relative_file(base+'/'+ref,workspace)
+            except FactoryError as e:issue(parent,ref,str(e));return
+            if local.exists() and base+'/'+ref not in files:
+                issue(parent,ref,'local test.log is not recorded by original completion');return
         available=[n for n in choices if n in files]
+        if ref=='test.log' and len(available)>1:
+            issue(parent,ref,'ambiguous test.log references in original completion');return
         if expected:
             available=[n for n in available if files[n]==expected]
             if not available:
@@ -102,6 +127,23 @@ def history_dependencies(workspace,completion,candidate,load):
     text='\n'.join(relative_file(n,workspace).read_text(encoding='utf-8') for n in documents)
     for name in ('acceptance.md','session-environment.json','source-sha256.json'):
         path='validation/goal0/'+name
+        if name=='acceptance.md':
+            # Two supported delivery layouts, selected from the original
+            # completion only. Never discover arbitrary same-named files.
+            layouts=(path,'validation/acceptance.md')
+            registered=[p for p in layouts if p in files]
+            if not registered and name not in text:continue
+            if len(registered)!=1:
+                issue('completion / delivery docs',name,'missing or ambiguous acceptance source in original completion');continue
+            path=registered[0]
+            try:
+                conflict=any(relative_file(p,workspace).exists() for p in layouts if p!=path)
+            except FactoryError as e:
+                issue('completion / delivery docs',name,str(e));continue
+            if conflict:
+                issue('completion / delivery docs',name,'conflicting acceptance delivery layouts');continue
+            add(path,'completion / delivery docs',path)
+            continue
         if path in files or name in text:add(path,'completion / delivery docs',path)
     for n in documents:
         # Actual project delivery documents are already in the candidate; scan
@@ -130,7 +172,11 @@ def history_dependencies(workspace,completion,candidate,load):
                     # Bare source/asset mentions are descriptions, not evidence
                     # citations. Qualified source paths and evidence names count.
                     if '/' not in ref and ref.endswith(('.js','.mjs','.html','.css')):continue
-                    resolve(name,ref,declared_absent=planned,descriptive=True)
+                    # Keep table-cell scope; filenames from other AC columns
+                    # or unrelated lines cannot authorize a shorthand log.
+                    cell=next((c for c in line.split('|') if ref in c),line)
+                    resolve(name,ref,declared_absent=planned,descriptive=True,
+                            context_refs=FILE_REF.findall(cell) if ref=='test.log' else ())
                 for ref in ARCHIVE_REF.findall(line):
                     resolve(name,ref+'/goal0/acceptance.md')
         elif name.endswith('.json'):
