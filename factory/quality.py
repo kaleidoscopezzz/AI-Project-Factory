@@ -12,6 +12,7 @@ import time
 import threading
 import subprocess
 import stat
+import copy
 from contextlib import contextmanager
 from pathlib import Path
 from .contracts import (FactoryError, digest, file_hash, safe_path, relative_file,
@@ -112,6 +113,72 @@ def ui_required(packet):
     text=' '.join(a['method']+' '+a['criterion'] for a in packet['acceptance'])+' '+packet['project_type']+' '+packet['technology']+' '+packet['original_request']
     return bool(re.search(r'Playwright|浏览器|截图|viewport|前端|网页|界面|页面|桌面|\b(?:web|html|css|react|vue|frontend|ui|gui)\b',text,re.I))
 
+
+def recovered_tester_event(execution, log_path, round_root):
+    """Finite, evidence-based reclassification; never mutates the real result.
+
+    Only the known hash-enumeration ParserError is supported. A successful
+    command, its enumerated file hashes, and every AC/check remain mandatory.
+    The caller still runs result() on the derived view with the real execution.
+    """
+    raw=execution.get('output');validate_schema(raw,TESTER_SCHEMA)
+    if (execution.get('exit_code')!=0 or execution.get('timed_out') or not execution.get('turn_completed')
+        or not execution.get('thread_ids') or execution.get('execution_mode')!='danger-full-access'
+        or raw['status']!='passed' or raw['limitations'] or len(raw['issues'])!=1
+        or any(a['result']!='passed' for a in raw['acceptance'])
+        or any(c['result']!='passed' or c['exit_code']!=0 for c in raw['checks'])):
+        raise FactoryError('不能将未解决质量问题归类为已恢复工具事件')
+    issue=raw['issues'][0]
+    if (issue['id']!='TESTER-TOOL-001' or issue['ac_ids'] or issue['category']!='test'
+        or issue['severity']!='minor' or issue['expected']!='输出证据 SHA256 清单。'
+        or issue['reproduce']!=['PowerShell 将 foreach 语句直接接到 ConvertTo-Json 管道。']
+        or len(issue['evidence'])!=1):
+        raise FactoryError('未知 issue 不得自动转为已解决')
+    events=[]
+    for line in log_path.read_text(encoding='utf-8').splitlines():
+        wrapper=json.loads(line)
+        if wrapper.get('stream')!='stdout':continue
+        try:event=json.loads(wrapper['text'])
+        except (ValueError,KeyError):continue
+        if event.get('type')=='item.completed' and event.get('item',{}).get('type')=='command_execution':
+            events.append(event['item'])
+    failed=[(i,e) for i,e in enumerate(events) if e.get('exit_code')!=0]
+    if len(failed)!=1:raise FactoryError('存在其他未恢复命令失败')
+    index,bad=failed[0];text=bad.get('aggregated_output','');command=bad.get('command','')
+    if (bad.get('exit_code')!=1 or 'ParserError' not in text or 'An empty pipe element is not allowed' not in text
+        or 'foreach($p in $paths)' not in command or 'Get-FileHash' not in command or 'ConvertTo-Json' not in command):
+        raise FactoryError('原命令并非已知辅助枚举解析错误')
+    good=[e for e in events[index+1:] if e.get('exit_code')==0 and e.get('status')=='completed'
+          and '$out=foreach($p in $paths)' in e.get('command','')
+          and '$out | ConvertTo-Json' in e.get('command','') and 'Candidate changed' in e.get('command','')]
+    if len(good)!=1:raise FactoryError('缺少唯一的已完成修正命令')
+    corrected=good[0];enumerated=json.loads(corrected['aggregated_output'])
+    if not isinstance(enumerated,list) or len({e['path'] for e in enumerated})!=len(enumerated):
+        raise FactoryError('修正命令哈希输出非法')
+    hashes={e['path']:e['sha256'] for e in enumerated}
+    required=[*issue['evidence'],*[e for a in raw['acceptance'] for e in a['evidence']],
+              *[e for c in raw['checks'] for e in c['evidence']]]
+    for e in required:
+        p=relative_file(e['path'],round_root)
+        if hashes.get(e['path'])!=e['sha256'] or not p.is_file() or file_hash(p)!=e['sha256']:
+            raise FactoryError('修正命令没有完整核验当前关键证据')
+    for name,h in hashes.items():
+        if not name.startswith('workspace/validation/') or file_hash(relative_file(name,round_root))!=h:
+            raise FactoryError('辅助枚举路径或哈希不可信')
+    record=json.loads(relative_file(issue['evidence'][0]['path'],round_root).read_text(encoding='utf-8-sig'))
+    if record.get('kind')!='evidence hash enumeration' or record.get('exit_code')!=1 or 'ParserError' not in record.get('error',''):
+        raise FactoryError('第一次失败事实缺失')
+    summaries=execution.get('command_executions',[])
+    for item in (bad,corrected):
+        if not any(e.get('command')==item['command'] and e.get('exit_code')==item['exit_code'] and e.get('status')==item['status'] for e in summaries):
+            raise FactoryError('CLI 原始日志与执行汇总不一致')
+    derived=copy.deepcopy(raw);derived['issues']=[]
+    proof={'classification':'recovered auxiliary tool event; not an unresolved software defect',
+           'original_issue':copy.deepcopy(issue),'failed_command':bad,'corrected_command':corrected,
+           'enumerated_hashes':enumerated,'source_result_fingerprint':digest(raw),
+           'derived_result_fingerprint':digest(derived),'new_Tester_calls':0}
+    return derived,proof
+
 class QualityGate:
     def __init__(self,controller,project,control,workspace,state,retry=False,allow_repair=True):
         from .controller import load, save
@@ -171,6 +238,16 @@ class QualityGate:
             ctx=rows[0]['context']
             allowed={e['path']:e['sha256'] for e in ctx['history']+ctx.get('delivery',[])+ctx.get('run_records',[])}
             if allowed.get(rel)!=entry['sha256']:raise FactoryError('历史证据不在受控清单')
+        elif rel=='context/reviewer-evidence-index.json' or rel.startswith('context/tester-reuse/'):
+            rows=[r for r in self.q['rounds'] if relative_file(r['path'],self.folder)==round_root]
+            if len(rows)!=1 or not rows[0].get('tester_derivation'):raise FactoryError('没有受控的本次复核来源')
+            row=rows[0];self.verify_context(row)
+            allowed={e['path']:e['sha256'] for e in row['context']['indices'] if e['path']=='context/reviewer-evidence-index.json'}
+            binding_path=relative_file(row['tester_derivation']['path'],self.folder)
+            if file_hash(binding_path)!=row['tester_derivation']['sha256']:raise FactoryError('工具恢复来源绑定变化')
+            binding=self.load(binding_path)
+            allowed.update({binding[k]['path']:binding[k]['sha256'] for k in ('execution','log','raw_result','proof')})
+            if allowed.get(rel)!=entry['sha256']:raise FactoryError('复核引用不在受控清单')
         elif not (rel.startswith('workspace/validation/') or rel.startswith('workspace/.quality-evidence/') or rel.startswith('checks/')):
             raise FactoryError('证据不在授权的测试/证据目录')
         if not path.is_file() or file_hash(path)!=entry['sha256']:
@@ -180,6 +257,21 @@ class QualityGate:
     def result(self,value,role,round_row,execution=None):
         schema=TESTER_SCHEMA if role=='Tester' else REVIEWER_SCHEMA
         validate_schema(value,schema)
+        if role=='Tester' and round_row.get('tester_derivation'):
+            binding=self.load(relative_file(round_row['tester_derivation']['path'],self.folder))
+            if file_hash(relative_file(round_row['tester_derivation']['path'],self.folder))!=round_row['tester_derivation']['sha256']:
+                raise FactoryError('派生复核绑定被篡改')
+            root=relative_file(round_row['path'],self.folder)
+            for e in (binding['execution'],binding['log'],binding['raw_result'],binding['proof']):
+                if file_hash(relative_file(e['path'],root))!=e['sha256']:raise FactoryError('真实 Tester 来源副本变化')
+            raw_execution=self.load(relative_file(binding['execution']['path'],root))
+            if self.load(relative_file(binding['raw_result']['path'],root))!=raw_execution:
+                raise FactoryError('真实原始结果与执行记录不一致')
+            derived,proof=recovered_tester_event(raw_execution,relative_file(binding['log']['path'],root),root)
+            if value!=derived or self.load(relative_file(binding['proof']['path'],root))!=proof:
+                raise FactoryError('派生结论不能由原始证据重算')
+            if execution is not None and execution!=raw_execution:raise FactoryError('派生执行来源不一致')
+            execution=raw_execution
         if value['candidate_fingerprint']!=round_row['candidate']['fingerprint']:
             raise FactoryError('Agent 结果不属于当前候选')
         acs={a['id'] for a in self.packet['acceptance']}
@@ -190,7 +282,12 @@ class QualityGate:
             if not ac['reason'].strip():raise FactoryError('AC 缺少判断理由')
             if ac['result']!='unverified' and not ac['evidence']:raise FactoryError('AC 无证据')
             if ac['result']=='passed' and all(e['path'].startswith('context/') for e in ac['evidence']):
-                raise FactoryError('历史记录不能单独证明当前 AC 通过；需要本轮审查/测试证据')
+                # Reviewer is read-only: its current CLI inspection + bound
+                # current index/recovery sources can prove the delivery AC.
+                # Tester and historical-only claims retain the original rule.
+                current_review=(role=='Reviewer' and ac['id']=='AC-012' and round_row.get('tester_derivation')
+                                and any(e['path']=='context/reviewer-evidence-index.json' for e in ac['evidence']))
+                if not current_review:raise FactoryError('历史记录不能单独证明当前 AC 通过；需要本轮审查/测试证据')
             for e in ac['evidence']:self.evidence(e,root)
         if candidate(self.workspace)!=round_row['candidate']:
             raise FactoryError('候选源码已变化；旧证据失效')
@@ -315,6 +412,9 @@ class QualityGate:
                 raise FactoryError(role+' 超时/失败/结构化输出缺失')
             threads=result.get('thread_ids',[])
             prior={t for old in records[:-1] for t in old.get('thread_ids',[])} | {t for old in self.state['calls'] for t in old.get('thread_ids',[])}
+            for saved in self.q['rounds']:
+                if saved.get('tester_derivation'):
+                    prior.update(self.load(relative_file(saved['tester_execution']['path'],self.folder)).get('thread_ids',[]))
             if not threads or prior.intersection(threads):raise FactoryError('Agent thread 缺失或与其他调用复用')
             value=result['output']
             if role!='CoderRepair':self.result(value,role,round_row,result)
@@ -335,7 +435,8 @@ class QualityGate:
     def history_plan(self):
         """Evidence closure only. Ready never means AC-012 passed."""
         completion=self.control/'completion.json'
-        return history_dependencies(self.workspace,self.load(completion) if completion.is_file() else {},candidate(self.workspace),self.load)
+        return history_dependencies(self.workspace,self.load(completion) if completion.is_file() else {},candidate(self.workspace),self.load,
+                                    required_history=getattr(self,'state',{}).get('independent_revalidation',{}).get('required_history',[]))
 
     def history_files(self):
         plan=self.history_plan()
@@ -451,6 +552,10 @@ class QualityGate:
                 'read_only_history_context':str(root/'context/history'),
                 'read_only_delivery_context':str(root/'context/delivery'),
                 'run_record_context':str(root/'context/run-records'),
+                'tester_recovery':({'binding':str(relative_file(row['tester_derivation']['path'],self.folder)),
+                    'context':str(root/'context/tester-reuse'),
+                    'meaning':'zero-model reclassification of a recovered tool event; original real Tester is preserved, not rerun'}
+                    if row.get('tester_derivation') else None),
                 'ac012_review_policy':{'focus':'当前交付说明、R/AC/Task映射、真实命令与结果、当前源码指纹、日志/截图/trace索引、操作范围和验收状态',
                     'archive_warnings':row['context']['dependencies'].get('archive_warnings',[]),
                     'disclosure':'仅列明的三条归档引用可unverified且非阻塞；在本轮AC-012审查证据、reason及Reviewer summary披露。其他当前/关键来源缺失仍须blocked。非关键归档warning不是当前AC未验证，不放入表示当前验收阻塞的limitations；不得隐藏实际阻塞。'},
@@ -467,6 +572,10 @@ class QualityGate:
                 '历史文档可作为补充引用；passed至少还需一份本轮测试或审查证据，历史通过记录不能单独证明当前AC通过。\n'
                 '无证据或未测试的AC只能unverified，并在limitations说明；整体只能failed/blocked，不能passed。返回前自查每项非unverified的evidence非空、文件存在、SHA256准确、候选指纹不变。禁止虚构或由主控补填结果。\n'
                 'checks须分别记录实际build/test/runtime的argv、exit_code、result、ac_ids及evidence；独立运行命令需留下CLI工具事件，主控基础检查不是你的自测。\n'
+                '正向runtime检查必须是可结束的检查命令：自行启动服务、验证health/监听/行为，finally清理服务，成功检查命令退出0。把实际命令及stdout/stderr/检查结果写入本轮证据。\n'
+                '服务进程因Ctrl+C/清理返回非零不是检查命令退出0；两者在证据中分别记录，不能把长驻服务argv及退出1填为正向runtime passed。任何真实检查非零仍不能标passed。\n'
+                '预期400/403/404/503等故障必须由断言命令验证预期行为并退出0；保留实际HTTP/进程错误，不删检查、不忽略非零。\n'
+                'limitations仅填写影响当前验收或无法核实的限制。移动视口模拟、Full Access无OS隔离等非阻塞事实放在相关AC reason与本轮审查证据披露；不能隐藏真实缺陷。\n'
                 'UI必须真实浏览器交互、持久化/服务重启/失败检查；保留浏览器自身沙箱，缺依赖/浏览器/权限blocked，不以HTTP200替代。browser check.evidence本身必须包含两种视口PNG和trace ZIP，不仅放在AC结果中。\n'
                 'AC-012按索引分别审查history历史资料、delivery原完成交付记录、run_records派发前快照与本轮artifacts/你新生成的证据；资料齐备预检不是通过结论。历史未生成与旧指纹缺口须保留事实，不能借用当前字节补证。\n'
                 '按ac012_review_policy核验当前有效交付，逐条披露archive_warnings为历史追溯unverified，不能仅因这三条非关键归档缺口把当前AC-012标为unverified；也不能由预检替它判passed。当前必需证据或实际依赖的关键来源缺失/错误仍须blocked。\n'
@@ -684,8 +793,13 @@ class QualityGate:
             while True:
                 folder=relative_file(row['path'],self.folder);copy=folder/'workspace'
                 if candidate(copy)!=row['candidate']:raise FactoryError('测试副本源码变化')
-                pre=folder/('preflight-'+str(time.time_ns()));pre.mkdir()
-                self.c.executor.preflight(self.packet,copy,pre)
+                if row.get('tester_derivation'):
+                    # Read-only Reviewer continuation reuses actual Tester checks;
+                    # never re-run a browser/build just to refresh a green record.
+                    self.result(row['tester'],'Tester',row)
+                else:
+                    pre=folder/('preflight-'+str(time.time_ns()));pre.mkdir()
+                    self.c.executor.preflight(self.packet,copy,pre)
                 self.basic(row)
                 if row['tester'] is None:
                     prompt=self.tester_prompt(row)
@@ -701,6 +815,8 @@ class QualityGate:
                             '审查候选源码、TaskPacket、Planner AC、Coder报告及Tester证据有效性/授权范围/覆盖与明显缺陷。\n'
                             '不能因任何completed/pass自报自动批准；当前必需证据不足、未实现或AC unknown/unverified不能approved。按ac012_review_policy区分并在AC-012 reason、本轮审查证据及summary披露三条非关键历史archive_warnings；仅这些追溯限制不自动拒绝，不能扩大到其他关键来源。\n'
                             'approved仅指当前TaskPacket质量门槛，不是APF外部验收/Git冻结/软件正式发布。\n'
+                            '如 tester_recovery 存在，必须读取其中原始 Tester 输出、原始命令日志及恢复认定；独立判断工具事件是否确已恢复、是否漏掉关键检查。优先核验当前软件、测试和浏览器证据，勿扩展无关历史审计。\n'
+                            'issues只列当前未解决缺陷；有真实恢复证据的辅助工具事件保留在summary及相关AC reason，不隐瞒失败也不当作未解决业务缺陷。limitations只列影响本阶段验收或无法核实的限制；Full Access无OS隔离、视口模拟、未发布等非阻塞事实在summary披露。真正关键未知仍须blocked。\n'
                             +json.dumps({**self.context(row,'Reviewer'),'tester':row['tester'],'coder_report':self.coder_report(row)},ensure_ascii=False,sort_keys=True,separators=(',',':')))
                     row['reviewer']=self.call('Reviewer',prompt,copy,row,REVIEWER_SCHEMA);self.checkpoint()
                 self.result(row['reviewer'],'Reviewer',row)

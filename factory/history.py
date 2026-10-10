@@ -23,7 +23,7 @@ ARCHIVE_GAPS={
         '48ff440502c276b0ae4d9d28b7e19a9bfc0fd6e73ce6b3d0233b5c8b0b41d8b8',
 }
 
-def history_dependencies(workspace,completion,candidate,load):
+def history_dependencies(workspace,completion,candidate,load,*,required_history=()):
     files=completion.get('workspace_manifest',{});nodes={};edges=[];unknown=[];warnings=[];absent=[];queue=[];runtime_mentions=[]
     def issue(parent,ref,reason,archive_gap=False,expected=None):
         pinned=ARCHIVE_GAPS.get((parent,ref,expected)) if archive_gap else None
@@ -149,6 +149,13 @@ def history_dependencies(workspace,completion,candidate,load):
         # Actual project delivery documents are already in the candidate; scan
         # them for references, keeping their provenance separately from history.
         add(n,'current candidate',n,'delivery')
+    for entry in required_history:
+        parent=entry['parent'];parent_path=relative_file(parent,workspace)
+        if files.get(parent)!=entry['parent_sha256'] or not parent_path.is_file() or file_hash(parent_path)!=entry['parent_sha256']:
+            issue(parent,entry['source'],'required historical parent SHA mismatch');continue
+        if not entry['source'].startswith('validation/'):
+            issue(parent,entry['source'],'required historical evidence outside validation');continue
+        add(entry['source'],parent,entry['source'],expected=entry['sha256'])
     while queue:
         if len(nodes)>256 or sum(n['bytes'] for n in nodes.values() if n['source'].endswith(('.md','.json')))>8*1024*1024:
             raise FactoryError('历史依赖索引超过明确读取预算；停止，需人工定向索引')

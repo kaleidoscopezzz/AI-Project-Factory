@@ -47,11 +47,11 @@ def validate_spec(spec, plan, workspace):
         raise FactoryError('增量运行断言无效')
 
 
-def check_receipt(project, entry, goal):
+def check_receipt(project, entry, goal, *, project_id=None):
     path=relative_file(entry['path'],project/'control/sequence')
     if file_hash(path)!=entry['sha256']:raise FactoryError('已完成阶段记录被修改')
     value=load(path)
-    if value['project_id']!=project.name or value['goal']!=goal or value['status']!='质量门槛通过':
+    if value['project_id']!=(project_id or project.name) or value['goal']!=goal or value['status']!='质量门槛通过':
         raise FactoryError('阶段完成身份或进入条件无效')
     for name,h in value['files'].items():
         p=relative_file(name,project)
@@ -173,7 +173,7 @@ def prepare_stage(c, project, control, workspace, original, spec, prior_entry):
     return stage_controller(c)
 
 
-def finish(c, project, control, workspace, goal):
+def finish(c, project, control, workspace, goal, *, project_id=None):
     state=load(control/'state.json');q=load(control/'quality/state.json')
     if state['status']!='质量门槛通过' or q['status']!='质量门槛通过':
         raise FactoryError('阶段未通过现有QualityGate')
@@ -188,6 +188,11 @@ def finish(c, project, control, workspace, goal):
     for call in q['calls']:
         pins.update(p for p in relative_file(call['path'],gate.folder).iterdir() if p.is_file())
     root=relative_file(row['path'],gate.folder)
+    if row.get('tester_derivation'):
+        binding_path=relative_file(row['tester_derivation']['path'],gate.folder);pins.add(binding_path)
+        binding=load(binding_path)
+        pins.update(relative_file(binding[k]['path'],root) for k in ('execution','log','raw_result','proof'))
+        if row.get('reviewer_execution'):pins.add(relative_file(row['reviewer_execution']['path'],gate.folder))
     context=row['context']
     refs=[e for role in ('tester','reviewer') for ac in row[role]['acceptance'] for e in ac['evidence']]
     refs += [e for check in row['tester']['checks'] for e in check['evidence']]
@@ -195,7 +200,9 @@ def finish(c, project, control, workspace, goal):
     for e in [*context['history'],*context['delivery'],*context['run_records'],*context['indices'],context['preflight'],
               {'path':context['manifest_path'],'sha256':context['manifest_sha256']}]:
         pins.add(relative_file(e['path'],root))
-    record={'project_id':project.name,'goal':goal,'status':'质量门槛通过','candidate':candidate(workspace),
+    identity=project_id or project.name
+    if identity!=gate.packet['project_id']:raise FactoryError('阶段完成身份与TaskPacket不匹配')
+    record={'project_id':identity,'goal':goal,'status':'质量门槛通过','candidate':candidate(workspace),
             'packet_fingerprint':digest(gate.packet),
             'files':{p.relative_to(project).as_posix():file_hash(p) for p in sorted(pins)},
             'scope':'single software Goal; internal quality result, not external APF acceptance'}
