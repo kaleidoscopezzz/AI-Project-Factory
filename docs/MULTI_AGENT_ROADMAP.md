@@ -1,6 +1,17 @@
-# 未来多 Agent 建设方案（尚未实现）
+# 多 Agent 建设路线图
 
-本阶段产物是可安装 Skills、模板和案例文档。以下调度、交接、重试、审批与恢复机制都是后续实现设计；当前不存在运行中的软件开发工厂。案例 task-packet.json 只是数据接口实例，不会执行开发、Git 或发布。
+本文保留 Goal 0 时制定的角色、规划顺序和未来设计结构，并同步当前批准范围。APF Goal 0～3 已封版，Goal 2 为有限范围批准，Goal 3 为受控双阶段真实交付批准。以下通用并行/DAG/Git/发行设计仍是规划，不是当前实现；现行架构见 [架构说明](ARCHITECTURE.md)。
+
+| APF 阶段 | 当前实际状态 |
+| --- | --- |
+| Goal 0 | Skills、模板与两类规划案例已批准 |
+| Goal 1 | 真实 Planner→TaskPacket→Coder、基础验证与恢复已批准 |
+| Goal 2 | 独立质量角色、缺陷包、有限返工及恢复已有限范围批准 |
+| Goal 3 | 同一待办软件 Goal 0→Goal 1 真实接续与独立质量批准已封版；原规划的通用 DAG/并行等不在本次批准范围 |
+| Goal 4 | 受控 Git Agent、外部验收/冻结账本；尚未开始 |
+| Goal 5 | Release Agent、构建来源、包一致性、目标平台验收和获批后的交付；尚未开始 |
+
+原始两类案例仍是规划文档验证，并非业务系统。真实案例和未验证能力见 [能力说明](VERIFIED_CAPABILITIES.md)。
 
 ## 1. 角色及输入输出
 | 角色 | 输入 | 输出 | 写入/控制边界 |
@@ -15,7 +26,9 @@
 
 用户只需与 Orchestrator 沟通。Agent 之间传结构化产物与证据，不要求用户逐个转发提示词。实现时需使用实际环境支持的受控 Agent API，并验证其授权与取消机制，不能假设当前桌面工具就是稳定产品调度 SDK。
 
-## 2. 交接契约 v1
+## 2. 原设计：交接契约 v1
+
+以下为原始规划字段，不是当前 TaskPacket 的逐字段规范。现行契约见 [TaskPacket](GOAL1_TASK_PACKET.md) 和 [阶段机制](GOAL3_INCREMENT.md)。
 任务包至少包含：schema_version、task_id、goal_id、role、plan_version、prompt_path、input_artifacts（相对路径、sha256、版本）、baseline（真实 HEAD/Tag/dirty 状态与候选文件清单指纹）、depends_on、write_set、exclusive_resources、requirements/acceptance_ids、run_commands（cwd/前提/expected exit）、evidence_paths、blocking_questions、operation_policy、approval_refs、retry_budget、cost_budget、status。
 
 输出报告包含 task_id/attempt_id、候选指纹、实际写集、命令退出码和结果、证据hash、未完成、缺陷和下一动作。结果依赖输入版本，输入或候选变更后将旧结果标 stale；不能把旧版本测试绿灯交给新版本 Release。
@@ -25,7 +38,7 @@
 ## 3. 流程、并行与冲突防护
 默认顺序：需求→规划→重大歧义决策→工程方案→提示词/任务包门槛→Coder→固定候选→Tester/Reviewer→返工或待验收→受控 Git→受控 Release。
 
-可并行：Planner 的不同只读分析；契约已定且可写路径不交叠的独立模块；同一固定候选上的 Tester 和 Reviewer。不可并行：根配置/锁文件、共享类型变更、路由总装配、数据库迁移序号、PROJECT_STATUS、Git/index 和发行目录写入。
+可并行：Planner 的不同只读分析；契约已定且可写路径不交叠的独立模块；未来设计中同一固定候选上的只读分析；当前 Reviewer 必须在 Tester 合法通过后串行启动。不可并行：根配置/锁文件、共享类型变更、路由总装配、数据库迁移序号、PROJECT_STATUS、Git/index 和发行目录写入。
 
 派发前计算写集的文件/目录前缀冲突；相交则串行或拆出整合者。独立 checkout/worktree 是后续授权下的隔离方案，本阶段未创建。即使用 worktree，仍需检测语义冲突和共享契约版本；不是“每人一分支”就能无冲突。Reviewer 只核对不改，Tester 新测试和 Coder 同时写相同 spec 必须排队。
 
@@ -43,7 +56,7 @@ Tester 产生 Issue-ID、AC-ID、复现步骤、实际/预期、候选指纹、�
 
 写状态采用单一作者、临时文件+原子替换、schema校验；事件记录 task/attempt、输入输出hash、命令/进程标识、审批引用、预算。恢复时重新读权限、基线、任务租约、未完成子进程和文件状态，重新校验hash。只对无副作用或有幂等键的操作自动续跑；提交/发布/迁移先核对已执行结果，不重复执行。不强杀未知进程。
 
-生成提示词是可重复的文档动作；真正开发任务恢复要保留原输出与新attempt，不能覆盖失败证据。当前模板可人工记录这些字段；持久化调度代码尚未实现。
+生成提示词是可重复的文档动作；真正开发任务恢复要保留原输出与新attempt，不能覆盖失败证据。当前已实现项目 state/events、QualityGate 检查点和 Sequence 阶段记录；本节通用状态设计不等同于当前所有枚举已落地。实际路径和恢复边界见架构及阶段说明。
 
 ## 6. Token/重试预算
 每个任务记录 max_attempts、最大执行时长和可用时实际 Token 使用；不要伪造工具没提供的精确 Token 数。用户总预算优先，预留整合与验收报告预算；达到阈值停止新派发，汇总可恢复状态等待决策。
@@ -55,21 +68,30 @@ Tester 产生 Issue-ID、AC-ID、复现步骤、实际/预期、候选指纹、�
 
 禁止自动 reset/clean/restore/switch 用户改动、强推、泄露凭据或替换未知分支。失败不自动回滚破坏性动作。发行记录业务基线和包装/Runtime基线、依赖来源许可、实际构建和目标设备 smoke；包内元数据不代替程序字节/运行验证。未测平台、缺凭据、缺Runtime或失败门槛必须写明，不冒称发行成功。
 
-本项目 Goal 0 的策略始终禁止 Git 写操作和正式发布，未来设计不改变这一点。
+Goal 0 开发时禁止 Git 写入的历史约束不推导为所有后续任务永久禁止。本次及既有封版由用户单独授权；自动 Git Agent 和正式发行仍未实现。
 
-## 8. 后续建设顺序
+## 8. 原始建设顺序与当前进度
 1. Goal 1：先实现 Planner→Coder 的单任务人工门控交接。保存 TaskPacket v1、解析与校验、输入指纹、ready/draft/blocked 状态、提示词输出和人工复制执行；沙盒例子不涉及生产系统或 Git。
 2. Goal 2：加入 Coder 结果回收和 Tester 执行，固定候选、环境隔离、缺陷包、有限返工和恢复；使用假的执行器验证状态，之后才接真实 Agent API。
 3. Goal 3：独立 Reviewer、多任务依赖图、写集锁、整合回归、全局预算；失败与取消可重现。
 4. Goal 4：受控 Git Agent 与外部验收/冻结账本，明确审批身份和证据。
 5. Goal 5：Release Agent、构建来源、包一致性、目标平台验收与批准后的部署/交付。
 
-每步只在前阶段验收后推进。下一步最有价值的是可检查的单任务交接，而不是先开发复杂 DAG 调度器。
+以上五步为原始路线图，Goal 1～3 的实际批准范围以顶部表格为准，不将原规划的每一项写成已完成。Goal 4 和 Goal 5 职能保留原定义，尚未开发。下一正式里程碑为 Goal 4；本次仅更新文档。
 
-## 9. 下一阶段 Planner→Coder 最小验收建议
+## 9. 历史：Planner→Coder 初始验收建议
 - 不完整输入输出 draft/blocked 并保留可继续部分；缺重大决策不能派发。
 - schema、ID、依赖环、AC覆盖、写集冲突、路径越界、baseline和输入hash校验必须能拒绝错误任务包。
 - 批准范围内任务生成无占位符提示词；未获准 Git/部署动作在策略层拒绝。
 - Coder 收到相同计划版本与提示词内容，可回报 Task-ID/attempt/输出指纹；改变输入会使旧完成状态过期。
 - 中断恢复不会重复已完成操作；达到重试预算不再自动派发；状态可人工审查。
 - 用本轮两案例及反例测试契约，不开发它们的业务系统。
+
+
+## 10. 建议扩展与后续待办（未批准实现）
+
+建议 Goal 6：面向普通用户的产品化、一键软件工厂与安装体验。它不是原始 Goal 0～5 正式路线图的一部分，也没有作为已批准功能实现。独立 CLI 0.1.0 尚在独立分支，未合并 main，本次不进行合并。
+
+计划增加新项目 Goal 0 自动生成并验收根目录 AGENTS.md 的规范；历史已批准项目不追溯失效。已有代码可能产生项目授权文件，但这一新的强制规范尚未正式接入主线任务生成与验收，本次不改 Skills、TaskPacket 或质量门槛。
+
+真实 CoderRepair 自动闭环、任意数量 Goal 自动任务准备、换机运行与 Token 硬限额仍需后续明确范围，不为其重新打开 Goal 2 或 Goal 3 封版。

@@ -1,4 +1,6 @@
-# TaskPacket 1.0 与执行协议
+# TaskPacket 与执行协议
+
+本文保留 Goal 1 的 1.0 单阶段契约。Goal 3 已批准，阶段链使用兼容的 1.1 前序引用扩展，详见 [两阶段机制](GOAL3_INCREMENT.md)；没有重写历史任务包。
 
 权威实现：`factory/contracts.py`。Agent 响应 JSON Schema 位于 `factory/schemas/`，运行时从同一 Python 契约生成 schema。TaskPacket 由主控从经校验的 Planner 响应组装，身份、路径、预算和状态均由主控决定，Planner 不能扩大权限。
 
@@ -10,7 +12,7 @@
 | goal | 固定 Goal 0，不能派发后续业务 |
 | project_type / technology | 来自完整经校验规划；技术选择有依据 |
 | workspace | 精确等于 projects/<id>/workspace；绝对解析、无穿越/链接 |
-| allow_write / deny_write | 仅 workspace；禁止 skills、历史 validation、factory .git、参考项目与 control；其他项目由沙箱和解析路径拒绝 |
+| allow_write / deny_write | 仅 workspace；禁止 skills、历史 validation、factory .git、参考项目与 control；其他项目不在授权范围；Full Access 不提供 OS 隔离 |
 | prompt_path | 精确的 control/goal0-prompt.md |
 | acceptance | 当前 Goal0 至少8项，R/AC/Task/Goal映射一致且都出现在提示词中 |
 | checks / runtime | argv 数组，build/test必备；本地服务接受 {port}，HTTP路径和可观察期望；不把自然语言拼入 shell |
@@ -27,4 +29,4 @@ Planner 独立 `codex exec` 输出 JSON；主控原子落盘及组装 packet；�
 
 恢复：优先校验已有 packet；其次重用完整 planner-result checkpoint；无 checkpoint 才重新规划。遗留执行中状态不能成功，需显式 Retry 且预算未耗尽。手工修改控制文件属于破坏可信本地状态，SHA不是签名、也不是抵御具有相同用户权限攻击者的边界。
 
-Goal 2 建议：先扩展验收协议及独立 Tester 执行，统一失败诊断/受限修复包，再引入独立 Reviewer。Git/Release 保持单独审批接口，未获专门收口授权不执行。先增加不同技术栈适配与恢复故障注入，再考虑多任务并发和共享文件所有权。
+当前已接入独立 Tester、只读 Reviewer、缺陷包与有限返工/恢复；批准范围见 [能力说明](VERIFIED_CAPABILITIES.md)。真实自动返工闭环尚未验证。Git/Release 属于未来 Goal 4/5；不能从软件阶段完成推导这些操作的授权。
