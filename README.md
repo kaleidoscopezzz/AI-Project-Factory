@@ -19,18 +19,9 @@ APF 面向希望降低软件开发门槛的用户。目前专注 **个人 Window
 
 ## 核心流程
 
-```mermaid
-flowchart LR
-    U[用户需求] --> P[Planner 规划]
-    P --> T[经验证的 TaskPacket]
-    T --> C[Coder 开发]
-    C --> E[Tester 独立验证]
-    E --> R[Reviewer 只读审查]
-    R --> A[软件阶段批准]
-    A --> N[经确认的下一 Goal]
-```
+![AI Project Factory 核心开发工作流](docs/assets/apf-core-workflow.svg)
 
-主控保存状态、任务包和证据；Tester 合法通过后才能进入 Reviewer。明确业务缺陷可以生成 DefectPacket 并进入受控修复；**真实 CoderRepair 自动返工完整闭环仍未验证**。当前流程不包含自动 Git 封版或软件发行。
+APF 已真实验证受控双阶段开发、独立 Tester、只读 Reviewer 及正式阶段交付。获批阶段可在明确授权后生成本地 Git 版本，默认不自动 Push。**真实 CoderRepair 自动返工闭环与完整无人值守多 Goal 交付仍未验证**；软件发行属于后续阶段。
 
 ## 已验证案例：本机离线待办工具
 
