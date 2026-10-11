@@ -66,7 +66,7 @@ def manifest(workspace):
     for p in Path(workspace).rglob('*'):
         if p.is_symlink() or (hasattr(p,'is_junction') and p.is_junction()):
             raise FactoryError('工程包含链接；拒绝校验')
-        if p.is_file() and not any(x in ('node_modules','.factory-tmp','__pycache__') for x in p.relative_to(workspace).parts):
+        if p.is_file() and not any(x in ('.git','node_modules','.factory-tmp','__pycache__') for x in p.relative_to(workspace).parts):
             files[p.relative_to(workspace).as_posix()]=file_hash(p)
     return files
 
@@ -338,6 +338,18 @@ class Controller:
             result['runtime_error']=str(e)
         save(control/'failed-task-diagnostics.json',result)
         return result
+
+    def inspect_project_git(self,project_id):
+        from .git_agent import GitAgent
+        return GitAgent(self,project_id).inspect()
+
+    def configure_project_git(self,project_id,policy):
+        from .git_agent import GitAgent
+        return GitAgent(self,project_id).configure(policy)
+
+    def version_approved_stage(self,project_id,goal):
+        from .git_agent import GitAgent
+        return GitAgent(self,project_id).commit(goal)
 
     def prepare_goal_sequence(self,project_id,goal1_spec,approval_id,*,allow_repair=False):
         """Development API only; validates a caller-approved second stage."""

@@ -24,7 +24,7 @@ from .history import history_dependencies
 # Only well-known generated directories are excluded. Arbitrary source extensions
 # are never excluded; tests, configs, lockfiles, docs and AGENTS.md are included.
 GENERATED_ROOTS = {'validation','dist','build','var','.quality-evidence','.factory-tmp'}
-GENERATED_ANY = {'node_modules','__pycache__','.pytest_cache','.cache'}
+GENERATED_ANY = {'.git','node_modules','__pycache__','.pytest_cache','.cache'}
 RUNNING = {'Tester执行中','Reviewer审查中','Coder返工中'}
 
 # External Reviewer classified these exact disclosures for this verified
