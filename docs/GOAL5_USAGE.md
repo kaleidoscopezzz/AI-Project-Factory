@@ -2,6 +2,8 @@
 
 Release Agent 将已获得真实质量批准的软件阶段，转换为经过构建、解压和运行检查的本地便携 ZIP。入口为 `scripts/release-stage.ps1`，Python API 为 `Controller.release_approved_stage(project_id, goal, config)`。没有模型调用、Git 写操作或远端上传。
 
+**Goal 5 已限定范围封版**，批准 Tag 为 `goal-5-approved`。范围是已批准候选的本地构建、ZIP 检查、独立解压运行和来源绑定交付记录，不代表 APF 1.0.0 已发布或任意技术栈均可自动发行。
+
 ## 输入与授权
 
 先完成现有 Sequence 的正式阶段批准。工具复用 Git Agent 的只读批准验证，核对阶段回执、TaskPacket、候选文件和独立真实 Tester/Reviewer 来源；它不会重新启动质量 Agent，也不要求候选已有 Git 仓库。当前共享验证器要求 Git 命令已安装。存在本地版本记录时校验其 Commit 树与批准候选一致，否则版本字段明确为空。
@@ -54,6 +56,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\START.ps1 -Port 3000
 打开 `http://127.0.0.1:3000`；端口占用可改成 3001；Ctrl+C 停止。执行策略参数只作用于这一次 PowerShell 进程，不修改系统设置。待办软件需要已加入 PATH 的 Node.js 22 或更高版本，不内置 Node，也无第三方 npm 依赖。数据保存于解压目录的 `var/`；一个数据目录只运行一个服务。
 
 工具实际执行 ZIP CRC、清单和 SHA-256 验证，拒绝路径穿越、链接和覆盖已有解压目录；随后从包内启动脚本启动服务。待办配置额外检查界面/静态资源、新增、编辑、完成状态、查询、重启持久化及删除。检查结束只终止本轮拥有的进程树；记录受控清理的退出码，不能将它冒称为程序自然退出成功。
+
+## 已验证发行实例
+
+原待办软件 Goal 1 的发行 ZIP 含 9 个文件，8,687 字节；原包 SHA-256 为 `4bd82c79f9880ef6e3bada3c1a758f9a2691995aea9d92fee621a0d554559651`。Windows 发行验证使用 Node.js 26.3.0，已从新解压目录实际检查新增、编辑、完成状态、查询、删除和重启持久化。外部独立审查另使用 Node.js 22.16.0 在 Linux 验证核心服务，不等于 Linux 下 Windows 启动脚本或完整发行链路均已验证。
+
+历史发行包只保存在本地验证资料中，本文不提供 GitHub 发布附件下载。包需要已安装的 Node.js，不是免安装 EXE；公开软件发行、运行环境捆绑和安装器尚未提供。
 
 ## 重复、失败与限制
 

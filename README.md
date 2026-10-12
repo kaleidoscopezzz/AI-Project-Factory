@@ -1,12 +1,12 @@
 # AI Project Factory (APF)
 
-用自然语言描述软件需求，让 Planner、Coder、Tester 和 Reviewer 协作完成规划、开发、验证与阶段交付。
+用自然语言描述软件需求，让 Planner、Coder、Tester 和 Reviewer 协作完成规划、开发与阶段批准，再通过受控 Git 和 Release Agent 留下版本、交付可运行的软件。
 
-APF 面向希望降低软件开发门槛的用户。目前专注 **个人 Windows 电脑与 Codex**，已完成受控双阶段软件开发的真实验证；使用仍需要环境准备、权限选择和阶段范围确认，尚不能无人干预完成任意软件。
+APF 面向希望降低软件开发门槛的用户。目前专注 **个人 Windows 电脑与 Codex**，已验证受控双阶段开发、独立质量审查、授权本地 Git 版本管理和真实本地 ZIP 发行。使用仍需要环境准备、权限选择和阶段范围确认，尚不能无人干预完成任意软件。
 
 ## 当前进度
 
-**APF Goal 0～Goal 3 已批准，其中 Goal 2 和 Goal 3 为限定范围批准。**
+**原始 Goal 0～Goal 5 已完成核心开发，并按各自批准范围封版；APF 1.0.0 尚未正式发布。** Goal 2 为有限范围批准，Goal 3 为受控双阶段批准，Goal 4 限于授权本地版本管理，Goal 5 为有限范围本地软件发行批准。
 
 | APF 里程碑 | 已批准范围 | Tag |
 | --- | --- | --- |
@@ -14,6 +14,8 @@ APF 面向希望降低软件开发门槛的用户。目前专注 **个人 Window
 | Goal 1 | Planner → TaskPacket → Coder、基础验证与失败恢复 | `goal-1-approved` |
 | Goal 2 | 独立质量角色、缺陷包、有限返工及恢复；有限范围外部审查 | `goal-2-approved` |
 | Goal 3 | 同一待办软件从已批准 Goal 0 接续到 Goal 1，真实编码、测试、只读审查与阶段批准 | `goal-3-approved` |
+| Goal 4 | 项目策略授权的本地 Git Commit、候选与批准来源绑定；不自动 Tag/Push | `goal-4-approved` |
+| Goal 5 | Release Agent 构建、ZIP 检查、独立解压运行与交付记录；有限范围本地发行 | `goal-5-approved` |
 
 **APF 的 Goal 是工厂能力里程碑；生成软件的 Goal 是该软件的实施阶段。** 两者不是同一套进度。
 
@@ -21,7 +23,9 @@ APF 面向希望降低软件开发门槛的用户。目前专注 **个人 Window
 
 ![AI Project Factory 核心开发工作流](docs/assets/apf-core-workflow.svg)
 
-APF 已真实验证受控双阶段开发、独立 Tester、只读 Reviewer 及正式阶段交付。获批阶段可在明确授权后生成本地 Git 版本，默认不自动 Push。**真实 CoderRepair 自动返工闭环与完整无人值守多 Goal 交付仍未验证**；软件发行属于后续阶段。
+APF 已真实验证受控双阶段开发、独立 Tester、只读 Reviewer 及正式阶段交付。批准后，通过明确授权的阶段后接口生成本地 Git 版本，再由 Release Agent 在独立副本中构建、检查 ZIP、解压并实际启动，记录发行来源、SHA-256 和交付结果。两者不需要额外模型调用，也不自动 Push 或上传。
+
+接口与权限见 [受控本地 Git](docs/GOAL4_USAGE.md) 和 [本地软件发行](docs/GOAL5_USAGE.md)。**真实 CoderRepair 自动返工闭环与完整无人值守多 Goal 交付仍未验证。**
 
 ## 已验证案例：本机离线待办工具
 
@@ -32,6 +36,10 @@ APF 已真实验证受控双阶段开发、独立 Tester、只读 Reviewer 及�
 
 已执行实际构建、业务操作、持久化与失败场景检查，以及 Windows Edge 桌面和移动视口交互验证。移动视口模拟不等于真机测试，截图和重复检查不作为独立测试数量。软件 Goal 1 接续复用了原 Planner 的合法规划，没有重新开发 Goal 0。
 
+软件 Goal 1 已成功生成 **9 个文件的本地发行 ZIP**，在全新解压目录实际启动并验证新增、编辑、完成状态、查询、删除及重启持久化。Windows 发行验证使用 **Node.js 26.3.0**；外部独立审查另使用 **Node.js 22.16.0 / Linux** 验证核心服务，不能据此声称完整跨平台发行验证。
+
+原发行包 SHA-256：`4bd82c79f9880ef6e3bada3c1a758f9a2691995aea9d92fee621a0d554559651`。运行仍需要 Node.js，**不是免安装独立 EXE**。使用方法见 [发行与运行说明](docs/GOAL5_USAGE.md)；历史验证包保存在本地，当前首页不提供 GitHub 发布附件下载。
+
 ## 能力边界
 
 | 能力 | 当前状态 |
@@ -41,13 +49,15 @@ APF 已真实验证受控双阶段开发、独立 Tester、只读 Reviewer 及�
 | 固定候选、证据哈希、完成记录复用与两阶段串行接续 | 已实现；受控案例真实验证 |
 | 缺陷包、有限返工、部分中断恢复 | 已实现并有确定性测试；真实自动返工闭环未验证 |
 | 无人干预的任意多 Goal 连续开发 | 未实现 |
-| 自动 Git 管理、最终安装包与发行 | 未实现，分别属于后续 Goal 4、Goal 5 |
+| 受控本地 Git 版本 | Goal 4 已批准；项目授权、质量回执绑定、真实本地 Commit；无自动 Tag/Push |
+| 本地软件发行 | Goal 5 已限定范围封版；真实构建、ZIP 内容检查、独立解压启动、来源/SHA-256/交付记录 |
+| 通用 EXE、安装器、云部署与远端发布 | 当前不提供；本地 ZIP 仍依赖相应运行环境 |
 | OS 级工作区隔离、Token 硬限制 | 当前不提供 |
 | 普通用户零配置、一键软件工厂 | 未来方向；独立 CLI 0.1.0 尚未合并主线 |
 
 ## 安装与运行
 
-主线使用源码和 PowerShell 入口，没有正式发布的安装包。准备 Windows 11、PowerShell、Python 3.11+，以及已安装并登录的可信 Codex CLI。生成 Web 项目还需要相应 Node/Edge/浏览器工具环境；换机真实执行尚未完整验证。
+APF 主线使用源码和 PowerShell 入口，尚无正式 APF 1.0.0 安装包。准备 Windows 11、PowerShell、Python 3.11+、Git，以及已安装并登录的可信 Codex CLI。生成 Web 项目还需要相应 Node/Edge/浏览器工具环境；换机完整开发 E2E 尚未验证。Goal 5 的软件发行 ZIP 与 APF 自身的安装包是两回事。
 
 获取源码后在**仓库根目录**运行：
 
@@ -77,11 +87,13 @@ python -B -m unittest discover -s tests -p 'test_*.py'
 
 ## 技术架构
 
-Python Controller 管理任务、状态与调用；Codex CLI 执行角色；TaskPacket 绑定需求、权限和输入；QualityGate 核对候选与独立质量结果；Sequence 管理同一软件的两阶段记录。状态、日志、测试证据和阶段回执保存在项目控制目录中。详见 [架构说明](docs/ARCHITECTURE.md)。
+Python Controller 管理任务、状态与调用；Codex CLI 执行角色；TaskPacket 绑定需求、权限和输入；QualityGate 核对候选与独立质量结果；Sequence 管理同一软件的两阶段记录。Git Agent 保存授权本地版本，Release Agent 从获批候选生成并验证本地发行包。状态、日志、测试证据与交付记录保持来源绑定。详见 [架构说明](docs/ARCHITECTURE.md)。
 
 ## 下一步与限制
 
-正式路线图下一阶段为 **Goal 4：受控 Git Agent 与外部验收/冻结账本**；Goal 5 为 Release Agent 与发行交付，两者尚未开发。面向普通用户的一键体验可作为建议 Goal 6，尚未纳入已批准的原始路线图。
+六个研发里程碑的核心能力已完成，**首个正式 APF 1.0.0 仍需 CLI 整合、统一用户入口及最终端到端体验验收**。CLI 0.1.0 独立分支尚未合并 main，首页不提供该分支的正式命令。面向普通用户的产品化阶段仍是**建议 Goal 6，尚未正式立项**。
+
+根 AGENTS.md 强制生成、详细需求忠实度验证、真实自动返工闭环、多模型及多 Agent 自由编排均为未来计划，不属于本次已验证能力。自动 GitHub Push、云部署、通用 EXE 与安装器也不在当前交付范围。
 
 Full Access 使用当前用户的文件、进程和网络权限，**不是 OS 级工作区沙箱**。真实调用可能消耗大量 Token，目前没有可靠硬上限。APF 仍在持续开发，重大歧义、权限和不可安全恢复的问题需要用户介入。
 
@@ -95,3 +107,5 @@ Full Access 使用当前用户的文件、进程和网络权限，**不是 OS �
 - [已验证能力、案例与已知限制](docs/VERIFIED_CAPABILITIES.md)
 - [Goal 3 批准范围与开发 API](docs/GOAL3_INCREMENT.md)
 - [独立质量验证](docs/GOAL2_USAGE.md)
+- [受控本地 Git 版本](docs/GOAL4_USAGE.md)
+- [本地软件发行与运行](docs/GOAL5_USAGE.md)
