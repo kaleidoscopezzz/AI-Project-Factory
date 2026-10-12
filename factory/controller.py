@@ -351,6 +351,10 @@ class Controller:
         from .git_agent import GitAgent
         return GitAgent(self,project_id).commit(goal)
 
+    def release_approved_stage(self,project_id,goal,config):
+        from .release_agent import ReleaseAgent
+        return ReleaseAgent(self,project_id).release(goal,config)
+
     def prepare_goal_sequence(self,project_id,goal1_spec,approval_id,*,allow_repair=False):
         """Development API only; validates a caller-approved second stage."""
         from .sequence import prepare
