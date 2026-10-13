@@ -14,7 +14,7 @@ dependencies = []
 apf = "apf_cli.cli:main"
 
 [tool.setuptools]
-packages = ["apf_cli", "apf_cli.bundled_skills"]
+packages = ["apf_cli", "apf_cli.bundled_skills", "factory"]
 package-dir = {"apf_cli.bundled_skills" = "skills"}
 
 [tool.setuptools.package-data]

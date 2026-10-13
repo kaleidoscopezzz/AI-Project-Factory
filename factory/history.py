@@ -164,6 +164,16 @@ def history_dependencies(workspace,completion,candidate,load,*,required_history=
         if name.endswith('.md'):
             try:content=path.read_text(encoding='utf-8')
             except UnicodeError:issue(name,name,'historical Markdown is not valid UTF-8');continue
+            # Prose may label a file by basename while the same document gives
+            # its qualified citations in an evidence index. Verify EVERY such
+            # citation below; do not invent a second, nonexistent local path or
+            # select one of several versions as an AC verdict. Explicit bare
+            # links/backticks retain the strict original resolution rules.
+            qualified=set()
+            if name in {'validation/acceptance.md','validation/goal0/acceptance.md',acceptance_path} and not archive(name):
+                for ref in FILE_REF.findall(content):
+                    resolved=ref if ref.startswith('validation/') else str(PurePosixPath(name).parent/ref)
+                    if '/' in ref and not archive(resolved):qualified.add(PurePosixPath(ref).name)
             for line in content.splitlines():
                 # Preserve explicit planned/not-generated facts. Do not demand
                 # files that the historical record explicitly says never existed.
@@ -181,6 +191,9 @@ def history_dependencies(workspace,completion,candidate,load,*,required_history=
                 for ref in unsafe:resolve(name,ref)
                 prose=re.sub(r'`[^`]+`|\[[^\]]*\]\([^)]+\)','',line)
                 for ref in FILE_REF.findall(prose):
+                    if '/' not in ref and ref in qualified:
+                        runtime_mentions.append({'parent':name,'reference':ref,'kind':'prose label; qualified citations in this document are verified separately, not an AC verdict'})
+                        continue
                     # Bare source/asset mentions are descriptions, not evidence
                     # citations. Qualified source paths and evidence names count.
                     if '/' not in ref and ref.endswith(('.js','.mjs','.html','.css')):continue

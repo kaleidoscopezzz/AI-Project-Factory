@@ -13,10 +13,14 @@ from . import APFError, VERSION, VERSION_TEXT
 
 
 def parser():
-    result = argparse.ArgumentParser(prog="apf", description="AI Project Factory 0.1.0：复用三个 Codex Skills 生成需求、Goals 和 Goal 0 提示词。")
+    result = argparse.ArgumentParser(prog="apf", description="AI Project Factory 0.1.0：生成规划，或执行受控双阶段开发、质量审查与本地ZIP发行。")
     action = result.add_mutually_exclusive_group()
     action.add_argument("--version", action="store_true", help="离线打印版本和作者签名")
     action.add_argument("--prompt-generate", metavar="需求", help="使用本地已登录 Codex 生成规划（一次只读 Planner 调用）")
+    action.add_argument("--build", metavar="需求", help="实际执行两个软件Goal、独立质量检查及本地发行（消耗模型额度）")
+    action.add_argument("--resume", metavar="目录", help="恢复已有build；不隐式重试失败模型，不覆盖用户目录")
+    result.add_argument("--full-access", action="store_true", help="显式授权build的Coder/Tester和工程检查使用当前用户权限；无OS隔离")
+    result.add_argument("--allow-local-git", action="store_true", help="显式授权已批准最终软件阶段的本地Git提交；不推送")
     result.add_argument("--out", metavar="目录", help="输出目录；默认当前目录 apf-plan-日期-时间，重名自动加序号")
     result.add_argument("--codex-path", metavar="文件", help="优先使用指定 codex.exe；失败不回退")
     result.add_argument("--skills-dir", metavar="目录", help="可选：含三个完整 Skill 子目录的位置")
@@ -110,6 +114,19 @@ def main(argv=None):
     if args.version:
         print(VERSION_TEXT)
         return 0
+    if args.build is not None or args.resume is not None:
+        try:
+            from .build import build
+            build(args)
+            return 0
+        except (APFError, OSError, ValueError) as exc:
+            print(f"构建停止：{exc}", file=sys.stderr)
+            return 1
+        except KeyboardInterrupt:
+            print("构建中断；保留检查点，使用 --resume 查看或安全接续。", file=sys.stderr)
+            return 130
+    if args.full_access or args.allow_local_git:
+        cli_parser.error("--full-access、--allow-local-git 只用于 --build / --resume")
     if args.prompt_generate is None:
         if args.out or args.codex_path or args.skills_dir:
             cli_parser.error("--out、--codex-path 和 --skills-dir 需与 --prompt-generate 一起使用")

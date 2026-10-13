@@ -6,7 +6,8 @@
 
 | 组件 | 实际职责 |
 | --- | --- |
-| `apf_cli/` / `pyproject.toml` | 已整合的 0.1.0 console script；离线版本/帮助，单次只读 Codex 规划及三个 Skill 资源复用；不导入工厂执行链 |
+| `apf_cli/` / `pyproject.toml` | 已整合的 0.1.0 console script；离线版本/帮助、独立规划及产品开发/恢复入口；按命令延迟加载工厂 |
+| `factory/product.py` | 薄产品适配：扩展同次Planner响应为原计划、独立Goal1契约及发行清单；共享有界调用预算，复用全部原阶段机制 |
 | `scripts/factory.ps1` | 将真实 PowerShell 参数交给 Python 主控；单阶段开发、状态查询与 CLI 检查 |
 | `factory/controller.py` | 保存需求与状态、规划/任务包校验、角色派发、基础工程检查、接续控制 |
 | `factory/contracts.py` | Planner/Coder 契约与 TaskPacket 校验；ID、依赖、AC 映射、权限及来源绑定 |
@@ -40,4 +41,4 @@ Goal 5 已限定范围封版，复用正式阶段批准来源；构建在独立�
 
 ## 未实现或未真实验证
 
-真实自动返工闭环未验证；任意多 Goal 自动任务准备、自由编排、外部冻结自动化、自动 Tag/Push、云部署、通用 EXE 与安装器不在当前实现范围。CLI 0.1.0 已整合主线，但仅提供规划文件生成；现有 Factory、Sequence、Git Agent 和 Release Agent 仍使用各自的入口/API。APF 1.0.0 仍需完整统一入口及最终体验验收。AGENTS.md 强制生成、详细需求忠实度验证和多模型能力为未来计划。
+真实自动返工闭环未验证；任意多 Goal 自动任务准备、自由编排、外部冻结自动化、自动 Tag/Push、云部署、通用 EXE 与安装器不在当前实现范围。CLI 0.1.0 的 `--build` 将现有 Factory、Sequence、Git Agent 和 Release Agent 接入同一入口，`--prompt-generate` 仍只规划。独立输出目录中的 `.apf/run.json` 只记录整轮身份和共享预算，不能替代原质量状态机或伪造阶段批准。新的结构化Planner响应经过原计划/TaskPacket/增量契约校验，不从自由格式Markdown猜测可执行命令。APF 1.0.0 尚待最终验收与发布，详见 [产品入口](PRODUCT_USAGE.md)。AGENTS.md 强制生成、详细需求忠实度验证和多模型能力为未来计划。

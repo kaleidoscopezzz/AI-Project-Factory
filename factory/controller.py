@@ -367,8 +367,9 @@ class Controller:
     def use_unstarted_quality_context(self,project_id,name):
         """A new evidence context after zero-call preparation failure only."""
         project,control,workspace,state=self.locate(project_id)
-        if state.get('sequence_goal')!='Goal 1' or not re.fullmatch(r'quality-goal1-[a-z0-9-]{1,40}',name):
-            raise FactoryError('独立质量上下文只用于本次增量Goal1')
+        goal_number='1' if state.get('sequence_goal')=='Goal 1' else '0'
+        if not re.fullmatch(r'quality-goal'+goal_number+r'-[a-z0-9-]{1,40}',name):
+            raise FactoryError('独立准备恢复上下文必须与当前软件阶段匹配')
         with locked(control):
             old=control/'quality';q=load(old/'state.json')
             if q['status']!='质量门槛失败' or q['calls']:

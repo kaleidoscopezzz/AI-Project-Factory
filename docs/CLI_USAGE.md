@@ -1,8 +1,18 @@
 # AI Project Factory CLI 0.1.0（Windows）
 
-CLI 0.1.0 已整合主线，复用三个 APF Codex Skills；只生成规划文件，不开发业务、不运行
-Coder/Tester/Reviewer、不启动 Factory 或 Goal 3 Sequence。APF 1.0.0 的完整一句话自动开发、
-测试、版本管理与发行入口尚待最终产品化整合。
+CLI 0.1.0 已整合主线，复用三个冻结 Codex Skills。`--prompt-generate` 只生成规划文件；
+新增 `--build` 通过原 Controller、Sequence 和 QualityGate 执行受控双阶段开发，再由
+Release Agent 交付本地 ZIP。安装包包含工厂模块与原样 Skill，内部版本仍为 0.1.0。
+APF 1.0.0 尚未正式发布；真实与确定性验证范围见 [项目状态](../PROJECT_STATUS.md)。
+
+```powershell
+apf --build "开发一个支持新增、完成和删除的本地待办事项软件" --out ".\my-todo" --full-access
+apf --resume ".\my-todo" --full-access
+```
+
+这两个入口消耗真实模型额度，具有有界 Goal/时间/返工限制，不是无限自动开发。
+默认不提交软件 Git、不 Push；本地版本另需 `--allow-local-git`。
+详细环境、权限、发行及恢复规则见 [产品使用说明](PRODUCT_USAGE.md)。以下规划命令兼容原行为。
 
 ## 安装
 

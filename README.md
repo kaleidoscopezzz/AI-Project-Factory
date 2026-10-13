@@ -54,7 +54,7 @@ APF 已真实验证受控双阶段开发、独立 Tester、只读 Reviewer 及�
 | 通用 EXE、安装器、云部署与远端发布 | 当前不提供；本地 ZIP 仍依赖相应运行环境 |
 | OS 级工作区隔离、Token 硬限制 | 当前不提供 |
 | 规划 CLI 0.1.0 | 已接入主线；版本、帮助及通过本机 Codex 生成规划文件；本轮安装与接入验证使用 Fake Codex |
-| 普通用户零配置、一键软件工厂 | 完整统一入口尚待产品化整合，不由规划 CLI 自动完成 |
+| 一句话开发与发行入口 | `apf --build` 已接通现有双阶段工厂；支持有界小型本地项目，验证范围见下文，不是任意软件全自动 |
 
 ## 安装与运行
 
@@ -87,7 +87,21 @@ apf --prompt-generate "我想开发一个图书馆管理系统"
 apf --prompt-generate "我想开发一个图书馆管理系统" --out ".\library-plan"
 ```
 
-**CLI 0.1.0 的提示词生成功能已接入主线，但 APF 1.0.0 的完整一句话自动开发、测试、版本管理与发行入口尚待最终产品化整合。** 规划 CLI 不启动 Coder/Tester/Reviewer，不覆盖已有结果；安装、Codex 定位及错误处理见 [CLI 使用说明](docs/CLI_USAGE.md)。
+规划 CLI 不启动 Coder/Tester/Reviewer，不覆盖已有结果；安装、Codex 定位及错误处理见 [CLI 使用说明](docs/CLI_USAGE.md)。
+
+### 一句话开发并取得软件 ZIP
+
+```powershell
+apf --build "开发一个支持新增、完成和删除的本地待办事项软件" --out ".\my-todo" --full-access
+```
+
+新入口直接复用 Controller、TaskPacket、Sequence 和 QualityGate：一次只读规划，两个独立软件阶段，真实编码、独立测试和只读审查，然后由 Release Agent 构建 ZIP、在新目录解压并实际启动。输出包路径、运行前提、启动命令、来源及 SHA-256。输出目录必须不存在；原规划命令继续保留。
+
+`--full-access` 明确授权 Coder/Tester 和工程检查使用当前用户权限，**没有 OS 工作区隔离**。默认不写软件 Git；可加 `--allow-local-git`，只对最终已批准阶段留下本地 Commit，不 Push。使用 `apf --resume ".\my-todo" --full-access` 在原预算和来源检查内接续，已完成阶段不重派；未知模型中断不隐式重试。
+
+当前限制为两个 Goal、一次有依据的返工、最多十次模型调用，单次最多 600 秒、整轮墙钟 3600 秒；Token 无硬上限。首版支持直接 Node/Python 脚本的本机 HTTP 项目，不自动安装运行依赖，不支持任意规模软件、无限 Goal 或通用 EXE。
+
+**统一入口已通过确定性及安装验证，尚未完成 APF 1.0.0 真实全链验收。** 本次新待办需求的真实 Planner 和 Goal 0 Coder 已完成，构建/开发测试通过；验收资料装配已局部修复，但后续实际启动检查发现遗留排他锁阻止重启，因此未派发独立 Tester/Reviewer，也未生成新的发行 ZIP。原有 Goal 3/5 案例不能替代本次新入口验收。详细命令、失败恢复及发行范围见 [产品入口说明](docs/PRODUCT_USAGE.md)。
 
 现有软件开发 PowerShell 入口继续可用。在仓库根目录准备可信 Codex 路径：
 
@@ -118,7 +132,7 @@ Python Controller 管理任务、状态与调用；Codex CLI 执行角色；Task
 
 ## 下一步与限制
 
-六个研发里程碑的核心能力已完成，CLI 0.1.0 的规划入口已整合主线。**首个正式 APF 1.0.0 仍需完整开发/质量/Git/发行的统一用户入口及最终端到端体验验收**，规划文件生成不等于全套软件交付。面向普通用户的产品化阶段仍是**建议 Goal 6，尚未正式立项**。
+六个研发里程碑的核心能力已完成，CLI 0.1.0 已接入规划和有界双阶段开发/发行入口。**APF 1.0.0 尚未正式发布**；真实入口验收与最终产品体验范围仍需明确，规划文件生成不等于软件交付。面向普通用户的后续产品化里程碑仍是**建议 Goal 6，尚未正式立项**。
 
 根 AGENTS.md 强制生成、详细需求忠实度验证、真实自动返工闭环、多模型及多 Agent 自由编排均为未来计划，不属于本次已验证能力。自动 GitHub Push、云部署、通用 EXE 与安装器也不在当前交付范围。
 
@@ -128,6 +142,7 @@ Full Access 使用当前用户的文件、进程和网络权限，**不是 OS �
 
 - [快速开始与 Windows 运行](docs/GOAL1_USAGE.md)
 - [CLI 安装与规划命令](docs/CLI_USAGE.md)
+- [一句话开发、恢复与软件发行](docs/PRODUCT_USAGE.md)
 - [Skills 使用与可选安装](docs/USAGE.md)
 - [技术架构](docs/ARCHITECTURE.md)
 - [正式路线图及建议扩展](docs/MULTI_AGENT_ROADMAP.md)

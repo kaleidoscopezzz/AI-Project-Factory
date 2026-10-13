@@ -11,7 +11,19 @@
 | Goal 4 | 受控 Git Agent 与批准来源版本记录 | 已批准封版 |
 | Goal 5 | Release Agent 与发行交付 | 外部限定范围审查通过，已限定范围封版 |
 
-## 当前产品整合：CLI 0.1.0 接入主线，APF 1.0.0 完整入口待整合
+## 当前产品整合：统一开发入口已实现，APF 1.0.0 真实全链验收未完成
+
+开发基线为 main `427b3feb28a055faac13fff5777f53ea36b80c05`；Goal 0～5 原批准范围不变。新增 `apf --build` / `--resume`，保留 CLI 0.1.0 的两行版本及仅规划入口。产品适配直接复用 Controller、Sequence、QualityGate、Git Agent 和 Release Agent；安装包含工厂模块与原样 Skill。每轮最多两个 Goal、一次实现返工、十次模型调用，单次至多600秒、整轮墙钟3600秒；Token无硬上限。默认不提交软件Git，需显式 `--allow-local-git`，不自动Push。
+
+已运行完整确定性回归387/387（585.192秒），恢复补充后定向94/94（109.234秒）；资料装配兼容初测97项有1项旧历史数量失败，收紧适用范围后最终98/98（202.737秒），另恢复兼容68/68（144.290秒）。新增产品/引用测试共31项，不将复测相加冒充独立测试数。最终安装后的版本、帮助、权限拒绝、工厂/Skill加载、Fake双阶段路径和完成恢复7项检查通过；原规划命令用原生Fake Codex真实生成三份UTF-8文件。Fake不等于真实模型质量批准，真实发行兼容性由既有Release Agent本地脚本测试独立覆盖。
+
+本次唯一新待办场景调用真实Planner 1次和Goal0 Coder 1次。形成合法双阶段规划、独立Goal0 TaskPacket及源码；主控build/test均退出0，首次HTTP启动通过。Coder自测含实际Edge截图与Trace，不能替代独立Tester。材料装配因文档标签被误当缺失路径而阻塞：局部修复后34份实际依赖路径/SHA齐备，原失败质量账本未改，新零派发上下文保留来源与原预算，不冒称测试通过。
+
+新上下文实际build/test继续退出0，但默认启动因遗留 `data/store.lock` 被拒绝，确认当前候选无法可信完成重复启动验证。独立Tester、Reviewer、CoderRepair均新增0次；软件Goal0未获正式质量批准，Goal1未执行，本次未生成合法发行ZIP。另发现原Planner运行参数/包布局不符合Release接口，现已在未来Coder派发前检查原有发行契约，并强化Planner技术参数说明；不重写本次原始计划、任务包或业务源码制造通过。
+
+**本阶段是经过确定性验证的产品整合实现，不是APF 1.0.0正式发布或真实E2E通过。** 后续仍需修复软件锁生命周期，在新授权的有界真实验收中证明完整开发→独立质量批准→ZIP→解压业务运行链。真实自动返工闭环、换机体验和任意多Goal无人值守仍未验证；Full Access无OS隔离，Token无硬上限。使用见 [产品入口](docs/PRODUCT_USAGE.md)。下方历史记录保持其当时事实。
+
+## 历史：CLI 0.1.0 接入主线时的产品整合记录
 
 本轮以 main 文档提交 `11397200cb9bc7c4d63204508a0ade210488d7ee` 为基线，整合已提交 CLI 分支 `feat/cli-0.1.0` 的 `e38f432c520664cea97fb3c413dbd6e92c06f833`。使用普通 Merge，未以旧版本覆盖 Controller、QualityGate、Sequence、Git Agent 或 Release Agent。CLI Worktree 的原有未跟踪规划和证据保留，Goal 0～5 批准 Tag 不移动。
 

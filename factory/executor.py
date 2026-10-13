@@ -12,6 +12,17 @@ import uuid
 from pathlib import Path
 from .contracts import FactoryError
 
+def playwright_path():
+    """Use an installed dependency; never download or install a browser."""
+    paths = []
+    if os.environ.get('APF_PLAYWRIGHT_PATH'):
+        paths.append(Path(os.environ['APF_PLAYWRIGHT_PATH']))
+    paths += [Path.home()/'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright',
+              Path.cwd()/'node_modules/playwright']
+    for path in paths:
+        if (path/'package.json').is_file(): return str(path.resolve())
+    raise FactoryError('未找到已安装Playwright；可用APF_PLAYWRIGHT_PATH指定其目录，不自动安装')
+
 def redact(text):
     text = re.sub(r'-----BEGIN [^-]*PRIVATE KEY-----[\s\S]*?-----END [^-]*PRIVATE KEY-----','[REDACTED PRIVATE KEY]',text)
     text = re.sub(r'\bsk-[A-Za-z0-9_-]{8,}', '[REDACTED KEY]',text)
@@ -221,7 +232,7 @@ class CodexExecutor:
                        'passed':result['exit_code']==0 and not result['timed_out']})
         if self.full_access and result['passed']:
             # Fixed content only. Reuse installed Edge; no generated app loaded.
-            browser_script = ('const {chromium}=require("C:/Users/44725/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright");'
+            browser_script = ('const {chromium}=require('+json.dumps(playwright_path())+');'
                 '(async()=>{let b;try{b=await chromium.launch({channel:"msedge",headless:true,chromiumSandbox:true,timeout:12000});'
                 'const p=await b.newPage();await p.goto("about:blank");await p.setContent("<p id=probe>APF_ENV_PROBE</p>");'
                 'if(await p.locator("#probe").textContent()!=="APF_ENV_PROBE")throw Error("DOM mismatch");'
