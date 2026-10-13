@@ -1,6 +1,6 @@
 # Windows 快速开始与主线入口
 
-从仓库根目录执行以下示例。APF 当前是源码工具，独立 CLI 0.1.0 未合并 `main`；不存在主线 `apf start` 或一键安装功能。最新批准范围见 [项目状态](../PROJECT_STATUS.md)。
+从仓库根目录执行以下示例。规划 CLI 0.1.0 已整合 `main`，可在独立虚拟环境安装并使用 `apf --version`、`--help` 和 `--prompt-generate`，见 [CLI 安装与使用](CLI_USAGE.md)。它只生成规划文件；主线尚无 `apf start` 或完整一键软件交付命令。以下原有 PowerShell 开发与恢复入口继续有效，最新批准范围见 [项目状态](../PROJECT_STATUS.md)。
 
 ## 环境准备
 

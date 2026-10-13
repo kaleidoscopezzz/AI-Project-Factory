@@ -1,6 +1,6 @@
 # AI Project Factory 项目状态
 
-更新时间：2026-10-12，Asia/Shanghai。
+更新时间：2026-10-13，Asia/Shanghai。
 
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
@@ -11,7 +11,19 @@
 | Goal 4 | 受控 Git Agent 与批准来源版本记录 | 已批准封版 |
 | Goal 5 | Release Agent 与发行交付 | 外部限定范围审查通过，已限定范围封版 |
 
-## 当前正式状态：Goal 0～5 按各自范围封版，APF 1.0.0 待产品整合
+## 当前产品整合：CLI 0.1.0 接入主线，APF 1.0.0 完整入口待整合
+
+本轮以 main 文档提交 `11397200cb9bc7c4d63204508a0ade210488d7ee` 为基线，整合已提交 CLI 分支 `feat/cli-0.1.0` 的 `e38f432c520664cea97fb3c413dbd6e92c06f833`。使用普通 Merge，未以旧版本覆盖 Controller、QualityGate、Sequence、Git Agent 或 Release Agent。CLI Worktree 的原有未跟踪规划和证据保留，Goal 0～5 批准 Tag 不移动。
+
+主线可在独立 Python 虚拟环境安装 `apf`，支持离线 `--version`（严格两行）和 `--help`，以及通过本机已安装且登录的 Codex 执行 `--prompt-generate`、可选 `--out`。提示词生成复用三个冻结 Skill 的完整原文，生成 UTF-8 的 requirements.md、goals.md、goal0-prompt.md 及私有运行记录；不会启动业务 Coder/Tester/Reviewer 或进入 Goal 3～5 的执行链。小范围兼容修改增加模型派发前的登录态检查，不读取认证文件或索取额外 API Key。
+
+Windows / Python 3.14.6 独立环境真实安装成功，激活 PowerShell 后 Get-Command 找到该环境的 console script。已安装命令在非源码目录执行版本、帮助和两次原生 Fake Codex 规划，验证默认目录、中文 --out、UTF-8、文件覆盖保护、无 Codex/未登录/非法目录错误，以及 wheel 和源目录两个 Skill 来源的逐文件哈希。实际本机 Codex 0.162.0-alpha.17.2 只做版本、帮助、features 和登录态检查，未执行真实规划。
+
+CLI 专项 47/47（17.177 秒）；包含 Goal 0～5 兼容功能的完整确定性回归 365/365（692.502 秒），失败、初始化错误、跳过均 0，保留既有 ResourceWarning 原始日志。新增真实 Planner/Coder/Tester/Reviewer/CoderRepair 模型调用全部 0；Fake 不等于真实模型规划验收。
+
+**CLI 0.1.0 的提示词生成功能已接入主线，但 APF 1.0.0 的完整一句话自动开发、测试、版本管理与发行入口尚待最终产品化整合。** 新项目根 AGENTS.md 强制交付、详细需求忠实度验证、真实自动返工、任意多 Goal 无人值守、多模型/多 Agent 自由编排和 GUI 等明确延期。本轮不发布 APF 1.0.0、不新增批准 Tag，不修改历史阶段性质。安装与使用见 [CLI 文档](docs/CLI_USAGE.md)；原 PowerShell 开发入口继续有效。以下封版和开发记录保持其当时事实。
+
+## 历史：Goal 5 封版文档同步时的状态
 
 Goal 5 已完成外部限定范围审查并由用户完成源码封版。只读核验 main、HEAD、origin/main 和远端 main 均为 `3e02835593dc860618208fb69297d295648db693`；annotated Tag `goal-5-approved` 对象为 `3018b9b392e534d9d062ab213f735511606a3c03`，本地及远端一致，解引用至同一提交。本次后续文档提交不移动任何批准 Tag。
 

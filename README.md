@@ -53,7 +53,8 @@ APF 已真实验证受控双阶段开发、独立 Tester、只读 Reviewer 及�
 | 本地软件发行 | Goal 5 已限定范围封版；真实构建、ZIP 内容检查、独立解压启动、来源/SHA-256/交付记录 |
 | 通用 EXE、安装器、云部署与远端发布 | 当前不提供；本地 ZIP 仍依赖相应运行环境 |
 | OS 级工作区隔离、Token 硬限制 | 当前不提供 |
-| 普通用户零配置、一键软件工厂 | 未来方向；独立 CLI 0.1.0 尚未合并主线 |
+| 规划 CLI 0.1.0 | 已接入主线；版本、帮助及通过本机 Codex 生成规划文件；本轮安装与接入验证使用 Fake Codex |
+| 普通用户零配置、一键软件工厂 | 完整统一入口尚待产品化整合，不由规划 CLI 自动完成 |
 
 ## 安装与运行
 
@@ -65,6 +66,32 @@ APF 主线使用源码和 PowerShell 入口，尚无正式 APF 1.0.0 安装包�
 git clone https://github.com/kaleidoscopezzz/AI-Project-Factory.git
 Set-Location AI-Project-Factory
 python --version
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install .
+.\.venv\Scripts\Activate.ps1
+apf --version
+apf --help
+```
+
+`apf --version` 精确输出：
+
+```text
+AI Project Factory 0.1.0
+Wit beyond measure is man's greatest treasure
+```
+
+版本和帮助不需要网络、登录或模型。以下规划命令使用已安装并登录的本机 Codex，复用三个冻结 Skills，生成 UTF-8 的 `requirements.md`、`goals.md` 和 `goal0-prompt.md`，并保留私有运行记录。**运行规划命令会消耗模型额度；本轮整合只用 Fake Codex 验证，没有发起真实规划。**
+
+```powershell
+apf --prompt-generate "我想开发一个图书馆管理系统"
+apf --prompt-generate "我想开发一个图书馆管理系统" --out ".\library-plan"
+```
+
+**CLI 0.1.0 的提示词生成功能已接入主线，但 APF 1.0.0 的完整一句话自动开发、测试、版本管理与发行入口尚待最终产品化整合。** 规划 CLI 不启动 Coder/Tester/Reviewer，不覆盖已有结果；安装、Codex 定位及错误处理见 [CLI 使用说明](docs/CLI_USAGE.md)。
+
+现有软件开发 PowerShell 入口继续可用。在仓库根目录准备可信 Codex 路径：
+
+```powershell
 $cli = Read-Host '请输入已安装且可信的 codex.exe 路径'
 .\scripts\factory.ps1 -CheckCli -CodexPath $cli
 ```
@@ -91,7 +118,7 @@ Python Controller 管理任务、状态与调用；Codex CLI 执行角色；Task
 
 ## 下一步与限制
 
-六个研发里程碑的核心能力已完成，**首个正式 APF 1.0.0 仍需 CLI 整合、统一用户入口及最终端到端体验验收**。CLI 0.1.0 独立分支尚未合并 main，首页不提供该分支的正式命令。面向普通用户的产品化阶段仍是**建议 Goal 6，尚未正式立项**。
+六个研发里程碑的核心能力已完成，CLI 0.1.0 的规划入口已整合主线。**首个正式 APF 1.0.0 仍需完整开发/质量/Git/发行的统一用户入口及最终端到端体验验收**，规划文件生成不等于全套软件交付。面向普通用户的产品化阶段仍是**建议 Goal 6，尚未正式立项**。
 
 根 AGENTS.md 强制生成、详细需求忠实度验证、真实自动返工闭环、多模型及多 Agent 自由编排均为未来计划，不属于本次已验证能力。自动 GitHub Push、云部署、通用 EXE 与安装器也不在当前交付范围。
 
@@ -100,6 +127,7 @@ Full Access 使用当前用户的文件、进程和网络权限，**不是 OS �
 ## 文档导航
 
 - [快速开始与 Windows 运行](docs/GOAL1_USAGE.md)
+- [CLI 安装与规划命令](docs/CLI_USAGE.md)
 - [Skills 使用与可选安装](docs/USAGE.md)
 - [技术架构](docs/ARCHITECTURE.md)
 - [正式路线图及建议扩展](docs/MULTI_AGENT_ROADMAP.md)
