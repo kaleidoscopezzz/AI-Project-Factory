@@ -9,6 +9,7 @@ import threading
 import time
 import tomllib
 import uuid
+import base64
 from pathlib import Path
 from .contracts import FactoryError
 
@@ -57,6 +58,32 @@ def kill_tree(process):
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait(timeout=5)
+
+# Trusted preload for APF-owned Node runtime checks, not Agent/model processes.
+# Closing the verifier's pipe requests the application's existing SIGINT cleanup
+# on Windows too. Applications without such a handler still hit the bounded,
+# owned-process fallback; no exit status is manufactured by the preload.
+NODE_STOP_IMPORT = 'data:text/javascript;base64,' + base64.b64encode(
+    b"process.stdin.resume();process.stdin.unref?.();process.stdin.once('end',()=>{"
+    b"if(process.listenerCount('SIGINT'))process.emit('SIGINT');});"
+).decode('ascii')
+
+def runtime_launch(argv):
+    node = Path(argv[0]).name.lower() in ('node','node.exe')
+    return ([argv[0], '--import='+NODE_STOP_IMPORT, *argv[1:]] if node else list(argv)), node
+
+def stop_runtime(process, graceful=False, timeout=5):
+    """Bounded cleanup of precisely the runtime process owned by this call."""
+    forced=False
+    if process.poll() is None and graceful and process.stdin:
+        try:process.stdin.close()
+        except (OSError,ValueError):pass
+        try:process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:pass
+    if process.poll() is None:
+        forced=True;kill_tree(process)
+    return {'graceful_requested':graceful, 'forced':forced,
+            'exit_code':process.returncode, 'process_stopped':process.poll() is not None}
 
 def process_identity(pid):
     """Read a specific handle identity; never kill an unowned/reused PID."""

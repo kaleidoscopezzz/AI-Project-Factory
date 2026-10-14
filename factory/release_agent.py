@@ -19,7 +19,7 @@ from pathlib import Path
 
 from .controller import Controller, ROOT, load, save, locked
 from .contracts import FactoryError, digest, file_hash, relative_file, safe_path, command_check
-from .executor import clean_env, kill_tree, redact
+from .executor import clean_env, kill_tree, redact, NODE_STOP_IMPORT, stop_runtime
 from .git_agent import GitAgent, sensitive, MAX_FILE_BYTES, MAX_TOTAL_BYTES
 from .quality import candidate, GENERATED_ROOTS, GENERATED_ANY
 
@@ -183,8 +183,10 @@ class ReleaseAgent:
             env.pop(n,None)
         return env
 
-    def _spawn(self,argv,cwd,out,err):
-        return subprocess.Popen(argv,cwd=cwd,env=self._env(cwd),stdin=subprocess.DEVNULL,
+    def _spawn(self,argv,cwd,out,err,runtime_node=False):
+        env=self._env(cwd)
+        if runtime_node:env['NODE_OPTIONS']='--import='+NODE_STOP_IMPORT
+        return subprocess.Popen(argv,cwd=cwd,env=env,stdin=subprocess.PIPE if runtime_node else subprocess.DEVNULL,
             stdout=out,stderr=err,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0,
             start_new_session=os.name!='nt')
 
@@ -237,7 +239,8 @@ class ReleaseAgent:
             with out_path.open('wb') as out,err_path.open('wb') as err:
                 argv=([powershell,'-NoProfile','-ExecutionPolicy','Bypass','-File','START.ps1','-Port',str(port)] if powershell
                       else [exe[runtime['argv'][0]]['path'],*[s.replace('{port}',str(port)) for s in runtime['argv'][1:]]])
-                p=self._spawn(argv,folder/'unpacked',out,err)
+                graceful=runtime['argv'][0]=='node'
+                p=self._spawn(argv,folder/'unpacked',out,err,runtime_node=graceful)
                 try:
                     deadline=time.monotonic()+config['timeout_seconds']
                     while True:
@@ -252,9 +255,10 @@ class ReleaseAgent:
                     assertions(base)
                     if p.poll() is not None:raise FactoryError('实际运行检查过程中服务异常退出')
                 finally:
-                    kill_tree(p)
+                    cleanup=stop_runtime(p,graceful)
                     procs.append({'phase':index,'pid':p.pid,'exit_code_after_cleanup':p.returncode,
-                                  'stop_reason':'owned process tree terminated by verifier','still_running':p.poll() is None})
+                                  'stop_reason':'bounded owned runtime cleanup', 'cleanup':cleanup,
+                                  'still_running':p.poll() is None})
             for path in (out_path,err_path):path.write_text(redact(path.read_text(encoding='utf8',errors='replace')),encoding='utf8')
         remembered={}
         def require(ok,message):

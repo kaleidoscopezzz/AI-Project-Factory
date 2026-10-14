@@ -15,7 +15,7 @@ from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from .contracts import (FactoryError,STATES,SKILLS,PLAN_SCHEMA,CODER_SCHEMA,digest,file_hash,
                         safe_path,relative_file,validate_plan,validate_packet,schema_check,command_check)
-from .executor import CodexExecutor,resolve_codex,redact,popen,kill_tree
+from .executor import CodexExecutor,resolve_codex,redact,popen,kill_tree,runtime_launch,stop_runtime
 
 ROOT = Path(__file__).resolve().parents[1]
 BUDGET = {'max_agent_calls':3,'max_retries':1,'agent_timeout_seconds':900,'check_timeout_seconds':180,'max_validation_rounds':1}
@@ -183,8 +183,7 @@ class Controller:
                 '环境已核实：Windows PowerShell、Python 3.14.6、Node 26.3.0；Planner始终只读，优先现有工具和无运行外部依赖方案。\n'+
                 permission+
                 '运行契约 checks 至少含 build/test，各 argv 用 node 或 python 的项目脚本，或 npm run build/test。runtime.argv 启动本地服务绑定 127.0.0.1，接受独立的 {port} 占位符参数；runtime.path 是 HTTP 路径，expected_text 是该响应可断言的真实内容。\n'
-                '这些接口由 Coder 实现，不是已运行结果。UI 必须有可运行纵向样板和真实浏览器测试/截图，不能只抓 HTML 冒充交互。可用本机只读 Playwright：\n'
-                r'C:\Users\44725\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\node_modules\playwright'+'\n'
+                '这些接口由 Coder 实现，不是已运行结果。UI 必须有可运行纵向样板和真实浏览器测试/截图，不能只抓 HTML 冒充交互。浏览器工具目录由实际执行预检提供，不得硬编码私人路径。\n'
                 '禁止修改父目录 control、其他项目、工厂冻结文件、C:\\910Program、.git、全局环境；禁止发布/付费/下阶段。允许 workspace 内必要源码配置测试证据，不能修改预置 AGENTS.md。\n'
                 'prompt_md 必须是可直接执行、至少 2200 中文/字符的具体 Goal 0 提示词，包含模板全部约束及 AC、失败有限修复、最终报告和停止。\n'
                 f'<business-request>\n{state["original_request"]}\n</business-request>\n'+self.skill_input(state))
@@ -263,7 +262,8 @@ class Controller:
         with socket.socket() as s:
             s.bind(('127.0.0.1',0)); port=s.getsockname()[1]
         runtime=packet['runtime']; argv=[a.replace('{port}',str(port)) for a in runtime['argv']]
-        process=popen(self.executor.sandbox_argv(argv,workspace),workspace)
+        launch,graceful=runtime_launch(argv)
+        process=popen(self.executor.sandbox_argv(launch,workspace),workspace)
         captured={'stdout':[],'stderr':[]}
         import threading
         def collect(stream,key):
@@ -287,7 +287,7 @@ class Controller:
                 except (urllib.error.URLError,TimeoutError,OSError):
                     time.sleep(.3)
         finally:
-            kill_tree(process)
+            result['cleanup']=stop_runtime(process,graceful)
             result['process_stopped']=process.poll() is not None
             save(control/'runtime-log.json',captured); save(control/'runtime-check.json',result)
         if not result['passed']:
