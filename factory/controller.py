@@ -623,6 +623,9 @@ class Controller:
                 prompt+='<validated-task-packet>\n'+json.dumps(packet,ensure_ascii=False,indent=2)+'\n</validated-task-packet>\n'
                 prompt_tag='goal0-prompt' if goal=='Goal 0' else 'goal-prompt'
                 prompt+=f'<{prompt_tag}>\n'+Path(packet['prompt_path']).read_text(encoding='utf-8')+f'\n</{prompt_tag}>\n'
+                if goal=='Goal 1':
+                    from .sequence import predecessor_context
+                    prompt+='\n当前权威前序批准（已核验，优先于上文历史自测说明）：\n<verified-predecessor-approval>\n'+json.dumps(predecessor_context(control,packet),ensure_ascii=False,indent=2)+'\n</verified-predecessor-approval>\n'
                 save(control/f'handoff-{len(state["calls"])+1:02d}.json',{'task_id':state['task_id'],'packet_sha256':digest(packet),
                                                                       'prompt_sha256':file_hash(packet['prompt_path']),'input_sha256':digest(prompt.encode()),'automatic':True})
                 if full_access:

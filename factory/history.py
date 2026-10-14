@@ -73,7 +73,12 @@ def history_dependencies(workspace,completion,candidate,load,*,required_history=
         choices=[]
         if ref.startswith('validation/history-'):choices=[ref]
         elif a:
-            if ref.startswith('validation/goal0/'):choices=[a+'/goal0/'+ref.split('validation/goal0/',1)[1]]
+            if a.startswith('validation/history-run-'):
+                # Continuation archives preserve the complete original project
+                # layout. Local references keep the document's own directory;
+                # source-root citations retain the archived source namespace.
+                choices=[base+'/'+ref,a+'/'+ref]
+            elif ref.startswith('validation/goal0/'):choices=[a+'/goal0/'+ref.split('validation/goal0/',1)[1]]
             elif '/' not in ref:
                 choices=[base+'/'+ref,a+'/'+ref,a+'/goal0/'+ref]
                 # These are current delivery inputs, not archived state records.
@@ -170,10 +175,12 @@ def history_dependencies(workspace,completion,candidate,load,*,required_history=
             # select one of several versions as an AC verdict. Explicit bare
             # links/backticks retain the strict original resolution rules.
             qualified=set()
-            if name in {'validation/acceptance.md','validation/goal0/acceptance.md',acceptance_path} and not archive(name):
+            continuation_acceptance=bool(archive(name) and archive(name).startswith('validation/history-run-')
+                and name in {archive(name)+'/validation/acceptance.md',archive(name)+'/validation/goal0/acceptance.md'})
+            if (name in {'validation/acceptance.md','validation/goal0/acceptance.md',acceptance_path} and not archive(name)) or continuation_acceptance:
                 for ref in FILE_REF.findall(content):
                     resolved=ref if ref.startswith('validation/') else str(PurePosixPath(name).parent/ref)
-                    if '/' in ref and not archive(resolved):qualified.add(PurePosixPath(ref).name)
+                    if '/' in ref and (not archive(resolved) or continuation_acceptance):qualified.add(PurePosixPath(ref).name)
             for line in content.splitlines():
                 # Preserve explicit planned/not-generated facts. Do not demand
                 # files that the historical record explicitly says never existed.

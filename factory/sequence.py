@@ -89,6 +89,32 @@ def validate_link(packet, root, state, plan, control):
         raise FactoryError('后续需求/提示词未经原阶段确认')
 
 
+def predecessor_context(control,packet):
+    """Verified approval for the next Coder, not a mutable workspace status page."""
+    project=control.parents[2]
+    prior=check_receipt(project,packet['predecessor'],'Goal 0')
+    quality=[];approved_at=None
+    for name,h in prior['files'].items():
+        if not name.endswith('/state.json'):continue
+        value=load(relative_file(name,project))
+        if value.get('status')=='质量门槛通过' and value.get('updated_at'):
+            approved_at=value['updated_at']
+        if value.get('version')=='2.0' and value.get('status')=='质量门槛通过':
+            row=value['rounds'][-1]
+            if (row['candidate']!=prior['candidate'] or row.get('tester',{}).get('status')!='passed'
+                or row.get('reviewer',{}).get('decision')!='approved'):
+                raise FactoryError('前序真实质量来源与阶段回执不符')
+            quality.append({'path':str(relative_file(name,project)),'sha256':h,
+                            'tester':'passed','reviewer':'approved'})
+    if len(quality)!=1:raise FactoryError('前序独立质量批准来源不唯一或缺失')
+    path=project/'control/sequence'/packet['predecessor']['path']
+    return {'goal':'Goal 0','status':prior['status'],'receipt_path':str(path),
+            'receipt_sha256':packet['predecessor']['sha256'],'candidate_fingerprint':prior['candidate']['fingerprint'],
+            'packet_fingerprint':prior['packet_fingerprint'],'approved_at':approved_at,
+            'quality_sources':quality,'scope':'软件阶段独立Tester/Reviewer批准，不是APF产品外部封版',
+            'precedence':'工作区内待验收状态是先前自测时的历史说明；以本条经哈希核验的正式阶段回执为进入依据，不要求再次外部ChatGPT批准。源文件或回执不匹配仍须停止，禁止改写旧文件制造批准。'}
+
+
 def prepare(c, project_id, spec, approval_id, *, allow_repair=False):
     project,control,workspace,state=c.locate(project_id)
     with locked(control):

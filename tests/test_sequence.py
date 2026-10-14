@@ -217,7 +217,8 @@ class SequenceTests(unittest.TestCase):
         folder=RUN_ROOT/'approved-fixture'/uuid.uuid4().hex
         qpath=folder/'control/quality/state.json'
         qpath.parent.mkdir(parents=True);(folder/'control/sequence').mkdir()
-        save(qpath,{'status':'质量门槛通过','rounds':[{'tester':{'status':'passed'},'reviewer':{'decision':'approved'}}]})
+        save(qpath,{'version':'2.0','status':'质量门槛通过','rounds':[{'candidate':candidate(self.workspace),
+            'tester':{'status':'passed'},'reviewer':{'decision':'approved'}}]})
         record={'project_id':self.pid,'goal':'Goal 0','status':'质量门槛通过','candidate':candidate(self.workspace),
                 'packet_fingerprint':digest(load(self.control/'task-packet.json')),
                 'files':{'control/quality/state.json':file_hash(qpath)},'scope':'AgentDouble approval fixture only'}

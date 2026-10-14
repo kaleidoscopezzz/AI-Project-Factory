@@ -4,6 +4,7 @@ This ledger limits the whole CLI run; it does not replace stage/quality ledgers.
 Interrupted model calls are never automatically relaunched.
 """
 import copy
+import json
 import shutil
 import time
 import uuid
@@ -20,7 +21,13 @@ RECIPE_SCHEMA = obj({'name': S, 'source_files': arr(S), 'package_files': arr(S),
                      'runtime_requirement': S, 'smoke': {'type':'string','enum':['http-health','offline-todo']}})
 BUILD_SCHEMA = obj({'plan': PLAN_SCHEMA, 'goal1_spec': SPEC_SCHEMA, 'release': RECIPE_SCHEMA})
 LIMITS = {'Planner': 1, 'Coder': 2, 'CoderRepair': 1, 'Tester': 3, 'Reviewer': 3}
+CONTINUATION_LIMITS = {'Planner':0,'Coder':1,'CoderRepair':1,'Tester':3,'Reviewer':3}
 SOURCE = Path(__file__).parent
+
+def limits_for(ledger):
+    expected=CONTINUATION_LIMITS if ledger.get('continuation') else LIMITS
+    if ledger['limits']!=expected:raise FactoryError('整轮调用预算被修改')
+    return expected
 
 
 def validate_release_plan(plan, spec, recipe):
@@ -54,6 +61,15 @@ class RunExecutor:
     def full_access(self, value): self.native.full_access = value
 
     def verify(self):
+        limits_for(self.ledger)
+        if self.ledger.get('continuation'):
+            entry=self.ledger['continuation'];path=relative_file(entry['record'],self.folder)
+            if file_hash(path)!=entry['sha256']:raise FactoryError('接续授权来源变化')
+            source=load(path);root=Path(source['source_runtime'])
+            claim=safe_path(source['claim']['path'],root.parent.parent)
+            if file_hash(claim)!=source['claim']['sha256']:raise FactoryError('接续授权占用记录变化')
+            for name,h in source['source_files'].items():
+                if file_hash(relative_file(name,root))!=h:raise FactoryError('接续原始成果变化：'+name)
         expected=self.ledger.get('preparation_fix',{}).get('factory_files',self.ledger['factory_files'])
         if expected != source_files():
             raise FactoryError('运行绑定的工厂代码发生变化；停止，不绕过检查点')
@@ -93,7 +109,9 @@ class RunExecutor:
         calls = self.ledger['calls']
         if any(c['status'] in ('running', 'interrupted') for c in calls):
             raise FactoryError('存在未确认完成的模型调用；不隐式重试')
-        if sum(c['role'] == logical for c in calls) >= LIMITS[logical]:
+        if self.ledger.get('continuation') and logical=='Coder' and 'goals/goal-1' not in control.as_posix():
+            raise FactoryError('接续禁止重复派发Goal 0 Coder')
+        if sum(c['role'] == logical for c in calls) >= limits_for(self.ledger)[logical]:
             raise FactoryError(logical + ' 整轮调用预算已用尽')
         if logical in ('Tester','Reviewer'):
             # More than two calls is only permitted after the single real repair.
@@ -104,7 +122,7 @@ class RunExecutor:
                'input_sha256':digest(prompt.encode()), 'control':str(control.relative_to(self.folder)),
                'timeout_seconds':timeout}
         calls.append(rec); save(self.folder/'run.json', self.ledger)
-        print('[APF] '+logical+'，整轮调用 '+str(len(calls))+'/10', flush=True)
+        print('[APF] '+logical+'，整轮调用 '+str(len(calls))+'/'+str(sum(limits_for(self.ledger).values())), flush=True)
         try:
             if role == 'Planner':
                 prompt += PRODUCT_INSTRUCTIONS
@@ -162,6 +180,164 @@ release.name为小写英文短横线slug；runtime_requirement准确注明Node/P
 
 
 class ProductRun:
+    @classmethod
+    def handoff(cls, source_output, output, *, authorization_id, executor,
+                full_access=False, amendments=None, normalize_runtime=False, runtime_data=None, timeout=600):
+        """Explicit new budget for a completed Coder, never an old approval.
+
+        The immutable source is checked at preparation AND every later dispatch.
+        Caller-authorized local amendments create a new candidate. Fresh basic
+        checks below do not stand in for real Tester/Reviewer approval.
+        """
+        import re
+        from .contracts import validate_packet, validate_plan
+        from .controller import manifest
+        from .quality import candidate, GENERATED_ROOTS
+        from .revalidation import original_files
+        if not full_access:raise FactoryError('接续仍需本次显式Full Access选择')
+        if not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',authorization_id):raise FactoryError('缺少明确接续授权标识')
+        source_output=Path(source_output).resolve();output=Path(output).absolute()
+        if output.is_relative_to(source_output) or source_output.is_relative_to(output):raise FactoryError('接续目录不能覆盖或嵌套原运行')
+        source=source_output/'.apf'
+        with locked(source):
+            claim=source_output.parent/('.continuation-'+digest({'source':str(source),'authorization':authorization_id})+'.json')
+            if claim.exists():raise FactoryError('该接续授权已绑定运行；只允许恢复原接续，不新开额度')
+            ledger=load(source/'run.json')
+            if ledger.get('continuation'):raise FactoryError('不链式续期接续预算')
+            if ledger['output']!=str(source_output) or ledger['status']!='stopped':raise FactoryError('原运行身份或停止状态无效')
+            oldc=Controller(source);project,control,workspace,state=oldc.locate(ledger['project_id'])
+            with locked(control):
+                packet=load(control/'task-packet.json');validate_packet(packet,source,state)
+                completion=load(control/'completion.json');coder=load(control/'coder-result.json')
+                if (not completion['passed'] or not completion['runtime']['passed']
+                    or completion['workspace_manifest']!=manifest(workspace)
+                    or completion['packet_fingerprint']!=digest(packet) or coder['status']!='completed'):
+                    raise FactoryError('原始Coder完成记录或候选变化')
+                if ([x['role'] for x in ledger['calls']]!=['Planner','Coder']
+                    or any(x['status']!='finished' or x['exit_code'] for x in ledger['calls'])):
+                    raise FactoryError('只接续已完成一次真实Planner/Goal0 Coder、未派发质量Agent的运行')
+                for call in ledger['calls']:
+                    if file_hash(relative_file(call['result'],source))!=call['sha256']:raise FactoryError('原真实执行记录SHA变化')
+                for name,h in ledger['resources'].items():
+                    if file_hash(relative_file(name,source))!=h:raise FactoryError('原Skill/工厂快照变化')
+                if ledger.get('preparation_fix'):
+                    pin=ledger['preparation_fix']
+                    if file_hash(relative_file(pin['record'],source))!=pin['sha256']:raise FactoryError('原准备修复检查点变化')
+                for q in control.glob('quality*/state.json'):
+                    if load(q).get('calls'):raise FactoryError('已有质量模型调用不能借接续刷新额度')
+                full=load(source/'product-plan.json')
+                if file_hash(source/'product-plan.json')!=ledger['plan_sha256'] or full['plan']!=load(control/'planner-result.json'):
+                    raise FactoryError('原完整规划身份变化')
+                pins=original_files(project)
+                pins={str(Path('projects')/project.name/n).replace('\\','/'):h for n,h in pins.items()}
+                for name in ('run.json','product-plan.json',*[x['result'] for x in ledger['calls']],*ledger['resources']):
+                    pins[name]=file_hash(relative_file(name,source))
+                if ledger.get('preparation_fix'):
+                    name=ledger['preparation_fix']['record'];pins[name]=file_hash(relative_file(name,source))
+                skills={name:source/'skills'/name for name in ('requirement-planner','goal0-scaffolder','goal-prompt-writer')}
+                run=cls(output,request=ledger['request'],full_access=True,executor=executor,skills=skills,timeout=timeout)
+                dest=run.folder/'projects'/project.name;dest.mkdir(parents=True)
+                target=dest/'workspace';shutil.copytree(workspace,target,ignore=shutil.ignore_patterns('.factory-tmp','__pycache__','node_modules'))
+                newcontrol=dest/'control';newcontrol.mkdir()
+                # Preserve the entire original evidence namespace and source
+                # bytes together, so its indexed hashes retain their meaning.
+                archive='validation/history-'+run.ledger['run_id']
+                archived=target/archive;archived.mkdir(parents=True)
+                for name,h in completion['workspace_manifest'].items():
+                    p=relative_file(name,workspace);d=relative_file(name,archived)
+                    d.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(p,d)
+                    if file_hash(d)!=h:raise FactoryError('历史副本SHA错误')
+                # Keep original relative evidence paths readable for the real
+                # Coder result. Its immutable archive binds the old source SHA;
+                # only the new current acceptance page is replaced below.
+                for name in ('dist','build'):
+                    p=target/name
+                    if p.exists():
+                        shutil.rmtree(safe_path(p,target))
+                if runtime_data:
+                    if runtime_data not in ('data','var'):raise FactoryError('仅允许明确的项目数据目录迁移')
+                    p=relative_file(runtime_data,target)
+                    if p.exists():
+                        legacy=newcontrol/'source-data';shutil.move(str(p),legacy)
+                        (target/'var').mkdir(exist_ok=True)
+                        for f in legacy.iterdir():
+                            if f.name not in ('store.lock','store.guard.sqlite') and f.is_file():shutil.copy2(f,target/'var'/f.name)
+                repairs={}
+                for name,data in (amendments or {}).items():
+                    p=relative_file(name,target)
+                    if (name=='AGENTS.md' or Path(name).parts[0] in GENERATED_ROOTS or not p.is_file() or not isinstance(data,bytes)):
+                        raise FactoryError('接续修复必须是现有业务源文件，禁止修改授权或历史')
+                    oldhash=file_hash(p);p.write_bytes(data);repairs[name]={'before':oldhash,'after':file_hash(p)}
+                derived=copy.deepcopy(full)
+                for item in (derived['plan'],derived['goal1_spec']):
+                    item['prompt_md']=item['prompt_md'].replace(str(workspace),str(target))
+                    if normalize_runtime:
+                        argv=item['runtime']['argv'];item['runtime']['argv']=[*argv[:2],'--host','127.0.0.1','--port','{port}','--data-dir','var']
+                if normalize_runtime:
+                    derived['release']['package_files']=[n.removeprefix('dist/') for n in derived['release']['package_files']]
+                    derived['goal1_spec']['prompt_md']+='\n当前接续的正式运行契约：'+str(derived['goal1_spec']['runtime'])+'\n最终ZIP根清单：'+str(derived['release']['package_files'])+'\n此前dist构建布局保留，发行选择上述原相对路径。数据仅放var，不覆盖前序历史。保留已验证的OS互斥修复。\n'
+                if derived['plan']['acceptance']!=full['plan']['acceptance'] or derived['plan']['tasks']!=full['plan']['tasks']:
+                    raise FactoryError('禁止改变原AC或任务范围')
+                validate_plan(derived['plan'],target);validate_spec(derived['goal1_spec'],derived['plan'],target)
+                validate_release_plan(derived['plan'],derived['goal1_spec'],derived['release'])
+                for name in packet['artifacts']:
+                    shutil.copy2(control/name,newcontrol/name)
+                save(newcontrol/'planner-result.json',derived['plan'])
+                (newcontrol/'goal0-prompt.md').write_text(derived['plan']['prompt_md']+'\n',encoding='utf8')
+                save(newcontrol/'coder-result.json',coder)
+                copied=copy.deepcopy(state);copied.update(status='基础验证中',error=None)
+                for name in ('quality','quality_gate_enabled','quality_bootstrap_failure','active_quality_deadline'):
+                    copied.pop(name,None)
+                # Original calls remain historical facts, not new paid calls.
+                copied['continuation_source']=str(control)
+                newpacket=copy.deepcopy(packet);newpacket.update(workspace=str(target),allow_write=[str(target)],
+                    deny_write=[str(run.folder/'skills'),str(run.folder/'validation'),str(run.folder/'.git'),packet['deny_write'][3],str(newcontrol)],
+                    prompt_path=str(newcontrol/'goal0-prompt.md'),runtime=derived['plan']['runtime'],
+                    artifacts={n:file_hash(newcontrol/n) for n in packet['artifacts']})
+                copied['packet_fingerprint']=digest(newpacket)
+                save(newcontrol/'state.json',copied);save(newcontrol/'task-packet.json',newpacket)
+                validate_packet(newpacket,run.folder,copied)
+                save(newcontrol/'packet-validation.json',{'passed':True,'packet_fingerprint':digest(newpacket),'source_packet_fingerprint':digest(packet)})
+                # Current delivery explicitly reports basic checks, not AC pass.
+                acceptances=[n for n in ('validation/acceptance.md','validation/goal0/acceptance.md') if n in completion['workspace_manifest']]
+                if len(acceptances)!=1:raise FactoryError('原完成记录的验收文档缺失或冲突')
+                (target/'validation/acceptance.md').write_text('# 当前Goal 0接续交付\n\n原AC定义未改变，独立Tester和Reviewer尚未执行。\n\n原始开发与失败资料：[原验收文档]('+archive.removeprefix('validation/')+'/'+acceptances[0]+')\n\n'
+                    +'\n'.join(json.dumps(a,ensure_ascii=False) for a in newpacket['acceptance'])+'\n',encoding='utf8')
+                (target/'PROJECT_STATUS.md').write_text('软件Goal 0：原真实Coder成果经授权定点修锁，等待真实独立质量验收；Goal 1未执行。\n',encoding='utf8')
+                run.ledger.update(project_id=project.name,limits=dict(CONTINUATION_LIMITS),plan_sha256=None)
+                save(run.folder/'product-plan.json',derived);run.ledger['plan_sha256']=file_hash(run.folder/'product-plan.json')
+                record=run.folder/'handoff.json'
+                save(record,{'kind':'explicit authorized continuation; no inherited quality approval',
+                    'authorization_id':authorization_id,'source_runtime':str(source),'source_run_id':ledger['run_id'],
+                    'source_files':pins,'source_candidate':candidate(workspace),'source_packet_fingerprint':digest(packet),
+                    'source_deadline_unchanged':ledger['deadline'],'amendments':repairs,'normalization':normalize_runtime,
+                    'original_plan_fingerprint':digest(full),'derived_plan_fingerprint':digest(derived),
+                    'candidate':candidate(target),'limits':CONTINUATION_LIMITS,'archive':archive})
+                run.ledger['continuation']={'record':record.name,'sha256':file_hash(record)}
+                save(run.folder/'run.json',run.ledger)
+                # These are real, model-free engineering checks on new bytes.
+                c=Controller(run.folder,executor,True)
+                provenance=load(control/'coder-file-provenance.json')
+                c.verify(newpacket,coder,target,newcontrol,provenance['before'])
+                evidence=target/'validation/continuation-checks';evidence.mkdir()
+                for p in newcontrol.iterdir():
+                    if p.is_file() and (p.name.startswith('check-') or p.name in ('basic-checks.json','runtime-check.json','runtime-log.json')):
+                        shutil.copy2(p,evidence/p.name)
+                report=target/'validation/acceptance.md'
+                with report.open('a',encoding='utf8') as stream:
+                    stream.write('\n本轮零模型基础检查（不是独立Tester批准）：\n'+
+                        '\n'.join('['+p.name+'](continuation-checks/'+p.name+')' for p in evidence.iterdir())+'\n')
+                completed=load(newcontrol/'completion.json');completed['workspace_manifest']=manifest(target)
+                completed['continuation']={'source_completion_sha256':file_hash(control/'completion.json'),'handoff':record.name,
+                    'scope':'new deterministic basic checks; real Tester/Reviewer approval still required'}
+                save(newcontrol/'completion.json',completed)
+                c.transition(copied,newcontrol,'已完成','原Coder来源已验证；新候选实际基础检查通过，质量未批准')
+                with claim.open('x',encoding='utf8') as stream:
+                    json.dump({'authorization_id':authorization_id,'run_id':run.ledger['run_id'],'output':str(output)},stream)
+                binding=load(record);binding['claim']={'path':str(claim),'sha256':file_hash(claim)};save(record,binding)
+                run.ledger['continuation']['sha256']=file_hash(record);save(run.folder/'run.json',run.ledger)
+                return run
+
     def __init__(self, output, *, request=None, resume=False, full_access=False,
                  allow_local_git=False, executor=None, skills=None, timeout=600, controller_factory=Controller):
         if not full_access:
@@ -239,7 +415,7 @@ class ProductRun:
         with locked(self.folder):
             # Second process must read the actual ledger under the run lock.
             self.ledger=load(self.folder/'run.json')
-            if self.ledger['limits']!=LIMITS: raise FactoryError('整轮调用预算被修改')
+            limits_for(self.ledger)
             self.recover_preparation()
             wrapper=RunExecutor(self.native,self.folder,self.ledger)
             wrapper.verify()

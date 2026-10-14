@@ -11,7 +11,39 @@
 | Goal 4 | 受控 Git Agent 与批准来源版本记录 | 已批准封版 |
 | Goal 5 | Release Agent 与发行交付 | 外部限定范围审查通过，已限定范围封版 |
 
-## 当前产品整合：锁专项修复完成，原运行尚不能完成发行
+## 当前产品整合：软件 Goal 0 真实批准，Goal 1 交接整改后待新授权
+
+本轮以 `d98e969727d9efbe77bb13dead6016624af90d5a` 为基线，保留 Goal 0～5 原批准范围。
+通过 ProductRun 的显式授权接续，复用此前真实 Planner 与 Goal 0 Coder；原始运行、失败
+账本、TaskPacket 和候选保留，新预算/代码快照/修复候选另行绑定，不继承质量批准。
+旧预算过期、代码检查点变化及发行契约问题分别核验，以新的合法上下文处理，没有改写旧值。
+
+新候选已纳入经验证的锁修复及回环地址/端口/var 数据目录/ZIP 入口契约适配。软件 Goal 0
+的 12 项 AC 均由真实 Tester 验证并通过主控校验，真实独立只读 Reviewer approved；
+现有 Sequence 生成正式 Goal 0 回执后才派发 Goal 1，未伪造或跳过前序批准。
+
+**本轮未完成软件 Goal 1 或新 ZIP 交付。** 唯一一次 Goal 1 Coder 调用返回 failed，
+CLI 虽退出 0，但没有修改业务源码：早期 PROJECT_STATUS/acceptance 仍写待验收，而
+交接提示缺少明确的正式前序批准来源，Coder 因而在编码前停止。编辑和删除尚未实现。
+这不是用户缺少授权，也不代表 Goal 0 的真实批准失效。
+
+局部修复现在向后续 Coder 提供经回执核验的批准路径、SHA、时间、候选/TaskPacket
+身份和 Tester/Reviewer 结论，明确旧自测状态与正式阶段批准的先后关系。真实回执的
+零模型核验通过；旧 Coder 输入、失败输出及账本不改写，尚未新增真实 Coder 复验。
+再次初始开发会超过本轮一次 Coder 上限，未用 CoderRepair 冒充额外初始开发。
+
+新增真实调用：Planner 0、Goal 0 全量 Coder 0、Goal 1 Coder 1、Tester 1、Reviewer 1、
+CoderRepair 0。CLI 报告输入 1,077,394 Token，其中缓存输入 929,024，输出 16,045；
+缓存属于输入，不另相加。Agent 累计 806.112 秒；没有 Token 硬上限。
+
+整合初测完整回归 411/411；批准交接整改后最终完整回归 412/412（597.851 秒），失败、
+初始化错误和跳过均 0。曾发现一个旧独立批准夹具缺协议 version/candidate，已补齐夹具
+后复测；没有放宽生产验证，原失败日志保留。最终接续专项 10/10、CLI 专项 47/47，
+这些复测不与完整回归数量重复累计。
+下一步仍需新授权的 Goal 1 开发、真实质量验收与发行；APF 1.0.0 不是只差发布。
+本轮未创建产品 Tag 或 GitHub Release；Full Access 无 OS 隔离等既有限制不变。
+
+## 历史：锁专项修复完成，原运行尚不能完成发行
 
 本轮基线为 `147ef009b2a4ad32ed2507b4489357aac437a91e`。Goal 0～5 原批准范围不变。
 原真实 Planner、软件 Goal 0 Coder 的输出、来源快照、TaskPacket 和 completion 均重新

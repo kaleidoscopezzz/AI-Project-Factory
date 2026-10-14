@@ -9,7 +9,7 @@ from . import APFError
 def build(args):
     from factory.contracts import FactoryError
     from factory.executor import CodexExecutor
-    from factory.product import ProductRun
+    from factory.product import ProductRun, limits_for
     from .codex import discover_codex, preflight
     from .skills import discover_skills
     try:
@@ -33,7 +33,8 @@ def build(args):
         native=CodexExecutor(full_access=False,codex_path=str(exe))
         run=ProductRun(output,request=args.build,resume=bool(args.resume),full_access=args.full_access,
                        allow_local_git=args.allow_local_git,executor=native,skills=selected,timeout=args.timeout)
-        print('权限：Planner/Reviewer只读，Coder/Tester当前用户Full Access。最多2个Goal、1次返工、10次模型调用、整轮3600秒；Token无硬上限。',flush=True)
+        count=sum(limits_for(run.ledger).values())
+        print(f'权限：Planner/Reviewer只读，Coder/Tester当前用户Full Access。最多2个Goal、1次返工、{count}次模型调用、整轮3600秒；Token无硬上限。',flush=True)
         result=run.execute()
         print(json.dumps(result,ensure_ascii=False,indent=2))
         return result
