@@ -57,6 +57,16 @@ def check_receipt(project, entry, goal, *, project_id=None):
     for name,h in value['files'].items():
         p=relative_file(name,project)
         if not p.is_file() or file_hash(p)!=h:raise FactoryError('已完成阶段的任务/质量/证据记录变化：'+name)
+    if 'source_stage' in value:
+        link=value['source_stage']
+        source=safe_path(link['project'],Path(__file__).resolve().parents[1]/'validation')
+        prior=check_receipt(source,link['receipt'],'Goal 0',project_id=value['project_id'])
+        if prior['candidate']!=value['candidate'] or prior['packet_fingerprint']!=value['packet_fingerprint']:
+            raise FactoryError('接续的前序批准身份不匹配')
+        copies=link['copies']
+        if set(copies)!=set(prior['files']) or {copies[n]:h for n,h in prior['files'].items()}!=value['files']:
+            raise FactoryError('前序批准副本来源不完整')
+        verify_relocation(source,project)
     if 'source_approval' in value:
         source=value['source_approval']
         directory=safe_path(source['directory'],Path(__file__).resolve().parents[1]/'validation')
@@ -66,6 +76,58 @@ def check_receipt(project, entry, goal, *, project_id=None):
         if prior['candidate']!=value['candidate'] or prior['packet_fingerprint']!=value['packet_fingerprint']:
             raise FactoryError('独立前序批准身份不匹配')
     return value
+
+
+def verify_relocation(source, target):
+    """Only paths and their derived artifact hashes may change at a handoff."""
+    old=load(source/'control/task-packet.json');new=load(target/'control/task-packet.json')
+    oldroot=str(source.parents[1]);newroot=str(target.parents[1])
+    def rebind(v):
+        if isinstance(v,str):return v.replace(oldroot,newroot)
+        if isinstance(v,list):return [rebind(x) for x in v]
+        if isinstance(v,dict):return {k:rebind(x) for k,x in v.items()}
+        return v
+    expected=rebind(old)
+    for name in old['artifacts']:
+        a=relative_file(name,source/'control');b=relative_file(name,target/'control')
+        if file_hash(a)!=old['artifacts'][name]:raise FactoryError('原规划产物SHA变化')
+        if name.endswith('.json'):
+            equal=rebind(load(a))==load(b)
+        else:equal=rebind(a.read_text(encoding='utf8'))==b.read_text(encoding='utf8')
+        if not equal:raise FactoryError('接续只能重定位原规划路径，不能改变需求或AC')
+        expected['artifacts'][name]=file_hash(b)
+    if expected!=new:raise FactoryError('重定位任务包超出路径变更范围')
+
+
+def adopt_completed_goal0(c, project_id, source_project, entry):
+    """Reuse an actual Sequence approval, preserving original packet identity.
+
+    The relocated execution packet is separate; it does not claim a new review.
+    """
+    project,control,workspace,state=c.locate(project_id)
+    source=safe_path(source_project,Path(__file__).resolve().parents[1]/'validation')
+    prior=check_receipt(source,entry,'Goal 0',project_id=project_id)
+    verify_relocation(source,project)
+    if candidate(workspace)!=prior['candidate']:raise FactoryError('接续候选与已批准Goal 0不匹配')
+    folder=control/'sequence';cursor=load(folder/'state.json')
+    if cursor['completed']:raise FactoryError('不能覆盖已有阶段记录')
+    pins={};copies={}
+    for name,h in prior['files'].items():
+        # Keep Windows paths short without losing the original path/SHA mapping.
+        dst=folder/'g0'/digest(name)[:12]/Path(name).name;dst.parent.mkdir(parents=True,exist_ok=True)
+        dst.write_bytes(relative_file(name,source).read_bytes())
+        if file_hash(dst)!=h:raise FactoryError('前序批准副本SHA错误')
+        pins[dst.relative_to(project).as_posix()]=h
+        copies[name]=dst.relative_to(project).as_posix()
+    receipt={**prior,'files':pins,'source_stage':{'project':str(source),'receipt':entry,
+        'copies':copies,
+        'scope':'existing real approval; relocated execution packet, no new Goal 0 model calls'}}
+    path=folder/'goal0-completion.json';save(path,receipt)
+    local={'path':path.name,'sha256':file_hash(path)}
+    check_receipt(project,local,'Goal 0')
+    cursor['completed']['Goal 0']=local;cursor.update(current_goal='Goal 1',status='阶段完成',error=None)
+    save(folder/'state.json',cursor)
+    return cursor
 
 
 def validate_link(packet, root, state, plan, control):
@@ -108,10 +170,15 @@ def predecessor_context(control,packet):
                             'tester':'passed','reviewer':'approved'})
     if len(quality)!=1:raise FactoryError('前序独立质量批准来源不唯一或缺失')
     path=project/'control/sequence'/packet['predecessor']['path']
+    origin=None
+    if 'source_stage' in prior:
+        link=prior['source_stage']
+        origin={'path':str(Path(link['project'])/'control/sequence'/link['receipt']['path']),
+                'sha256':link['receipt']['sha256'],'scope':'original immutable approved Goal 0 receipt'}
     return {'goal':'Goal 0','status':prior['status'],'receipt_path':str(path),
             'receipt_sha256':packet['predecessor']['sha256'],'candidate_fingerprint':prior['candidate']['fingerprint'],
             'packet_fingerprint':prior['packet_fingerprint'],'approved_at':approved_at,
-            'quality_sources':quality,'scope':'软件阶段独立Tester/Reviewer批准，不是APF产品外部封版',
+            'quality_sources':quality,'original_approval':origin,'scope':'软件阶段独立Tester/Reviewer批准，不是APF产品外部封版',
             'precedence':'工作区内待验收状态是先前自测时的历史说明；以本条经哈希核验的正式阶段回执为进入依据，不要求再次外部ChatGPT批准。源文件或回执不匹配仍须停止，禁止改写旧文件制造批准。'}
 
 
@@ -204,6 +271,7 @@ class _IncrementalController(Controller):
         plan=load(control/'planner-result.json')
         writes=[n.rstrip('/*') for t in plan['tasks'] if t['goal_id']=='Goal 1' for n in t['write_set']]
         delta=[n for n,h in after['files'].items() if baseline['files'].get(n)!=h]
+        if not delta:raise FactoryError('Goal 1没有实际业务源码变更，不能认定增量开发完成')
         if any(not any(n==w or n.startswith(w+'/') for w in writes) for n in delta):
             raise FactoryError('增量源码修改超出原Goal 1任务写集')
         return super().verify(packet,coder,workspace,control,before)

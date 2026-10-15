@@ -22,10 +22,12 @@ RECIPE_SCHEMA = obj({'name': S, 'source_files': arr(S), 'package_files': arr(S),
 BUILD_SCHEMA = obj({'plan': PLAN_SCHEMA, 'goal1_spec': SPEC_SCHEMA, 'release': RECIPE_SCHEMA})
 LIMITS = {'Planner': 1, 'Coder': 2, 'CoderRepair': 1, 'Tester': 3, 'Reviewer': 3}
 CONTINUATION_LIMITS = {'Planner':0,'Coder':1,'CoderRepair':1,'Tester':3,'Reviewer':3}
+STAGE_CONTINUATION_LIMITS = {'Planner':0,'Coder':1,'CoderRepair':1,'Tester':2,'Reviewer':2}
 SOURCE = Path(__file__).parent
 
 def limits_for(ledger):
-    expected=CONTINUATION_LIMITS if ledger.get('continuation') else LIMITS
+    expected=(STAGE_CONTINUATION_LIMITS if ledger.get('approved_goal0_continuation') else
+              CONTINUATION_LIMITS if ledger.get('continuation') else LIMITS)
     if ledger['limits']!=expected:raise FactoryError('整轮调用预算被修改')
     return expected
 
@@ -66,6 +68,11 @@ class RunExecutor:
             entry=self.ledger['continuation'];path=relative_file(entry['record'],self.folder)
             if file_hash(path)!=entry['sha256']:raise FactoryError('接续授权来源变化')
             source=load(path);root=Path(source['source_runtime'])
+            if source['limits']!=limits_for(self.ledger):raise FactoryError('接续授权预算范围不匹配')
+            if bool(self.ledger.get('approved_goal0_continuation'))!=(source['kind']=='authorized Goal 1 continuation of actual approved Goal 0'):
+                raise FactoryError('接续阶段授权模式不匹配')
+            for name,h in source.get('prepared_input_files',{}).items():
+                if file_hash(relative_file(name,self.folder))!=h:raise FactoryError('Coder交接预检原件变化')
             claim=safe_path(source['claim']['path'],root.parent.parent)
             if file_hash(claim)!=source['claim']['sha256']:raise FactoryError('接续授权占用记录变化')
             for name,h in source['source_files'].items():
@@ -106,6 +113,8 @@ class RunExecutor:
     def run(self, role, prompt, cwd, control, attempt, schema, timeout):
         self.verify()
         logical = 'CoderRepair' if role == 'Coder' and control.parent.name == 'calls' else role
+        if self.ledger.get('approved_goal0_continuation') and 'goals/goal-1' not in control.as_posix():
+            raise FactoryError('本次只授权Goal 1，禁止重复任何Goal 0 Agent')
         calls = self.ledger['calls']
         if any(c['status'] in ('running', 'interrupted') for c in calls):
             raise FactoryError('存在未确认完成的模型调用；不隐式重试')
@@ -114,6 +123,8 @@ class RunExecutor:
         if sum(c['role'] == logical for c in calls) >= limits_for(self.ledger)[logical]:
             raise FactoryError(logical + ' 整轮调用预算已用尽')
         if logical in ('Tester','Reviewer'):
+            if self.ledger.get('approved_goal0_continuation') and any(c['role']==logical for c in calls) and not any(c['role']=='CoderRepair' for c in calls):
+                raise FactoryError('第二次质量调用仅用于真实返工后的复验')
             # More than two calls is only permitted after the single real repair.
             if sum(c['role'] == logical for c in calls) >= 2 and not any(c['role']=='CoderRepair' for c in calls):
                 raise FactoryError('额外质量调用必须用于已登记的返工后复验')
@@ -180,6 +191,109 @@ release.name为小写英文短横线slug；runtime_requirement准确注明Node/P
 
 
 class ProductRun:
+    @classmethod
+    def continue_goal1(cls, source_output, output, *, authorization_id, executor, full_access=False, timeout=600):
+        """New explicit grant after an actual Goal 0 approval; old ledgers stay immutable."""
+        import re
+        from .contracts import validate_packet, validate_plan
+        from .quality import candidate
+        from .revalidation import original_files
+        from .sequence import adopt_completed_goal0, prepare_stage
+        if not full_access:raise FactoryError('Goal 1接续需本次显式Full Access')
+        if not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',authorization_id):raise FactoryError('接续授权标识无效')
+        old=Path(source_output).resolve();output=Path(output).absolute();source=old/'.apf'
+        if output.is_relative_to(old) or old.is_relative_to(output):raise FactoryError('新旧接续目录不可覆盖或嵌套')
+        with locked(source):
+            ledger=load(source/'run.json')
+            if ledger['status']!='stopped' or ledger['output']!=str(old):raise FactoryError('原运行不是合法停止状态')
+            claim=old.parent/('.continuation-'+digest({'source':str(source),'authorization':authorization_id})+'.json')
+            if claim.exists():raise FactoryError('接续授权已使用；只能恢复既有运行')
+            oldc=Controller(source);project,control,workspace,state=oldc.locate(ledger['project_id'])
+            with locked(control):
+                packet=load(control/'task-packet.json');validate_packet(packet,source,state)
+                cursor=load(control/'sequence/state.json')
+                if set(cursor['completed'])!={'Goal 0'}:raise FactoryError('只能接续已批准Goal 0、未批准Goal 1')
+                receipt=check_receipt(project,cursor['completed']['Goal 0'],'Goal 0')
+                if candidate(workspace)!=receipt['candidate']:raise FactoryError('原已批准候选变化')
+                # Validate the existing quality result, not a workspace self-report.
+                from .git_agent import GitAgent
+                if not getattr(executor,'label',None):GitAgent(oldc,project.name)._validate_quality(receipt)
+                oldstage=control/'goals/goal-1'
+                if oldstage.exists():
+                    priorstate=load(oldstage/'state.json')
+                    validate_packet(load(oldstage/'task-packet.json'),source,priorstate)
+                    if priorstate['status']!='已失败' or load(oldstage/'increment-before.json')!=receipt['candidate']:
+                        raise FactoryError('前次Goal 1不是源码未变的失败尝试')
+                full=load(source/'product-plan.json')
+                if file_hash(source/'product-plan.json')!=ledger['plan_sha256'] or full['plan']!=load(control/'planner-result.json'):
+                    raise FactoryError('原规划来源不匹配')
+                if oldstage.exists() and load(oldstage/'goal-spec.json')!=full['goal1_spec']:
+                    raise FactoryError('前次Goal 1任务与原完整规划不符')
+                for call in ledger['calls']:
+                    if call['status']!='finished' or file_hash(relative_file(call['result'],source))!=call['sha256']:
+                        raise FactoryError('原模型执行未完成或结果SHA变化')
+                for name,h in ledger['resources'].items():
+                    if file_hash(relative_file(name,source))!=h:raise FactoryError('原工厂/Skill快照变化')
+                pins={('projects/'+project.name+'/'+n):h for n,h in original_files(project).items()}
+                for n in ('run.json','product-plan.json',*[x['result'] for x in ledger['calls']],*ledger['resources']):
+                    pins[n]=file_hash(relative_file(n,source))
+                skills={n:source/'skills'/n for n in ('requirement-planner','goal0-scaffolder','goal-prompt-writer')}
+                run=cls(output,request=ledger['request'],full_access=True,executor=executor,skills=skills,timeout=timeout)
+                dest=run.folder/'projects'/project.name;dest.mkdir(parents=True)
+                target=dest/'workspace';shutil.copytree(workspace,target,ignore=shutil.ignore_patterns('.factory-tmp','__pycache__','node_modules'))
+                newcontrol=dest/'control';newcontrol.mkdir()
+                def rebind(v):
+                    if isinstance(v,str):return v.replace(str(source),str(run.folder))
+                    if isinstance(v,list):return [rebind(x) for x in v]
+                    if isinstance(v,dict):return {k:rebind(x) for k,x in v.items()}
+                    return v
+                derived=rebind(full)
+                for n in packet['artifacts']:
+                    if n.endswith('.json'):save(newcontrol/n,rebind(load(control/n)))
+                    else:(newcontrol/n).write_text(rebind((control/n).read_text(encoding='utf8')),encoding='utf8')
+                newpacket=rebind(packet);newpacket['artifacts']={n:file_hash(newcontrol/n) for n in packet['artifacts']}
+                copied=copy.deepcopy(state);copied.update(status='任务包已验证',packet_fingerprint=digest(newpacket),error=None,calls=[])
+                for n in ('quality','quality_gate_enabled','active_quality_deadline','quality_bootstrap_failure'):copied.pop(n,None)
+                save(newcontrol/'state.json',copied);save(newcontrol/'task-packet.json',newpacket)
+                validate_packet(newpacket,run.folder,copied);validate_plan(derived['plan'],target)
+                validate_spec(derived['goal1_spec'],derived['plan'],target)
+                validate_release_plan(derived['plan'],derived['goal1_spec'],derived['release'])
+                save(newcontrol/'packet-validation.json',{'passed':True,'packet_fingerprint':digest(newpacket),'relocated_from':digest(packet)})
+                save(run.folder/'product-plan.json',derived)
+                c=Controller(run.folder,executor,True)
+                c.prepare_goal_sequence(project.name,derived['goal1_spec'],run.ledger['run_id'],allow_repair=True)
+                adopted=adopt_completed_goal0(c,project.name,project,cursor['completed']['Goal 0'])
+                stage=prepare_stage(c,dest,newcontrol,target,copied,derived['goal1_spec'],adopted['completed']['Goal 0'])
+                stage_control=dest/'control/goals/goal-1';finalpacket=load(stage_control/'task-packet.json')
+                # Assemble and verify the EXACT final input before any new model call.
+                stage._check_coder_permission(load(stage_control/'state.json'),'Auto')
+                proof=executor.preflight(finalpacket,target,stage_control)
+                context=__import__('factory.sequence',fromlist=['predecessor_context']).predecessor_context(stage_control,finalpacket)
+                if not context['approved_at'] or context['candidate_fingerprint']!=receipt['candidate']['fingerprint']:
+                    raise FactoryError('前序批准时间或候选身份缺失')
+                prompt=stage.coder_input(finalpacket,load(stage_control/'state.json'),target,stage_control,preflight_result=proof)
+                (stage_control/'coder-input-preflight.md').write_text(prompt,encoding='utf8')
+                save(stage_control/'coder-input-preflight.json',{'passed':True,'packet_fingerprint':digest(finalpacket),
+                    'input_sha256':digest(prompt.encode()),'approval':context,'preflight':proof})
+                if candidate(target)!=receipt['candidate']:raise FactoryError('零模型预检改变已批准源码')
+                record=run.folder/'handoff.json'
+                save(record,{'kind':'authorized Goal 1 continuation of actual approved Goal 0',
+                    'authorization_id':authorization_id,'source_runtime':str(source),'source_run_id':ledger['run_id'],
+                    'source_files':pins,'source_deadline_unchanged':ledger['deadline'],
+                    'source_candidate':receipt['candidate'],'source_packet_fingerprint':receipt['packet_fingerprint'],
+                    'source_receipt':cursor['completed']['Goal 0'],'derived_packet_fingerprint':digest(finalpacket),
+                    'prepared_input_files':{p.relative_to(run.folder).as_posix():file_hash(p)
+                        for p in (stage_control/'coder-input-preflight.json',stage_control/'coder-input-preflight.md')},
+                    'limits':STAGE_CONTINUATION_LIMITS})
+                with claim.open('x',encoding='utf8') as f:
+                    json.dump({'authorization_id':authorization_id,'run_id':run.ledger['run_id'],'output':str(output)},f)
+                binding=load(record);binding['claim']={'path':str(claim),'sha256':file_hash(claim)};save(record,binding)
+                run.ledger.update(project_id=project.name,limits=dict(STAGE_CONTINUATION_LIMITS),
+                    approved_goal0_continuation=True,plan_sha256=file_hash(run.folder/'product-plan.json'),
+                    continuation={'record':record.name,'sha256':file_hash(record)})
+                save(run.folder/'run.json',run.ledger)
+                return run
+
     @classmethod
     def handoff(cls, source_output, output, *, authorization_id, executor,
                 full_access=False, amendments=None, normalize_runtime=False, runtime_data=None, timeout=600):

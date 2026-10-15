@@ -522,6 +522,38 @@ class Controller:
                 self.transition(state,control,'质量门槛失败',state['error'])
                 return state
 
+    def coder_input(self, packet, state, workspace, control, *, retry=False, preflight_result=None):
+        """Assemble the exact dispatch input without charging or calling a model."""
+        full_access=getattr(self.executor,"full_access",False)
+        preflight_result=preflight_result or {}
+        goal=packet['goal']
+        prompt=f'你是独立 Coder。以下 TaskPacket 已由主控验证；只实现 {goal}，不重新规划范围，不调用其他 Agent。\n'
+        if goal!='Goal 0':
+            prompt+='这是同一工程的新阶段授权；保留前序成果，在已有源码上增量修改，禁止清空或重建工程。\n'
+            tasks=[t for t in load(control/'planner-result.json')['tasks'] if t['goal_id']==goal]
+            prompt+='本阶段任务、依赖和允许源码写集：'+json.dumps(tasks,ensure_ascii=False)+'\n禁止删除前序有效源码或修改写集之外的源码；运行证据另存指定产物目录。\n'
+        prompt+='不得读取参考项目、凭据或用户历史。禁止所有 Git 写操作与全局写入，不修改 AGENTS.md、父目录 control、工厂冻结文件及其他项目。\n'
+        prompt+='返回 JSON Schema 报告。真实执行构建、测试、运行并记录截图；失败如实返回，禁止假成功。限本次调用内同问题最多两次修复/三轮自测；超时/越界/授权缺口停止。\n'
+        prompt+='files/evidence 必须列存在的具体相对文件，不列目录。completed 的 tests 列最终有效全量验证结果；以前失败必须保留原日志并在 summary/limitations 写清，不删除或冒充成功。\n'
+        if retry:
+            prompt+='上次失败记录：'+json.dumps(state.get('calls',[]) [-1:],ensure_ascii=False)+'\n仅修复当前失败，复用现有工程。\n'
+        if full_access:
+            prompt+='本次调用者显式通过--full-access授权派生 Coder 和本工程验证使用当前用户权限，无管理员提权。实际模式danger-full-access，工作目录不是OS隔离。原提示词中的受限执行限制仅在本次权限授权范围内被覆盖，其余边界与验收不变。\n'
+            prompt+=('仅修复当前失败，复用已有工程，不重复生成。\n' if retry else f'按已验证TaskPacket实现指定{goal}实际工程，不重新规划；环境预检不代替业务测试。\n')
+            if preflight_result.get('browser_environment_probe',{}).get('exit_code')==0:
+                prompt+='Node管道和已安装Edge固定页面预检已通过；UI浏览器测试优先channel:"msedge", chromiumSandbox:true，不自动下载浏览器或关闭浏览器自身沙箱。\n'
+            prompt+='现有validation测试证据必须保留；若测试脚本写固定路径，先复制旧证据到workspace内唯一历史目录再运行，不删除/覆盖唯一旧副本。不要修改业务验收门槛或以跳过测试换成功。\n'
+            prompt+='记录实际派生会话的sandbox配置及一次固定Node管道检查，不读取全局凭据/配置；真实完整业务测试必须包含桌面/移动截图及trace。完成后停止，不发布或Git写入。\n'
+        if packet['goal']=='Goal 1':
+            prompt+='固定Node管道检查：PowerShell中将文本 "apf-pipe-ok" 管道给 node -e 的独立程序，程序监听stdin data/end并断言文本再输出pipe-ok。不要把程序源码通过stdin交给node后再让同一程序等待已消费的stdin。\n'
+        prompt+='<validated-task-packet>\n'+json.dumps(packet,ensure_ascii=False,indent=2)+'\n</validated-task-packet>\n'
+        prompt_tag='goal0-prompt' if goal=='Goal 0' else 'goal-prompt'
+        prompt+=f'<{prompt_tag}>\n'+Path(packet['prompt_path']).read_text(encoding='utf-8')+f'\n</{prompt_tag}>\n'
+        if goal=='Goal 1':
+            from .sequence import predecessor_context
+            prompt+='\n当前权威前序批准（已核验，优先于上文历史自测说明）：\n<verified-predecessor-approval>\n'+json.dumps(predecessor_context(control,packet),ensure_ascii=False,indent=2)+'\n</verified-predecessor-approval>\n'
+        return prompt
+
     def _run_goal1(self,project_id,mode='Auto',retry=False,_lock_held=False):
         project,control,workspace,state=self.locate(project_id)
         with nullcontext() if _lock_held else locked(control):
@@ -603,29 +635,12 @@ class Controller:
                 save(control/f'coder-before-{len(state["calls"])+1:02d}.json',before)
                 protected={p.name:file_hash(p) for p in control.iterdir() if p.is_file() and p.name in (*packet['artifacts'],'task-packet.json','packet-validation.json')}
                 goal=packet['goal']
-                prompt=f'你是独立 Coder。以下 TaskPacket 已由主控验证；只实现 {goal}，不重新规划范围，不调用其他 Agent。\n'
-                if goal!='Goal 0':
-                    prompt+='这是同一工程的新阶段授权；保留前序成果，在已有源码上增量修改，禁止清空或重建工程。\n'
-                    tasks=[t for t in load(control/'planner-result.json')['tasks'] if t['goal_id']==goal]
-                    prompt+='本阶段任务、依赖和允许源码写集：'+json.dumps(tasks,ensure_ascii=False)+'\n禁止删除前序有效源码或修改写集之外的源码；运行证据另存指定产物目录。\n'
-                prompt+='不得读取参考项目、凭据或用户历史。禁止所有 Git 写操作与全局写入，不修改 AGENTS.md、父目录 control、工厂冻结文件及其他项目。\n'
-                prompt+='返回 JSON Schema 报告。真实执行构建、测试、运行并记录截图；失败如实返回，禁止假成功。限本次调用内同问题最多两次修复/三轮自测；超时/越界/授权缺口停止。\n'
-                prompt+='files/evidence 必须列存在的具体相对文件，不列目录。completed 的 tests 列最终有效全量验证结果；以前失败必须保留原日志并在 summary/limitations 写清，不删除或冒充成功。\n'
-                if retry:
-                    prompt+='上次失败记录：'+json.dumps(state.get('calls',[]) [-1:],ensure_ascii=False)+'\n仅修复当前失败，复用现有工程。\n'
-                if full_access:
-                    prompt+='本次调用者显式通过--full-access授权派生 Coder 和本工程验证使用当前用户权限，无管理员提权。实际模式danger-full-access，工作目录不是OS隔离。原提示词中的受限执行限制仅在本次权限授权范围内被覆盖，其余边界与验收不变。\n'
-                    prompt+=('仅修复当前失败，复用已有工程，不重复生成。\n' if retry else f'按已验证TaskPacket实现指定{goal}实际工程，不重新规划；环境预检不代替业务测试。\n')
-                    if preflight_result.get('browser_environment_probe',{}).get('exit_code')==0:
-                        prompt+='Node管道和已安装Edge固定页面预检已通过；UI浏览器测试优先channel:"msedge", chromiumSandbox:true，不自动下载浏览器或关闭浏览器自身沙箱。\n'
-                    prompt+='现有validation测试证据必须保留；若测试脚本写固定路径，先复制旧证据到workspace内唯一历史目录再运行，不删除/覆盖唯一旧副本。不要修改业务验收门槛或以跳过测试换成功。\n'
-                    prompt+='记录实际派生会话的sandbox配置及一次固定Node管道检查，不读取全局凭据/配置；真实完整业务测试必须包含桌面/移动截图及trace。完成后停止，不发布或Git写入。\n'
-                prompt+='<validated-task-packet>\n'+json.dumps(packet,ensure_ascii=False,indent=2)+'\n</validated-task-packet>\n'
-                prompt_tag='goal0-prompt' if goal=='Goal 0' else 'goal-prompt'
-                prompt+=f'<{prompt_tag}>\n'+Path(packet['prompt_path']).read_text(encoding='utf-8')+f'\n</{prompt_tag}>\n'
-                if goal=='Goal 1':
-                    from .sequence import predecessor_context
-                    prompt+='\n当前权威前序批准（已核验，优先于上文历史自测说明）：\n<verified-predecessor-approval>\n'+json.dumps(predecessor_context(control,packet),ensure_ascii=False,indent=2)+'\n</verified-predecessor-approval>\n'
+                prompt=self.coder_input(packet,state,workspace,control,retry=retry,preflight_result=preflight_result)
+                prepared=control/'coder-input-preflight.json'
+                if prepared.exists():
+                    pin=load(prepared)
+                    if pin['packet_fingerprint']!=digest(packet) or pin['input_sha256']!=digest(prompt.encode()):
+                        raise FactoryError('最终Coder输入与零模型交接预检不同；不消耗模型额度')
                 save(control/f'handoff-{len(state["calls"])+1:02d}.json',{'task_id':state['task_id'],'packet_sha256':digest(packet),
                                                                       'prompt_sha256':file_hash(packet['prompt_path']),'input_sha256':digest(prompt.encode()),'automatic':True})
                 if full_access:
