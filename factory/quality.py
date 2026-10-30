@@ -487,9 +487,28 @@ class QualityGate:
     def history_plan(self):
         """Evidence closure only. Ready never means AC-012 passed."""
         completion=self.control/'completion.json'
+        sources={};current=candidate(self.workspace)
+        repairs=getattr(self,'q',{}).get('repairs',[])
+        origin=None
+        if hasattr(self,'folder') and self.folder.name!='quality' and (self.folder/'source.json').is_file():
+            context=self.load(self.folder/'source.json')
+            if context.get('historical_code_quality'):
+                path=safe_path(context['old_quality_path'],self.control)
+                if file_hash(path)!=context['old_quality_sha256']:raise FactoryError('修复历史来源变化')
+                origin=(path.parent,self.load(path))
+        history=origin[1] if origin and not repairs else getattr(self,'q',{})
+        repairs=history.get('repairs',[])
+        if repairs and repairs[-1]['valid_repair'] and repairs[-1]['after']==current:
+            first=history['rounds'][0];base=origin[0] if origin and history is origin[1] else self.folder
+            for name,h in first['candidate']['files'].items():
+                if current['files'].get(name)!=h:
+                    path=relative_file(name,relative_file(first['path'],base)/'workspace')
+                    if not path.is_file() or file_hash(path)!=h:raise FactoryError('修复前源码快照缺失或被篡改')
+                    sources[name]={'path':path,'sha256':h}
         return history_dependencies(self.workspace,self.load(completion) if completion.is_file() else {},candidate(self.workspace),self.load,
                                     required_history=getattr(self,'state',{}).get('independent_revalidation',{}).get('required_history',[]),
-                                    acceptance_path='validation/goal1/acceptance.md' if self.packet['goal']=='Goal 1' else None)
+                                    acceptance_path='validation/goal1/acceptance.md' if self.packet['goal']=='Goal 1' else None,
+                                    historical_sources=sources)
 
     def history_files(self):
         plan=self.history_plan()
@@ -509,7 +528,9 @@ class QualityGate:
         if not plan['ready']:self.history_files()  # fail before any role registration
         for path,h in ((n['source'],n['sha256']) for n in plan['files'] if n['kind']=='history'):
             target=relative_file('history/'+path,folder);target.parent.mkdir(parents=True,exist_ok=True)
-            shutil.copy2(relative_file(path,self.workspace),target)
+            node=next(n for n in plan['files'] if n['source']==path)
+            original=safe_path(node['snapshot_path'],self.control) if node.get('snapshot_path') else relative_file(path,self.workspace)
+            shutil.copy2(original,target)
             if file_hash(target)!=h:raise FactoryError('历史资料副本哈希不匹配')
             # Windows read-only file attribute is a convenience, not an ACL or
             # an OS boundary against a Full Access process clearing the flag.
@@ -625,6 +646,7 @@ class QualityGate:
 
     def tester_prompt(self,row):
         return ('你是独立 Tester，不是Coder自测。只在execution_workspace测试副本内执行已授权build/test/runtime，业务源码与测试断言只读。\n'
+                '当前阶段只验证TaskPacket正式AC。Windows深目录的SHA枚举优先用Python或Node标准库；辅助命令失败应保留首次日志并修正重测，不伪装业务通过。\n'
                 '可只读访问evidence_index及read_only_history_context；禁止读写原workspace、主控账本、其他项目或凭据，禁止修改context。历史资料只作历史文档审查，不能冒充当前测试。\n'
                 '测试副本可生成dist/build/var、validation/.quality-evidence新证据；不得覆盖已有唯一证据。先读受控索引，再定向读所需文件，避免反复打印完整源码/trace/历史日志。\n'
                 '可在新的validation子目录生成本轮验收文档：R/AC/Task映射、真实命令退出码、当前源码指纹、日志/截图/Trace索引和范围；不覆盖输入的历史验收文档。\n'
@@ -645,11 +667,18 @@ class QualityGate:
                 +json.dumps(self.context(row),ensure_ascii=False,sort_keys=True,separators=(',',':')))
 
     def coder_report(self,row):
-        if self.q['repairs'] and self.q['repairs'][-1]['valid_repair'] and self.q['repairs'][-1]['after']==row['candidate']:
-            calls=[c for c in self.q['calls'] if c['role']=='CoderRepair' and c['status']=='finished']
-            rec=calls[-1];path=relative_file(rec['output_path'],self.folder)
+        q=self.q;base=self.folder
+        if not q['repairs'] and self.folder.name!='quality':
+            source=self.load(self.folder/'source.json')
+            if source.get('historical_code_quality'):
+                old=safe_path(source['old_quality_path'],self.control)
+                if file_hash(old)!=source['old_quality_sha256']:raise FactoryError('返工报告来源变化')
+                q=self.load(old);base=old.parent
+        if q['repairs'] and q['repairs'][-1]['valid_repair'] and q['repairs'][-1]['after']==row['candidate']:
+            calls=[c for c in q['calls'] if c['role']=='CoderRepair' and c['status']=='finished']
+            rec=calls[-1];path=relative_file(rec['output_path'],base)
             if file_hash(path)!=rec['output_sha256']:raise FactoryError('当前返工Coder报告被篡改')
-            repair=self.q['repairs'][-1]
+            repair=q['repairs'][-1]
             return {'report':self.load(path),'repair':{k:repair[k] for k in ('number','before','after','changes','valid_repair','defect_path')}}
         return {'report':self.load(self.control/'coder-result.json'),'repair':None}
 
@@ -657,7 +686,15 @@ class QualityGate:
         snap=candidate(self.workspace)
         if len(self.q['rounds'])>=BUDGET['max_rounds']:raise FactoryError('最多三轮质量验证，已达上限')
         index=len(self.q['rounds'])+1
-        folder=self.folder/'rounds'/f'{index:02d}';folder.mkdir(parents=True,exist_ok=False)
+        folder=self.folder/'rounds'/f'{index:02d}'
+        if folder.exists():
+            pre=folder/'context/dependency-preflight.json'
+            if (not pre.is_file() or self.load(pre).get('ready') is not False
+                or any(r['path']==folder.relative_to(self.folder).as_posix() for r in self.q['rounds'])
+                or any(r['candidate_fingerprint']==snap['fingerprint'] for r in self.q['calls'])):
+                raise FactoryError('已有轮次不能覆盖或借准备恢复重复调用')
+            folder=self.folder/'rounds'/f'{index:02d}p'
+        folder.mkdir(parents=True,exist_ok=False)
         workspace=folder/'workspace';workspace.mkdir()
         for name in snap['files']:
             target=relative_file(name,workspace);target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(relative_file(name,self.workspace),target)

@@ -263,7 +263,7 @@ class _IncrementalController(Controller):
             raise FactoryError('增量执行上下文身份无效')
         return project,control,workspace,state
 
-    def verify(self,packet,coder,workspace,control,before):
+    def verify_workspace(self,packet,workspace,control,before):
         after=candidate(workspace)
         baseline=load(control/'increment-before.json')
         removed=set(baseline['files'])-set(after['files'])
@@ -274,7 +274,7 @@ class _IncrementalController(Controller):
         if not delta:raise FactoryError('Goal 1没有实际业务源码变更，不能认定增量开发完成')
         if any(not any(n==w or n.startswith(w+'/') for w in writes) for n in delta):
             raise FactoryError('增量源码修改超出原Goal 1任务写集')
-        return super().verify(packet,coder,workspace,control,before)
+        return super().verify_workspace(packet,workspace,control,before)
 
 
 def stage_controller(c):

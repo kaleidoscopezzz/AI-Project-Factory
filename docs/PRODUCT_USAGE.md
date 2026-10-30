@@ -143,14 +143,52 @@ Node.js 26.3.0 自带 SQLite 只提供 OS 文件互斥，业务数据仍为 JSON
 检查点。正式批准路径、原始 SHA、时间及候选进入最终提示词，并解释旧自测文档的历史
 性质；实际派发输入与零模型预检一致。重定位只改变执行路径，不修改原 AC 或批准原件。
 
-该新接续的唯一一次 Coder 派发被平台额度限制拒绝，115.454 秒后 CLI 退出 1，回合未
-完成，没有工程命令或业务源码变更。usage 未返回，不能声称已确认 0 Token。
-没有新 Tester/Reviewer、CoderRepair 或发行 ZIP；这与早先交接遗漏的失败原因不同。
+历史：此前接续的 Coder 曾被平台额度限制拒绝，原始失败及其调用额度完整保留。
 
-已派发次数仍计入上限；普通 resume 不自动释放额度，也不刷新已过期的 3600 秒窗口。
-需要明确的新增续派授权才可继续 Goal 1 初始开发，不能用 CoderRepair 冒充第二次开发，
-也不能重复成功的 Planner 和 Goal 0 Agent。419/419 项完整确定性回归通过，另有 46 项
-兼容复测；这些验证不能代替当前软件 Goal 1 的真实质量批准。
+最新明确授权下，Goal 1 Coder 已保存编辑、删除、UI、测试和文档，但 600 秒内未返回
+完整回合。`ProductRun.accept_saved_delivery()` 仅接受具有真实交付声明、原清单 SHA、
+实际源码增量和独立基础检查的单次超时产物，记录 interrupted_with_verified_delivery；
+原失败调用、计数、时间和输出不改写。没有保存声明、文件篡改或权限不符时拒绝接收。
+这不是新模型调用，不替代独立 Tester/Reviewer，也不会刷新整轮预算。
+
+真实 Tester 7/8 项 AC passed，独立深目录副本测试发现 SQLite 锁数据库的 Windows
+长路径缺陷。一次真实 CoderRepair 仅修复路径转换，自测 build/test 通过。旧文档中的
+修复前源码引用只绑定受控原轮次快照 SHA，标记为历史资料；当前候选及未来测试仍使用
+新指纹。修复后的材料预检已通过，失败轮次、原始 Tester 输出和准备失败目录都保留。
+`ProductRun.recover_repaired_preparation()` 只适用于已有合法返工且新候选未派发的材料
+准备失败；保留原账本副本、新代码检查点和原时限，不产生质量批准或新的模型额度。
+
+历史续跑窗口曾不足以完成独立复验和审查，原过期账本保持原样。2026-10-30 新授权下，
+`ProductRun.open_quality_window()` 在同一 runtime 中建立独立预算/结果文件和质量上下文，
+继续调用既有 Sequence、QualityGate 与 Release Agent。Planner/初始 Coder 的预算为 0；
+默认只需 Tester 1、Reviewer 1，只有真实缺陷才能使用一次返工及对应复验，不自动续期。
+不得用普通 `--resume` 绕过授权或覆盖旧账本。
+
+### 最新真实发行验收（2026-10-30）
+
+本轮真实 Tester 八项 AC 全部 passed，独立只读 Reviewer approved。上一轮的实际返工
+候选未改动，取得正式 Goal 1 阶段回执后才发行。新增 Planner/Coder/CoderRepair 均为 0；
+旧 Coder 超时和首次 Tester 失败保持原样。深层辅助测试夹具路径问题以同 SHA 的较短
+独立副本复测解决，保留失败日志，没有修改源码/断言或忽略当前 AC。
+
+新 ZIP：12 个文件、10,563 字节；SHA-256：
+`f127b3d16cd0307e89deba52bfbcd7f2eace7969547e94c5d0e6aafac1d29b91`。
+在原开发/runtime 之外全新解包，包内 Windows PowerShell 启动脚本及新增、查看、编辑、
+完成、删除、重启持久化验证通过。它依赖 Node.js 26.x（本轮 26.3.0），不包含运行环境。
+本地验证 ZIP 没有作为 GitHub Release 附件公开；不要将历史 Goal 5 ZIP 当作这份新包。
+
+用户取得 ZIP 后，解压到新的可写目录，在解压目录执行：
+
+```powershell
+node --version
+powershell -NoProfile -ExecutionPolicy Bypass -File .\START.ps1 -Port 3000
+```
+
+打开 `http://127.0.0.1:3000`；按 Ctrl+C 停止，数据保存在解压目录的 `var`。端口占用可改
+`-Port 3001`。ExecutionPolicy 仅作用于当前 PowerShell 进程，不修改系统策略。
+
+当前案例已完成真实双阶段接续到 ZIP 的验收；分阶段新授权不等于完全无人值守的单次
+输入闭环。真实返工候选的复验/批准已成立，同一轮自动触发返工全过程仍未真实验证。
 
 APF 1.0.0 尚未正式发布。任意规模/任意 Goal 无人值守、真实自动返工通用保证、换机完整
 体验、强制 AGENTS.md、详细需求忠实度专项、多模型、GUI、云发布和安装器仍未交付。

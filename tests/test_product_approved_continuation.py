@@ -83,6 +83,6 @@ class ApprovedContinuationTests(unittest.TestCase):
         run=self.prepare();c=double_controller(run.folder,self.agent,True);stage=stage_controller(c)
         control=run.folder/'projects'/self.project.name/'control/goals/goal-1';work=control.parents[2]/'workspace'
         with self.assertRaisesRegex(FactoryError,'没有实际业务源码变更'):
-            stage.verify(load(control/'task-packet.json'),{},work,control,{})
+            stage.verify_workspace(load(control/'task-packet.json'),work,control,{})
 
 if __name__=='__main__':unittest.main()

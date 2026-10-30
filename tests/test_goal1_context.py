@@ -30,4 +30,20 @@ class Goal1ContextTests(unittest.TestCase):
             p=self.workspace/name;original=p.read_bytes();p.write_bytes(b'tampered')
             self.assertFalse(self.plan()['ready']);p.write_bytes(original)
 
+    def test_verified_pre_repair_code_is_historical_only(self):
+        src=self.workspace/'scripts/build.mjs';h=file_hash(src)
+        old=self.workspace/'validation/pre-repair/build.mjs';old.parent.mkdir();old.write_bytes(src.read_bytes())
+        src.write_text('// controlled new business source')
+        self.assertFalse(self.plan()['ready'])
+        result=history_dependencies(self.workspace,self.completion,candidate(self.workspace),load,
+             acceptance_path='validation/goal1/acceptance.md',historical_sources={'scripts/build.mjs':{'path':old,'sha256':h}})
+        self.assertTrue(result['ready'],result['unverified'])
+        entry=next(n for n in result['files'] if n['source']=='scripts/build.mjs')
+        self.assertEqual(entry['kind'],'history');self.assertEqual(entry['sha256'],h)
+        self.assertIn('NOT current',entry['result'])
+        old.write_text('tampered historical bytes')
+        result=history_dependencies(self.workspace,self.completion,candidate(self.workspace),load,
+             acceptance_path='validation/goal1/acceptance.md',historical_sources={'scripts/build.mjs':{'path':old,'sha256':h}})
+        self.assertFalse(result['ready'])
+
 if __name__=='__main__':unittest.main()

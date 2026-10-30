@@ -302,6 +302,10 @@ class Controller:
         for name in coder['files']+coder['evidence']:
             if not relative_file(name,workspace).is_file():
                 raise FactoryError('Coder 报告引用不存在文件：'+name)
+        return self.verify_workspace(packet,workspace,control,before)
+
+    def verify_workspace(self,packet,workspace,control,before):
+        """Objective artifact checks; does not assert that an Agent turn finished."""
         after=manifest(workspace)
         if before.get('AGENTS.md')!=after.get('AGENTS.md'):
             raise FactoryError('Coder 修改受保护 AGENTS.md')
@@ -322,6 +326,61 @@ class Controller:
         save(control/'completion.json',{'passed':True,'project_id':packet['project_id'],'packet_fingerprint':digest(packet),
                                         'checks':checks,'runtime':runtime,'workspace_manifest':manifest(workspace),
                                         'scope':'Coder 自测和主控基础验证通过，待外部 Reviewer；不是业务全部完成'})
+
+    def accept_saved_delivery(self,project_id,execution,source_files):
+        """Accept a saved delivery for independent QA, never relabel a timeout.
+
+        Requires an actual changed candidate, the Coder's written self-report,
+        its exact declared file hashes, and fresh independent engineering checks.
+        No Agent result or call counter is changed or invented.
+        """
+        project,control,workspace,state=self.locate(project_id)
+        from .quality import candidate
+        with locked(control):
+            packet=load(control/'task-packet.json');validate_packet(packet,self.root,state)
+            if (state.get('sequence_goal')!='Goal 1' or state['status']!='已失败'
+                or len(state['calls'])!=1 or not execution.get('timed_out')
+                or execution.get('turn_completed') or execution.get('output') is not None
+                or not execution.get('thread_ids') or (control/'quality').exists()
+                or (control/'coder-result.json').exists()):
+                raise FactoryError('不是有保存交付、尚未进入质量验证的单次超时Goal 1')
+            self._check_coder_permission(state,'Auto')
+            report=workspace/'PROJECT_STATUS.md';acceptance=workspace/'validation/goal1/acceptance.md'
+            index=workspace/'validation/goal1/candidate-manifest.json'
+            if (not report.is_file() or not acceptance.is_file() or not index.is_file()
+                or not report.read_text(encoding='utf8').startswith('Goal 1：已完成，待外部 Reviewer 验收')):
+                raise FactoryError('缺少Coder实际保存的交付声明；不能从部分源码推定完成')
+            rows=load(index)['source_files']
+            if len(rows)!=len(source_files) or {x['path'] for x in rows}!=set(source_files):
+                raise FactoryError('保存交付清单与原发行来源不符')
+            for row in rows:
+                if file_hash(relative_file(row['path'],workspace))!=row['sha256']:
+                    raise FactoryError('保存交付的源文件SHA不匹配')
+            archive=control/'saved-delivery'
+            if archive.exists():raise FactoryError('保存交付已处理或准备未完成；不隐式重复')
+            before=load(control/'coder-before-01.json');snapshot=candidate(workspace)
+            failed=(control/'state.json').read_bytes()
+            pins={str(p.relative_to(workspace)):file_hash(p) for p in (report,acceptance,index)}
+            self.verify_workspace(packet,workspace,control,before)
+            if candidate(workspace)!=snapshot:raise FactoryError('基础检查改变保存候选')
+            archive.mkdir();(archive/'failed-state.json').write_bytes(failed)
+            proof={'kind':'deterministic verification of saved Coder artifacts; original CLI timed out',
+                   'candidate':snapshot,'packet_fingerprint':digest(packet),'reports':pins,
+                   'failed_state_sha256':file_hash(archive/'failed-state.json'),
+                   'execution_fingerprint':digest(execution),'not_model_completion':True,'not_quality_approval':True}
+            save(archive/'proof.json',proof)
+            # This is deliberately NOT a CODER_SCHEMA completed model response.
+            save(control/'coder-result.json',{'status':'interrupted_with_verified_delivery',
+                'summary':'原Coder调用超时；已保存的真实交付通过独立基础检查，仍须真实Tester与Reviewer',
+                'source':{'path':'saved-delivery/proof.json','sha256':file_hash(archive/'proof.json')},
+                'artifact_handoff':proof,'original_failed_execution':execution,
+                'limitations':['原CLI turn未完成；这是工具产物复核，不是新的或成功的Coder回合']})
+            completion=load(control/'completion.json')
+            completion.update(scope='saved artifacts passed fresh basic checks; NOT successful Coder turn or independent quality approval',
+                              saved_delivery={'path':'saved-delivery/proof.json','sha256':file_hash(archive/'proof.json')})
+            save(control/'completion.json',completion)
+            self.transition(state,control,'已完成','保存产物基础检查通过；原Coder超时记录不变，等待独立质量验收')
+            return {'path':str(archive/'proof.json'),'sha256':file_hash(archive/'proof.json')}
 
     def diagnose(self,packet,workspace,control):
         """Collect objective checks after a failed Coder; never declares success."""

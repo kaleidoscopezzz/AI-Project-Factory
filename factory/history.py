@@ -23,7 +23,7 @@ ARCHIVE_GAPS={
         '48ff440502c276b0ae4d9d28b7e19a9bfc0fd6e73ce6b3d0233b5c8b0b41d8b8',
 }
 
-def history_dependencies(workspace,completion,candidate,load,*,required_history=(),acceptance_path=None):
+def history_dependencies(workspace,completion,candidate,load,*,required_history=(),acceptance_path=None,historical_sources=None):
     files=completion.get('workspace_manifest',{});nodes={};edges=[];unknown=[];warnings=[];absent=[];queue=[];runtime_mentions=[]
     def issue(parent,ref,reason,archive_gap=False,expected=None):
         pinned=ARCHIVE_GAPS.get((parent,ref,expected)) if archive_gap else None
@@ -40,19 +40,25 @@ def history_dependencies(workspace,completion,candidate,load,*,required_history=
     def add(name,parent,ref,kind='history',expected=None):
         try:path=relative_file(name,workspace)
         except FactoryError as e:issue(parent,ref,str(e));return
-        h=files.get(name)
+        h=files.get(name);snapshot=None
+        prior=(historical_sources or {}).get(name)
+        if prior and h==prior['sha256'] and file_hash(prior['path'])==h:
+            snapshot=prior;path=prior['path']
         if not h or not path.is_file() or file_hash(path)!=h:
             issue(parent,ref,'missing or not matched by original completion: '+name);return
         if expected is not None and h!=expected:
             issue(parent,ref,'referenced SHA256 differs from available original bytes: '+name);return
         generated=name.split('/')[0] in {'dist','build'}
-        if not name.startswith('validation/') and not generated and candidate['files'].get(name)!=h:
+        if not snapshot and not name.startswith('validation/') and not generated and candidate['files'].get(name)!=h:
             issue(parent,ref,'delivery/source reference is not current candidate: '+name);return
         e={'parent':parent,'reference':ref,'source':name,'sha256':h,'kind':kind}
         if e not in edges:edges.append(e)
         if name not in nodes:
             nodes[name]={'source':name,'sha256':h,'kind':'history' if name.startswith('validation/') or generated else 'delivery',
                          'bytes':path.stat().st_size,'result':'verified original bytes, not AC approval'}
+            if snapshot:
+                nodes[name].update(kind='history',snapshot_path=str(path),
+                    result='verified pre-repair source snapshot; NOT current candidate source')
             queue.append(name)
     def resolve(parent,ref,expected=None,declared_absent=False,descriptive=False,context_refs=()):
         if not isinstance(ref,str) or not ref:return
