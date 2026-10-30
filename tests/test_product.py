@@ -162,7 +162,7 @@ class ProductTests(unittest.TestCase):
         self.assertEqual(build.call_args.args[0].build,'中文')
         with patch('apf_cli.build.build') as build,contextlib.redirect_stdout(io.StringIO()) as stream:
             self.assertEqual(main(['--version']),0)
-        build.assert_not_called();self.assertEqual(stream.getvalue(),"AI Project Factory 0.1.0\nWit beyond measure is man's greatest treasure\n")
+        build.assert_not_called();self.assertEqual(stream.getvalue(),"AI Project Factory 1.0.0\nWit beyond measure is man's greatest treasure\n")
     def test_cli_no_authorization_no_process(self):
         from apf_cli.cli import main
         with patch('apf_cli.codex.discover_codex') as cli,contextlib.redirect_stderr(io.StringIO()):

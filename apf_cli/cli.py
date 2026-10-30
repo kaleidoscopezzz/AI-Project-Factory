@@ -13,7 +13,7 @@ from . import APFError, VERSION, VERSION_TEXT
 
 
 def parser():
-    result = argparse.ArgumentParser(prog="apf", description="AI Project Factory 0.1.0：生成规划，或执行受控双阶段开发、质量审查与本地ZIP发行。")
+    result = argparse.ArgumentParser(prog="apf", description=f"AI Project Factory {VERSION}：生成规划，或执行受控双阶段开发、质量审查与本地ZIP发行。")
     action = result.add_mutually_exclusive_group()
     action.add_argument("--version", action="store_true", help="离线打印版本和作者签名")
     action.add_argument("--prompt-generate", metavar="需求", help="使用本地已登录 Codex 生成规划（一次只读 Planner 调用）")

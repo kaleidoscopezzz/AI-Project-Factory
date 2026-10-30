@@ -1,0 +1,56 @@
+name: Publish APF 1.0.0
+
+on:
+  push:
+    tags: [v1.0.0]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      GIT_CONFIG_COUNT: "1"
+      GIT_CONFIG_KEY_0: core.autocrlf
+      GIT_CONFIG_VALUE_0: "false"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /apf_cli/
+            /factory/
+            /skills/
+            /pyproject.toml
+            /docs/CLI_USAGE.md
+            /docs/RELEASE_1.0.0.md
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14'
+      - name: Build APF wheel, without business Agent calls
+        run: python -m pip wheel . --no-deps --wheel-dir dist
+      - name: Verify installed offline commands
+        shell: pwsh
+        run: |
+          $wheel = (Get-ChildItem dist/*.whl).FullName
+          python -m pip install --no-deps $wheel
+          if ($LASTEXITCODE -ne 0) { throw 'Wheel installation failed' }
+          Push-Location $env:RUNNER_TEMP
+          try {
+            $version = & apf --version
+            if ($LASTEXITCODE -ne 0 -or ($version -join "`n") -cne "AI Project Factory 1.0.0`nWit beyond measure is man's greatest treasure") { throw 'Version output mismatch' }
+            & apf --help
+            if ($LASTEXITCODE -ne 0) { throw 'Help failed' }
+          } finally { Pop-Location }
+          $hash = (Get-FileHash $wheel -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $([IO.Path]::GetFileName($wheel))" | Set-Content dist/SHA256SUMS.txt -Encoding utf8
+      - name: Publish the APF package (not the example Todo ZIP)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $wheel = (Get-ChildItem dist/*.whl).FullName
+          gh release create $env:GITHUB_REF_NAME $wheel dist/SHA256SUMS.txt --verify-tag --title "AI Project Factory 1.0.0" --notes-file docs/RELEASE_1.0.0.md
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub Release creation failed' }

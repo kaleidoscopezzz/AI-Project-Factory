@@ -10,3 +10,8 @@
 /scripts/diagnose_goal1_environment.py -text
 /validation/goal1/** -text
 /validation/sandbox-compatibility-*/** -text
+
+# Release source archives exclude internal ledgers, generated projects and local rules.
+/validation export-ignore
+/projects export-ignore
+/AGENTS.md export-ignore

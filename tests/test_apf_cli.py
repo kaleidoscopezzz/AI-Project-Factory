@@ -50,6 +50,15 @@ class CliTests(unittest.TestCase):
         self.assertEqual(out.getvalue(), VERSION_TEXT + "\n")
         self.assertEqual(err.getvalue(), "")
 
+    def test_release_version_matches_metadata_and_preserves_motto(self):
+        import tomllib
+        from apf_cli import VERSION
+        metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+        self.assertEqual(metadata["version"], "1.0.0")
+        self.assertEqual(VERSION, "1.0.0")
+        self.assertEqual(VERSION_TEXT, "AI Project Factory 1.0.0\nWit beyond measure is man's greatest treasure")
+        self.assertIn("AI Project Factory 1.0.0", parser().format_help())
+
     def test_help_and_version_subprocess_empty_path(self):
         env = dict(os.environ, PATH="", LOCALAPPDATA=str(self.directory), CODEX_HOME=str(self.directory))
         for args in (["--version"], ["--help"]):

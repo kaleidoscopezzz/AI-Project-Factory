@@ -243,7 +243,7 @@ def configured_model(environ=None):
     except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise APFError("用户 Codex config.toml 无法读取；请先修复配置。") from exc
     if data.get("model_provider", "openai") != "openai":
-        raise APFError("CLI 0.1.0 仅支持已登录的 OpenAI Codex；自定义 model_provider 尚未支持，未调用模型。")
+        raise APFError("CLI 1.0.0 仅支持已登录的 OpenAI Codex；自定义 model_provider 尚未支持，未调用模型。")
     model = data.get("model")
     if model is not None and (not isinstance(model, str) or not model.strip()):
         raise APFError("Codex model 配置无效。")

@@ -1,9 +1,9 @@
-# AI Project Factory CLI 0.1.0（Windows）
+# AI Project Factory CLI 1.0.0（Windows）
 
-CLI 0.1.0 已整合主线，复用三个冻结 Codex Skills。`--prompt-generate` 只生成规划文件；
+CLI 1.0.0 已整合主线，复用三个冻结 Codex Skills。`--prompt-generate` 只生成规划文件；
 新增 `--build` 通过原 Controller、Sequence 和 QualityGate 执行受控双阶段开发，再由
-Release Agent 交付本地 ZIP。安装包包含工厂模块与原样 Skill，内部版本仍为 0.1.0。
-APF 1.0.0 尚未正式发布；真实与确定性验证范围见 [项目状态](../PROJECT_STATUS.md)。
+Release Agent 交付本地 ZIP。安装包包含工厂模块与原样 Skill，CLI 与安装元数据统一为 1.0.0。
+APF 1.0.0 按受控两阶段范围发布；真实与确定性验证范围见 [项目状态](../PROJECT_STATUS.md)。
 
 ```powershell
 apf --build "开发一个支持新增、完成和删除的本地待办事项软件" --out ".\my-todo" --full-access
@@ -19,7 +19,7 @@ apf --resume ".\my-todo" --full-access
 持久化已在独立解压目录验证；运行需要 Node.js 26.x（验证版本 26.3.0），不是独立 EXE。
 这是明确授权后的分阶段续跑实证，不是一次命令不中断完成任意项目的证明。
 `--resume` 不会续期过期预算、追加已耗尽角色额度或静默接受变化的工厂检查点。
-已完成阶段和候选继续复用，旧超时/失败与预算不改写；当前尚未创建 APF 1.0.0 正式版本。
+已完成阶段和候选继续复用，旧超时/失败与预算不改写；正式安装与发布范围见 [1.0.0 发布说明](RELEASE_1.0.0.md)。
 
 ## 安装
 
@@ -51,7 +51,7 @@ apf --version
 ```powershell
 python -m pip wheel . --no-deps --wheel-dir .\dist
 # 将 wheel 带到目标 Windows 设备，然后在其 Python 环境安装：
-python -m pip install .\dist\ai_project_factory_cli-0.1.0-py3-none-any.whl
+python -m pip install .\dist\ai_project_factory_cli-1.0.0-py3-none-any.whl
 ```
 
 wheel 内含三个完整冻结 Skill 资源的原样快照；目标设备不需要源码仓库。
@@ -66,7 +66,7 @@ apf --version
 标准输出精确两行，退出码 0：
 
 ```text
-AI Project Factory 0.1.0
+AI Project Factory 1.0.0
 Wit beyond measure is man's greatest treasure
 ```
 

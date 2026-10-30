@@ -6,7 +6,7 @@ APF 面向希望降低软件开发门槛的用户。目前专注 **个人 Window
 
 ## 当前进度
 
-**原始 Goal 0～Goal 5 已完成核心开发，并按各自批准范围封版；APF 1.0.0 尚未正式发布。** Goal 2 为有限范围批准，Goal 3 为受控双阶段批准，Goal 4 限于授权本地版本管理，Goal 5 为有限范围本地软件发行批准。
+**APF 1.0.0 按受控两阶段范围发布；原始 Goal 0～Goal 5 已按各自批准范围封版。** Goal 2 为有限范围批准，Goal 3 为受控双阶段批准，Goal 4 限于授权本地版本管理，Goal 5 为有限范围本地软件发行批准。
 
 | APF 里程碑 | 已批准范围 | Tag |
 | --- | --- | --- |
@@ -53,17 +53,17 @@ APF 已真实验证受控双阶段开发、独立 Tester、只读 Reviewer 及�
 | 本地软件发行 | Goal 5 已限定范围封版；真实构建、ZIP 内容检查、独立解压启动、来源/SHA-256/交付记录 |
 | 通用 EXE、安装器、云部署与远端发布 | 当前不提供；本地 ZIP 仍依赖相应运行环境 |
 | OS 级工作区隔离、Token 硬限制 | 当前不提供 |
-| 规划 CLI 0.1.0 | 已接入主线；版本、帮助及通过本机 Codex 生成规划文件；本轮安装与接入验证使用 Fake Codex |
+| APF CLI 1.0.0 | 已接入主线；版本、帮助及通过本机 Codex 生成规划文件；本轮安装与接入验证使用 Fake Codex |
 | 一句话开发与发行入口 | `apf --build` 已接通现有双阶段工厂；支持有界小型本地项目，验证范围见下文，不是任意软件全自动 |
 
 ## 安装与运行
 
-APF 主线使用源码和 PowerShell 入口，尚无正式 APF 1.0.0 安装包。准备 Windows 11、PowerShell、Python 3.11+、Git，以及已安装并登录的可信 Codex CLI。生成 Web 项目还需要相应 Node/Edge/浏览器工具环境；换机完整开发 E2E 尚未验证。Goal 5 的软件发行 ZIP 与 APF 自身的安装包是两回事。
+APF 1.0.0 提供源码安装与 Python wheel，见 [正式发布说明](docs/RELEASE_1.0.0.md) 和 [GitHub Release](https://github.com/kaleidoscopezzz/AI-Project-Factory/releases/tag/v1.0.0)。准备 Windows 11、PowerShell、Python 3.11+、Git，以及已安装并登录的可信 Codex CLI。本轮生成软件需要 Node.js 26.x（验证 26.3.0），Web 验收需要 Edge/Playwright 工具环境；换机完整开发 E2E 尚未验证。Goal 5 的软件发行 ZIP 与 APF 自身的安装包是两回事。
 
 获取源码后在**仓库根目录**运行：
 
 ```powershell
-git clone https://github.com/kaleidoscopezzz/AI-Project-Factory.git
+git clone --branch v1.0.0 --depth 1 https://github.com/kaleidoscopezzz/AI-Project-Factory.git
 Set-Location AI-Project-Factory
 python --version
 python -m venv .venv
@@ -76,7 +76,7 @@ apf --help
 `apf --version` 精确输出：
 
 ```text
-AI Project Factory 0.1.0
+AI Project Factory 1.0.0
 Wit beyond measure is man's greatest treasure
 ```
 
@@ -103,7 +103,7 @@ apf --build "开发一个支持新增、完成和删除的本地待办事项软�
 
 **统一入口待办项目已通过真实双阶段接续与发行验收。** 复用原 Planner 和已批准的软件 Goal 0，完成 Goal 1 编辑、删除及既有功能回归；修复后的候选取得真实 Tester **8/8 AC passed** 和独立只读 Reviewer **approved**，随后由 Release Agent 生成 **12 个文件的本地 ZIP**。在原开发目录之外解包，使用包内 `START.ps1` 实际验证新增、查看、编辑、完成、删除及重启持久化；运行依赖 **Node.js 26.x（本轮验证 26.3.0）**，不是独立 EXE。
 
-本例经过明确授权的分阶段续跑，保留原 Coder 超时和首次 Tester 失败；真实返工候选已获独立复验与批准。**这不代表一次命令不中断、无人干预完成任意项目，也没有验证同一轮自动触发返工的完整闭环。APF 1.0.0 尚未正式发布。** 新 ZIP 保存在本地，未提供 GitHub Release 下载。运行与验证范围见 [产品入口说明](docs/PRODUCT_USAGE.md)。
+本例经过明确授权的分阶段续跑，保留原 Coder 超时和首次 Tester 失败；真实返工候选已获独立复验与批准。**这不代表一次命令不中断、无人干预完成任意项目，也没有验证同一轮自动触发返工的完整闭环。** APF 1.0.0 按本例限定范围发布。 新 ZIP 保存在本地，未提供 GitHub Release 下载。运行与验证范围见 [产品入口说明](docs/PRODUCT_USAGE.md)。
 
 现有软件开发 PowerShell 入口继续可用。在仓库根目录准备可信 Codex 路径：
 
@@ -134,7 +134,7 @@ Python Controller 管理任务、状态与调用；Codex CLI 执行角色；Task
 
 ## 下一步与限制
 
-六个研发里程碑的核心能力已完成，CLI 0.1.0 已接入规划和有界双阶段开发/发行入口。**APF 1.0.0 尚未正式发布**；真实入口验收与最终产品体验范围仍需明确，规划文件生成不等于软件交付。面向普通用户的后续产品化里程碑仍是**建议 Goal 6，尚未正式立项**。
+六个研发里程碑的核心能力已完成，APF CLI 与元数据统一为 **1.0.0**。本版本验证个人 Windows/Codex 环境下的小型软件受控两阶段生成、独立审查与本地发行；不宣称一次命令无人干预完成任意软件。发布说明与安装包见 [v1.0.0](https://github.com/kaleidoscopezzz/AI-Project-Factory/releases/tag/v1.0.0)。面向普通用户的后续产品化里程碑仍是**建议 Goal 6，尚未正式立项**。
 
 根 AGENTS.md 强制生成、详细需求忠实度验证、真实自动返工闭环、多模型及多 Agent 自由编排均为未来计划，不属于本次已验证能力。自动 GitHub Push、云部署、通用 EXE 与安装器也不在当前交付范围。
 
